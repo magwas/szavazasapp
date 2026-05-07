@@ -1,0 +1,115 @@
+\documentclass[a4paper]{article}
+\usepackage[margin=1.5cm]{geometry}
+\usepackage{tikz}
+\usepackage{qrcode}
+\usepackage{multirow}
+\usepackage{array}
+\usepackage{calc}
+\usepackage{graphicx}
+
+% Default values
+\providecommand{\titletext}{Sample Ballot}
+\providecommand{\id}{VOTE-000001}
+\providecommand{\numsupport}{3}
+\providecommand{\candidates}{Alice, Bob, Charlie, David}
+
+% -------- 1cm x 1cm checkbox with centered baseline ----------
+\newcommand{\checkbox}{%
+  \begin{tikzpicture}[baseline=(current bounding box.center)]
+    \draw (0,0) rectangle (0.8,0.8);
+  \end{tikzpicture}%
+}
+
+% -------- Increase row height to accommodate 1cm squares --------
+\renewcommand{\arraystretch}{2.4}
+
+% Column widths
+\newlength{\firstcol}
+\newlength{\othercol}
+\setlength{\firstcol}{0.5\textwidth}
+\setlength{\othercol}{(\textwidth - \firstcol - 2\tabcolsep*(3+\numsupport+1) - \arrayrulewidth*(3+\numsupport+2))/(3+\numsupport-1)}
+\ifdim\othercol<1pt\setlength{\othercol}{0.5cm}\fi
+
+% Header
+\ifcase\numsupport
+  \newcommand{\header}{%
+    \multirow{2}{*}{Candidate} & \multirow{2}{*}{Oppose} & \\
+    & & \\
+  }
+\or % 1
+  \newcommand{\header}{%
+    \multirow{2}{*}{Candidate} & \multirow{2}{*}{Oppose} & & \multicolumn{1}{c}{Support} \\
+    & & & \multicolumn{1}{c}{strongly} \\
+  }
+\or % 2
+  \newcommand{\header}{%
+    \multirow{2}{*}{Candidate} & \multirow{2}{*}{Oppose} & & \multicolumn{2}{c}{Support} \\
+    & & & a bit & strongly \\
+  }
+\or % 3
+  \newcommand{\header}{%
+    \multirow{2}{*}{Candidate} & \multirow{2}{*}{Oppose} & & \multicolumn{3}{c}{Support} \\
+    & & & a bit & & strongly \\
+  }
+\or % 4
+  \newcommand{\header}{%
+    \multirow{2}{*}{Candidate} & \multirow{2}{*}{Oppose} & & \multicolumn{4}{c}{Support} \\
+    & & & a bit & & & strongly \\
+  }
+\or % 5
+  \newcommand{\header}{%
+    \multirow{2}{*}{Candidate} & \multirow{2}{*}{Oppose} & & \multicolumn{5}{c}{Support} \\
+    & & & a bit & & & & strongly \\
+  }
+\fi
+
+% Row macro (horizontal lines removed: only line break remains)
+\ifcase\numsupport
+  \def\row#1{#1 & \checkbox & & \\ }
+\or
+  \def\row#1{#1 & \checkbox & & \checkbox \\ }
+\or
+  \def\row#1{#1 & \checkbox & & \checkbox & \checkbox \\ }
+\or
+  \def\row#1{#1 & \checkbox & & \checkbox & \checkbox & \checkbox \\ }
+\or
+  \def\row#1{#1 & \checkbox & & \checkbox & \checkbox & \checkbox & \checkbox \\ }
+\or
+  \def\row#1{#1 & \checkbox & & \checkbox & \checkbox & \checkbox & \checkbox & \checkbox \\ }
+\fi
+
+\makeatletter
+\newcommand{\addrows}[1]{%
+  \@for\candidate:=#1\do{%
+    \expandafter\row\expandafter{\candidate}%
+  }%
+}
+\makeatother
+
+\newcommand{\ballotcontent}{%
+  % ArUco markers – unchanged
+  \begin{tikzpicture}[remember picture, overlay]
+    \node[anchor=north west, inner sep=0pt, xshift=1.5cm, yshift=-1.5cm] at (current page.north west) {\includegraphics[width=3cm]{aruco_tl.png}};
+    \node[anchor=north east, inner sep=0pt, xshift=-1.5cm, yshift=-1.5cm] at (current page.north east) {\includegraphics[width=3cm]{aruco_tr.png}};
+    \node[anchor=south west, inner sep=0pt, xshift=1.5cm, yshift=1.5cm] at (current page.south west) {\includegraphics[width=3cm]{aruco_bl.png}};
+    \node[anchor=south east, inner sep=0pt, xshift=-1.5cm, yshift=1.5cm] at (current page.south east) {\includegraphics[width=3cm]{aruco_br.png}};
+  \end{tikzpicture}%
+  \begin{center}
+    {\Large \textbf{\titletext}}\\[6pt]
+    \qrcode[height=3cm]{\id}\\[2pt]
+    {\small Ballot ID: \id}\\[12pt]
+  \end{center}
+  \begin{center}
+    \begin{tabular}{
+      >{\centering\arraybackslash}p{\firstcol}
+      *{\numexpr2+\numsupport\relax}{>{\centering\arraybackslash}p{\othercol}}
+    }
+    \header
+    \addrows{\candidates}
+    \end{tabular}
+  \end{center}
+}
+
+\begin{document}
+\ballotcontent
+\end{document}

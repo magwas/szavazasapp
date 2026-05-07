@@ -1,0 +1,15 @@
+#!/home/mag/.venv/bin/python
+import cv2
+import os
+
+# Create markers as PNG files (3cm x 3cm at 300dpi -> 354x354 pixels)
+# But we'll generate at 300x300 pixels and let LaTeX scale; for better quality, use 354x354.
+aruco_dict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_50)
+ids = [0, 1, 2, 3]  # tl, tr, bl, br
+names = ['tl', 'tr', 'bl', 'br']
+size_px = 354  # 3cm at 300dpi
+
+for i, marker_id in enumerate(ids):
+    marker_img = cv2.aruco.generateImageMarker(aruco_dict, marker_id, size_px)
+    cv2.imwrite(f"aruco_{names[i]}.png", marker_img)
+    print(f"Generated aruco_{names[i]}.png")
