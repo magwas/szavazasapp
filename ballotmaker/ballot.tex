@@ -6,6 +6,7 @@
 \usepackage{array}
 \usepackage{calc}
 \usepackage{graphicx}
+\usepackage{makecell}
 
 % Default values
 \providecommand{\titletext}{Sample Ballot}
@@ -13,10 +14,9 @@
 \providecommand{\numsupport}{3}
 \providecommand{\candidates}{Alice, Bob, Charlie, David}
 
-% -------- 1cm x 1cm checkbox with centered baseline ----------
 \newcommand{\checkbox}{%
   \begin{tikzpicture}[baseline=(current bounding box.center)]
-    \draw (0,0) rectangle (0.8,0.8);
+    \draw[line width=3pt] (0,0) rectangle (0.8,0.8);
   \end{tikzpicture}%
 }
 
@@ -33,49 +33,49 @@
 % Header
 \ifcase\numsupport
   \newcommand{\header}{%
-    \multirow{2}{*}{Candidate} & \multirow{2}{*}{Oppose} & \\
+    \multirow{2}{*}{Lehetőség} & \multirow{2}{*}{Ellenzem} & \\
     & & \\
   }
 \or % 1
   \newcommand{\header}{%
-    \multirow{2}{*}{Candidate} & \multirow{2}{*}{Oppose} & & \multicolumn{1}{c}{Support} \\
-    & & & \multicolumn{1}{c}{strongly} \\
+    \multirow{2}{*}{Lehetőség} & \multirow{2}{*}{Ellenzem} & & \multicolumn{1}{c}{Támogatom} \\
+    & & & \multicolumn{1}{c}{nagyon} \\
   }
 \or % 2
   \newcommand{\header}{%
-    \multirow{2}{*}{Candidate} & \multirow{2}{*}{Oppose} & & \multicolumn{2}{c}{Support} \\
-    & & & a bit & strongly \\
+    \multirow{2}{*}{Lehetőség} & \multirow{2}{*}{Ellenzem} & & \multicolumn{2}{c}{Támogatom} \\
+    & & & kicsit & nagyon \\
   }
 \or % 3
   \newcommand{\header}{%
-    \multirow{2}{*}{Candidate} & \multirow{2}{*}{Oppose} & & \multicolumn{3}{c}{Support} \\
-    & & & a bit & & strongly \\
+    \multirow{2}{*}{Lehetőség} & \multirow{2}{*}{Ellenzem} & & \multicolumn{3}{c}{Támogatom} \\
+    & & & kicsit & & nagyon \\
   }
 \or % 4
   \newcommand{\header}{%
-    \multirow{2}{*}{Candidate} & \multirow{2}{*}{Oppose} & & \multicolumn{4}{c}{Support} \\
-    & & & a bit & & & strongly \\
+    \multirow{2}{*}{Lehetőség} & \multirow{2}{*}{Ellenzem} & & \multicolumn{4}{c}{Támogatom} \\
+    & & & kicsit & & & nagyon \\
   }
 \or % 5
   \newcommand{\header}{%
-    \multirow{2}{*}{Candidate} & \multirow{2}{*}{Oppose} & & \multicolumn{5}{c}{Support} \\
-    & & & a bit & & & & strongly \\
+    \multirow{2}{*}{Lehetőség} & \multirow{2}{*}{Ellenzem} & & \multicolumn{5}{c}{Támogatom} \\
+    & & & kicsit & & & & nagyon \\
   }
 \fi
 
 % Row macro (horizontal lines removed: only line break remains)
 \ifcase\numsupport
-  \def\row#1{#1 & \checkbox & & \\ }
+  \def\row#1{\Large \textbf{#1} & \checkbox & & \\ }
 \or
-  \def\row#1{#1 & \checkbox & & \checkbox \\ }
+  \def\row#1{\Large \textbf{#1} & \checkbox & & \checkbox \\ }
 \or
-  \def\row#1{#1 & \checkbox & & \checkbox & \checkbox \\ }
+  \def\row#1{\Large \textbf{#1} & \checkbox & & \checkbox & \checkbox \\ }
 \or
-  \def\row#1{#1 & \checkbox & & \checkbox & \checkbox & \checkbox \\ }
+  \def\row#1{\Large \textbf{#1} & \checkbox & & \checkbox & \checkbox & \checkbox \\ }
 \or
-  \def\row#1{#1 & \checkbox & & \checkbox & \checkbox & \checkbox & \checkbox \\ }
+  \def\row#1{\Large \textbf{#1} & \checkbox & & \checkbox & \checkbox & \checkbox & \checkbox \\ }
 \or
-  \def\row#1{#1 & \checkbox & & \checkbox & \checkbox & \checkbox & \checkbox & \checkbox \\ }
+  \def\row#1{\Large \textbf{#1} & \checkbox & & \checkbox & \checkbox & \checkbox & \checkbox & \checkbox \\ }
 \fi
 
 \makeatletter
@@ -96,8 +96,8 @@
   \end{tikzpicture}%
   \begin{center}
     {\Large \textbf{\titletext}}\\[6pt]
-    \qrcode[height=3cm]{\id}\\[2pt]
     {\small Ballot ID: \id}\\[12pt]
+    \qrcode[height=3cm]{\id}\\[2pt]
   \end{center}
   \begin{center}
     \begin{tabular}{
@@ -105,8 +105,26 @@
       *{\numexpr2+\numsupport\relax}{>{\centering\arraybackslash}p{\othercol}}
     }
     \header
-    \addrows{\candidates}
+    \Xhline{4\arrayrulewidth}
+    \addrows{\candidates}\\
+    \Xhline{4\arrayrulewidth}
     \end{tabular}
+\begin{tikzpicture}[remember picture, overlay]
+\node[
+    anchor=south,
+    yshift=2.5cm
+] at (current page.south)
+{
+    \begin{minipage}{\dimexpr\textwidth-6cm\relax}
+    \centering
+    Minden sorba maximum egy X-et tegyen!\\[4pt]
+
+    A szavazat értékelésekor a lehetőségeknek\\
+    csak az Ön által kialakított sorrendje lesz figyelembe véve.\\
+    Számértéket nem számolunk.
+    \end{minipage}
+};
+\end{tikzpicture}
   \end{center}
 }
 

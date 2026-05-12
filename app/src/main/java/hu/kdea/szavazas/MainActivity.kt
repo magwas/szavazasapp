@@ -15,10 +15,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var previewView: PreviewView
     private lateinit var captureButton: Button
     private lateinit var cameraManager: CameraManager
-    private lateinit var qrProcessor: QRProcessor
     private lateinit var ballotProcessor: BallotProcessor
-    private var currentNumSupport = 3
-    private var currentNumRows = 11
     private var isProcessing = false
 
     private val permissionLauncher = registerForActivityResult(
@@ -34,27 +31,22 @@ class MainActivity : AppCompatActivity() {
         previewView = findViewById(R.id.previewView)
         captureButton = findViewById(R.id.captureButton)
 
-        setupProcessors()
-        // CameraManager onFrame lambda: simply close the frame (no live QR scanning)
+        val debugSaver = AndroidDebugImageSaver(this)
+        setupProcessors(debugSaver)
+
         cameraManager = CameraManager(
             context = this,
             lifecycleOwner = this,
             previewView = previewView,
             onFrame = { imageProxy: ImageProxy -> imageProxy.close() }
         )
+
         captureButton.setOnClickListener {
             if (!isProcessing) {
                 cameraManager.capturePhoto { file ->
                     val bitmap = BitmapFactory.decodeFile(file.absolutePath)
                     if (bitmap != null) {
-                        // Scan QR from the captured photo to get numSupport and numRows
-                        if (currentNumRows == 11 && currentNumSupport == 3) {
-                            qrProcessor.processBitmap(bitmap) {
-                                processBallot(bitmap)
-                            }
-                        } else {
-                            processBallot(bitmap)
-                        }
+                        processBallot(bitmap)
                     } else {
                         Toast.makeText(this, "Failed to load image", Toast.LENGTH_SHORT).show()
                     }
@@ -63,25 +55,21 @@ class MainActivity : AppCompatActivity() {
                 Toast.makeText(this, "Processing", Toast.LENGTH_SHORT).show()
             }
         }
+
         if (checkSelfPermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED)
             cameraManager.start()
         else permissionLauncher.launch(Manifest.permission.CAMERA)
     }
 
-    private fun setupProcessors() {
-        qrProcessor = QRProcessor { raw, numSupport, numCandidates ->
-            currentNumSupport = numSupport
-            currentNumRows = numCandidates
-            runOnUiThread { Toast.makeText(this, "QR: $raw", Toast.LENGTH_SHORT).show() }
-        }
+    private fun setupProcessors(debugSaver: DebugImageSaver) {
         ballotProcessor = BallotProcessor(
-            this,
+            context = this,
+            debugImageSaver = debugSaver,
             onResult = { results ->
                 runOnUiThread {
                     Toast.makeText(this, "Results: $results", Toast.LENGTH_LONG).show()
                     isProcessing = false
                     cameraManager.resumeAnalysis()
-                    qrProcessor.reset()
                 }
             },
             onError = { message ->
@@ -89,7 +77,6 @@ class MainActivity : AppCompatActivity() {
                     Toast.makeText(this, "Error: $message", Toast.LENGTH_LONG).show()
                     isProcessing = false
                     cameraManager.resumeAnalysis()
-                    qrProcessor.reset()
                 }
             }
         )
@@ -98,7 +85,7 @@ class MainActivity : AppCompatActivity() {
     private fun processBallot(bitmap: android.graphics.Bitmap) {
         isProcessing = true
         cameraManager.stopAnalysis()
-        ballotProcessor.process(bitmap, currentNumSupport, currentNumRows)
+        ballotProcessor.process(bitmap)
     }
 
     override fun onDestroy() {

@@ -1,39 +1,43 @@
 package hu.kdea.szavazas
 
 import android.graphics.Bitmap
-import android.util.Log
+import android.graphics.Rect
 import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.google.mlkit.vision.common.InputImage
 
-class QRProcessor(
-    private val onQrDetected: (raw: String, numSupport: Int, numCandidates: Int) -> Unit
-) {
-    private val scanner = BarcodeScanning.getClient()
-    private var alreadyDetected = false
+class QRProcessor : IQRProcessor {
 
-    fun processBitmap(bitmap: Bitmap, onComplete: () -> Unit) {
-        if (alreadyDetected) {
-            onComplete()
-            return
-        }
-        val inputImage = InputImage.fromBitmap(bitmap, 0)
-        scanner.process(inputImage)
+    data class QrResult(
+        val raw: String,
+        val numSupport: Int,
+        val numCandidates: Int,
+        val boundingBox: Rect
+    )
+
+    private val scanner = BarcodeScanning.getClient()
+
+    override fun detect(bitmap: Bitmap, onResult: (QrResult?) -> Unit) {
+        val image = InputImage.fromBitmap(bitmap, 0)
+        scanner.process(image)
             .addOnSuccessListener { barcodes ->
-                for (barcode in barcodes) {
-                    val raw = barcode.rawValue
-                    if (raw != null && !alreadyDetected) {
-                        alreadyDetected = true
+                if (barcodes.isNotEmpty()) {
+                    val bc = barcodes[0]
+                    val raw = bc.rawValue
+                    if (raw != null) {
                         val parts = raw.split("-")
                         val numSupport = if (parts.size >= 2) parts[1].toIntOrNull() ?: 3 else 3
                         val numCandidates = if (parts.size >= 3) parts[2].toIntOrNull() ?: 11 else 11
-                        onQrDetected(raw, numSupport, numCandidates)
-                        break
+                        val box = bc.boundingBox ?: Rect()
+                        onResult(QrResult(raw, numSupport, numCandidates, box))
+                    } else {
+                        onResult(null)
                     }
+                } else {
+                    onResult(null)
                 }
             }
-            .addOnFailureListener { e -> Log.e("QRProcessor", "Scan failed", e) }
-            .addOnCompleteListener { onComplete() }
+            .addOnFailureListener {
+                onResult(null)
+            }
     }
-
-    fun reset() { alreadyDetected = false }
 }

@@ -3,6 +3,7 @@ package hu.kdea.szavazas
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Matrix
+import android.util.Log
 import android.view.Surface
 import android.view.WindowManager
 import org.opencv.android.Utils
@@ -45,21 +46,32 @@ object ImageHelper {
         try {
             val dir = context.getExternalFilesDir(null) ?: context.cacheDir
             val file = File(dir, name)
-            val bmp = Bitmap.createBitmap(mat.width(), mat.height(), Bitmap.Config.ARGB_8888)
-            Utils.matToBitmap(mat, bmp)
+
+            // Ensure mat is converted to 4-channel RGBA for ARGB_8888 bitmap
+            val output = Mat()
+            when (mat.channels()) {
+                1 -> Imgproc.cvtColor(mat, output, Imgproc.COLOR_GRAY2RGBA)
+                3 -> Imgproc.cvtColor(mat, output, Imgproc.COLOR_BGR2RGBA)
+                4 -> mat.copyTo(output) // Assume already RGBA
+                else -> mat.copyTo(output)
+            }
+
+            val bmp = Bitmap.createBitmap(output.width(), output.height(), Bitmap.Config.ARGB_8888)
+            Utils.matToBitmap(output, bmp)
             FileOutputStream(file).use { out ->
                 bmp.compress(Bitmap.CompressFormat.JPEG, 95, out)
             }
             bmp.recycle()
+            output.release()
+            Log.d("ImageHelper", "Saved debug image: ${file.absolutePath}")
         } catch (e: Exception) {
-            // ignore debug errors
+            Log.e("ImageHelper", "Failed to save debug image $name", e)
         }
     }
 
     fun scale(mat: Mat, factor: Int): Mat {
         val scaled = Mat()
-        Imgproc.resize(mat, scaled, Size(mat.width() * factor.toDouble(),
-            mat.height() * factor.toDouble()))
+        Imgproc.resize(mat, scaled, Size(mat.width() * factor.toDouble(), mat.height() * factor.toDouble()))
         return scaled
     }
 }
