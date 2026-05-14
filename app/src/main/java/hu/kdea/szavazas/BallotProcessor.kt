@@ -7,11 +7,19 @@ import org.opencv.android.Utils
 import org.opencv.core.*
 import org.opencv.imgproc.Imgproc
 import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
+
+data class BallotResult(
+    val qrRaw: String,
+    val numRows: Int,
+    val numSupport: Int,
+    val xCells: List<Pair<Int, Int>>
+)
 
 class BallotProcessor(
     private val context: Context,
     private val debugImageSaver: DebugImageSaver,
-    private val onResult: (List<Boolean>) -> Unit,
+    private val onResult: (BallotResult) -> Unit,
     private val onError: (String) -> Unit,
     private val qrProcessor: IQRProcessor = QRProcessor(),
     private val openCVLoader: IOpenCVLoader = AndroidOpenCVLoader()
@@ -83,29 +91,38 @@ class BallotProcessor(
             val qrBitmap = Bitmap.createBitmap(scaled.width(), scaled.height(), Bitmap.Config.ARGB_8888)
             Utils.matToBitmap(scaled, qrBitmap)
 
+            var qrRaw: String? = null
             var numSupport = 0
             var numRows = 0
-            var qrAndroidRect: android.graphics.Rect? = null
+            var qrRect: android.graphics.Rect? = null
             val latch = CountDownLatch(1)
             qrProcessor.detect(qrBitmap) { qrResult ->
                 if (qrResult != null) {
+                    qrRaw = qrResult.raw        // from QrResult data class
                     numSupport = qrResult.numSupport
                     numRows = qrResult.numCandidates
-                    qrAndroidRect = qrResult.boundingBox
-                    Log.d("BallotProcessor", "QR detected: support=$numSupport, rows=$numRows, box=${qrAndroidRect}")
+                    qrRect = qrResult.boundingBox
+                    Log.d("BallotProcessor", "QR detected: raw=$qrRaw, support=$numSupport, rows=$numRows, box=$qrRect")
                 } else {
                     Log.e("BallotProcessor", "QR detection failed")
                 }
                 latch.countDown()
             }
-            latch.await()
-
-            val finalQrRect = qrAndroidRect
-            if (finalQrRect == null) {
-                onError("QR code detection failed")
-                qrBitmap.recycle()
+            try {
+                if (!latch.await(5, TimeUnit.SECONDS)) {
+                    onError("QR detection timed out")
+                    return
+                }
+            } catch (e: InterruptedException) {
+                onError("QR detection interrupted")
                 return
             }
+            if (qrRaw == null || qrRect == null) {
+                onError("QR code detection failed")
+                return
+            }
+            // qrRect is now guaranteed non-null because we returned if null
+            val finalQrRect = qrRect!!
             val qrRectOCV = Rect(finalQrRect.left, finalQrRect.top,
                 finalQrRect.width(), finalQrRect.height())
             val qrCentreX = qrRectOCV.x + qrRectOCV.width / 2
@@ -225,8 +242,7 @@ class BallotProcessor(
             debugImageSaver.save(debugGrid, "debug_grid_final.jpg")
             debugGrid.release()
 
-
-            // --- X detection using the SAME binary as grid detection ---
+            // --- X detection ---
             val debugEroded = scaled.clone()
             val debugSkeleton = scaled.clone()
             val debugBranches = scaled.clone()
@@ -241,7 +257,6 @@ class BallotProcessor(
                 xDetector.detect(projectionInput, cellInBinary, debugSkeleton, debugBranches, debugEroded)
             }
 
-// Save separate debug images
             debugImageSaver.save(debugEroded, "debug_eroded.jpg")
             debugImageSaver.save(debugSkeleton, "debug_skeleton.jpg")
             debugImageSaver.save(debugBranches, "debug_branch_points.jpg")
@@ -249,12 +264,35 @@ class BallotProcessor(
             debugSkeleton.release()
             debugBranches.release()
 
-            Log.d("BallotProcessor", "Final results: $results")
-            onResult(results)
+            // Convert results to list of (row, col)
+            val xCells = mutableListOf<Pair<Int, Int>>()
+            for (row in 0 until numRows) {
+                for (col in 0 until expectedCols) {
+                    val idx = row * expectedCols + col
+                    if (results[idx]) {
+                        xCells.add(row to col)
+                    }
+                }
+            }
 
+            Log.d("BallotProcessor", "Final X cells: $xCells")
+
+            // Cleanup
             qrBitmap.recycle()
             projectionInput.release()
             cropped.release()
+            scaled.release()
+            warpedBgr.release()
+            srcMat.release()
+            gray.release()
+
+            // Return result via callback
+            onResult(BallotResult(
+                qrRaw = qrRaw!!,
+                numRows = numRows,
+                numSupport = numSupport,
+                xCells = xCells
+            ))
 
         } catch (e: Exception) {
             Log.e("BallotProcessor", "Processing error", e)

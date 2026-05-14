@@ -23,7 +23,6 @@ class BallotDetectionUnitTest(private val imageName: String) {
         @Parameterized.Parameters(name = "{0}")
         @JvmStatic
         fun data(): Collection<Array<Any>> {
-            // List all test image base names (without extension)
             return listOf(
                 arrayOf("image1"),
                 arrayOf("image2")
@@ -50,7 +49,7 @@ class BallotDetectionUnitTest(private val imageName: String) {
         val (numSupport, numRows, xMarksList) = parseSimpleJson(jsonString)
         val expectedMarks = xMarksList.toSet()
 
-        // Prepare debug output directory for this image
+        // Prepare debug output
         val testDir = File(System.getProperty("java.io.tmpdir"), "ballot_test_output/$imageName")
         testDir.deleteRecursively()
         testDir.mkdirs()
@@ -85,10 +84,20 @@ class BallotDetectionUnitTest(private val imageName: String) {
         debugSaver.save(skeletonDebug, "debug_skeleton.jpg")
         debugSaver.save(branchDebug, "debug_branch_points.jpg")
 
-        // Verify expected X marks
+        // 1. Verify expected X marks are present
         for ((row, col) in expectedMarks) {
             val idx = row * (numSupport + 1) + col
             assertTrue("Missing X mark at [$row, $col] in $imageName", results[idx])
+        }
+
+        // 2. Verify no unexpected X marks are present
+        for (row in 0 until numRows) {
+            for (col in 0 until (numSupport + 1)) {
+                val idx = row * (numSupport + 1) + col
+                if (row to col !in expectedMarks) {
+                    assertFalse("Unexpected X mark detected at [$row, $col] in $imageName", results[idx])
+                }
+            }
         }
 
         // Clean up
