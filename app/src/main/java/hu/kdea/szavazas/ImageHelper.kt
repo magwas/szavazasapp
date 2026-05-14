@@ -6,10 +6,9 @@ import android.graphics.Matrix
 import android.util.Log
 import android.view.Surface
 import android.view.WindowManager
-import org.opencv.android.Utils
-import org.opencv.core.Mat
-import org.opencv.core.Size
-import org.opencv.imgproc.Imgproc
+import boofcv.android.ConvertBitmap
+import boofcv.struct.image.GrayU8
+import boofcv.struct.image.Planar
 import java.io.File
 import java.io.FileOutputStream
 
@@ -33,45 +32,62 @@ object ImageHelper {
         }
     }
 
-    fun bitmapToMat(bitmap: Bitmap): Mat {
-        val mat = Mat()
-        val argb = if (bitmap.config != Bitmap.Config.ARGB_8888)
-            bitmap.copy(Bitmap.Config.ARGB_8888, false) else bitmap
-        Utils.bitmapToMat(argb, mat)
-        if (argb != bitmap) argb.recycle()
-        return mat
+    fun bitmapToPlanar(bitmap: Bitmap): Planar<GrayU8> {
+        val planar = Planar(GrayU8::class.java, bitmap.width, bitmap.height, 3)
+        // bitmapToPlanar(bitmap, output, workPixel, workData)
+        ConvertBitmap.bitmapToPlanar(bitmap, planar, null, null)
+        return planar
     }
 
-    fun saveDebugImage(mat: Mat, name: String, context: Context) {
+    fun bitmapToGray(bitmap: Bitmap): GrayU8 {
+        val gray = GrayU8(bitmap.width, bitmap.height)
+        // bitmapToGray(bitmap, output, workBuffer)
+        ConvertBitmap.bitmapToGray(bitmap, gray, null)
+        return gray
+    }
+
+    fun grayToBitmap(gray: GrayU8): Bitmap {
+        val bitmap = Bitmap.createBitmap(gray.width, gray.height, Bitmap.Config.ARGB_8888)
+        // grayToBitmap(input, output, workBuffer)
+        ConvertBitmap.grayToBitmap(gray, bitmap, null)
+        return bitmap
+    }
+
+    fun planarToBitmap(planar: Planar<GrayU8>): Bitmap {
+        val bitmap = Bitmap.createBitmap(planar.width, planar.height, Bitmap.Config.ARGB_8888)
+        // planarToBitmap(planar, output, workBuffer)
+        ConvertBitmap.planarToBitmap(planar, bitmap, null)
+        return bitmap
+    }
+
+    fun saveDebugImage(image: Any, name: String, context: Context) {
         try {
             val dir = context.getExternalFilesDir(null) ?: context.cacheDir
             val file = File(dir, name)
-
-            // Ensure mat is converted to 4-channel RGBA for ARGB_8888 bitmap
-            val output = Mat()
-            when (mat.channels()) {
-                1 -> Imgproc.cvtColor(mat, output, Imgproc.COLOR_GRAY2RGBA)
-                3 -> Imgproc.cvtColor(mat, output, Imgproc.COLOR_BGR2RGBA)
-                4 -> mat.copyTo(output) // Assume already RGBA
-                else -> mat.copyTo(output)
+            val bmp = when (image) {
+                is GrayU8 -> grayToBitmap(image)
+                is Planar<*> -> planarToBitmap(image as Planar<GrayU8>)
+                else -> throw IllegalArgumentException("Unsupported image type")
             }
-
-            val bmp = Bitmap.createBitmap(output.width(), output.height(), Bitmap.Config.ARGB_8888)
-            Utils.matToBitmap(output, bmp)
             FileOutputStream(file).use { out ->
                 bmp.compress(Bitmap.CompressFormat.JPEG, 95, out)
             }
             bmp.recycle()
-            output.release()
             Log.d("ImageHelper", "Saved debug image: ${file.absolutePath}")
         } catch (e: Exception) {
             Log.e("ImageHelper", "Failed to save debug image $name", e)
         }
     }
 
-    fun scale(mat: Mat, factor: Int): Mat {
-        val scaled = Mat()
-        Imgproc.resize(mat, scaled, Size(mat.width() * factor.toDouble(), mat.height() * factor.toDouble()))
+    fun scale(image: GrayU8, factor: Int): GrayU8 {
+        val scaled = GrayU8(image.width * factor, image.height * factor)
+        for (y in 0 until scaled.height) {
+            for (x in 0 until scaled.width) {
+                val srcX = x / factor
+                val srcY = y / factor
+                scaled.set(x, y, image.get(srcX, srcY))
+            }
+        }
         return scaled
     }
 }

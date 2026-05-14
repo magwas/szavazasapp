@@ -1,0 +1,45 @@
+INSTRUMENTATION_STATUS: class=hu.kdea.szavazas.BallotDetectionTest
+INSTRUMENTATION_STATUS: current=1
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=1
+INSTRUMENTATION_STATUS: stream=
+hu.kdea.szavazas.BallotDetectionTest:
+INSTRUMENTATION_STATUS: test=runAllTests
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: class=hu.kdea.szavazas.BallotDetectionTest
+INSTRUMENTATION_STATUS: current=1
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=1
+INSTRUMENTATION_STATUS: stack=java.io.FileNotFoundException: test_images/test_ballot_001.jpg
+at android.content.res.AssetManager.nativeOpenAsset(Native Method)
+at android.content.res.AssetManager.open(AssetManager.java:885)
+at android.content.res.AssetManager.open(AssetManager.java:862)
+at hu.kdea.szavazas.BallotDetectionTest.runAllTests(BallotDetectionTest.kt:37)
+
+INSTRUMENTATION_STATUS: stream=
+Error in runAllTests(hu.kdea.szavazas.BallotDetectionTest):
+java.io.FileNotFoundException: test_images/test_ballot_001.jpg
+at android.content.res.AssetManager.nativeOpenAsset(Native Method)
+at android.content.res.AssetManager.open(AssetManager.java:885)
+at android.content.res.AssetManager.open(AssetManager.java:862)
+at hu.kdea.szavazas.BallotDetectionTest.runAllTests(BallotDetectionTest.kt:37)
+
+INSTRUMENTATION_STATUS: test=runAllTests
+INSTRUMENTATION_STATUS_CODE: -2
+INSTRUMENTATION_RESULT: stream=
+
+Time: 0.023
+There was 1 failure:
+1) runAllTests(hu.kdea.szavazas.BallotDetectionTest)
+java.io.FileNotFoundException: test_images/test_ballot_001.jpg
+at android.content.res.AssetManager.nativeOpenAsset(Native Method)
+at android.content.res.AssetManager.open(AssetManager.java:885)
+at android.content.res.AssetManager.open(AssetManager.java:862)
+at hu.kdea.szavazas.BallotDetectionTest.runAllTests(BallotDetectionTest.kt:37)
+
+FAILURES!!!
+Tests run: 1,  Failures: 1
+
+
+INSTRUMENTATION_CODE: -1
+

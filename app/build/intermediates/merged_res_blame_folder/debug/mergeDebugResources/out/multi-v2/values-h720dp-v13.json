@@ -1,0 +1,19 @@
+{
+    "logs": [
+        {
+            "outputFile": "hu.kdea.szavazas.app-mergeDebugResources-52:/values-h720dp-v13/values-h720dp-v13.xml",
+            "map": [
+                {
+                    "source": "/home/mag/.gradle/caches/8.9/transforms/63d4165a01774360b8f5fe6656f583d1/transformed/appcompat-1.7.0/res/values-h720dp-v13/values-h720dp-v13.xml",
+                    "from": {
+                        "startLines": "2",
+                        "startColumns": "4",
+                        "startOffsets": "55",
+                        "endColumns": "66",
+                        "endOffsets": "117"
+                    }
+                }
+            ]
+        }
+    ]
+}

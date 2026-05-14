@@ -1,0 +1,19 @@
+{
+    "logs": [
+        {
+            "outputFile": "hu.kdea.szavazas.app-mergeDebugResources-52:/values-ldrtl-v17/values-ldrtl-v17.xml",
+            "map": [
+                {
+                    "source": "/home/mag/.gradle/caches/8.9/transforms/94d56bd30bef8fca9e482b4907b2edb2/transformed/material-1.11.0/res/values-ldrtl-v17/values-ldrtl-v17.xml",
+                    "from": {
+                        "startLines": "2,3",
+                        "startColumns": "4,4",
+                        "startOffsets": "55,191",
+                        "endColumns": "135,140",
+                        "endOffsets": "186,327"
+                    }
+                }
+            ]
+        }
+    ]
+}

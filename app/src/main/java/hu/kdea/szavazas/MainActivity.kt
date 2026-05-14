@@ -8,7 +8,6 @@ import android.widget.Button
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import androidx.camera.core.ImageProxy
 import androidx.camera.view.PreviewView
 
 class MainActivity : AppCompatActivity() {
@@ -37,8 +36,7 @@ class MainActivity : AppCompatActivity() {
         cameraManager = CameraManager(
             context = this,
             lifecycleOwner = this,
-            previewView = previewView,
-            onFrame = { imageProxy: ImageProxy -> imageProxy.close() }
+            previewView = previewView
         )
 
         captureButton.setOnClickListener {
@@ -63,20 +61,17 @@ class MainActivity : AppCompatActivity() {
 
     private fun setupProcessors(debugSaver: DebugImageSaver) {
         ballotProcessor = BallotProcessor(
-            context = this,
             debugImageSaver = debugSaver,
             onResult = { results ->
                 runOnUiThread {
                     Toast.makeText(this, "Results: $results", Toast.LENGTH_LONG).show()
                     isProcessing = false
-                    cameraManager.resumeAnalysis()
                 }
             },
             onError = { message ->
                 runOnUiThread {
                     Toast.makeText(this, "Error: $message", Toast.LENGTH_LONG).show()
                     isProcessing = false
-                    cameraManager.resumeAnalysis()
                 }
             }
         )
@@ -84,7 +79,6 @@ class MainActivity : AppCompatActivity() {
 
     private fun processBallot(bitmap: android.graphics.Bitmap) {
         isProcessing = true
-        cameraManager.stopAnalysis()
         ballotProcessor.process(bitmap)
     }
 

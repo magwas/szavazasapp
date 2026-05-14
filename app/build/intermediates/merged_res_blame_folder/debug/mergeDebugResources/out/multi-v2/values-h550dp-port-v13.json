@@ -1,0 +1,19 @@
+{
+    "logs": [
+        {
+            "outputFile": "hu.kdea.szavazas.app-mergeDebugResources-52:/values-h550dp-port-v13/values-h550dp-port-v13.xml",
+            "map": [
+                {
+                    "source": "/home/mag/.gradle/caches/8.9/transforms/94d56bd30bef8fca9e482b4907b2edb2/transformed/material-1.11.0/res/values-h550dp-port-v13/values-h550dp-port-v13.xml",
+                    "from": {
+                        "startLines": "2",
+                        "startColumns": "4",
+                        "startOffsets": "55",
+                        "endColumns": "64",
+                        "endOffsets": "115"
+                    }
+                }
+            ]
+        }
+    ]
+}

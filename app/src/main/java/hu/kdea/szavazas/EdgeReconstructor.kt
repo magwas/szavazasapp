@@ -15,7 +15,18 @@ object EdgeReconstructor {
     ): List<Pair<Int, Int>>? {
         val rawPeaks = PeakFinder.findRawPeaks(proj, offset)
         val merged = PeakFinder.mergeClosePeaks(rawPeaks)
-        val pairs = pairEdges(merged)
+
+        // Dynamic pair width: if emptySecondColumn, there is one extra (empty) column,
+        // so the total number of columns = expectedPairs + 1.
+        val totalColumns = if (emptySecondColumn) expectedPairs + 1 else expectedPairs
+        val span = proj.size
+        val avgColumnWidth = span.toDouble() / totalColumns
+        // A pair (left‑right) typically occupies about one column width.
+        // Use a reasonable fraction to allow some variation.
+        val minGap = (avgColumnWidth * 0.25).toInt()
+        val maxGap = (avgColumnWidth * 0.75).toInt()
+
+        val pairs = pairEdges(merged, minGap, maxGap)
 
         if (pairs.size != expectedPairs) return null
 
@@ -28,9 +39,11 @@ object EdgeReconstructor {
         // must be roughly twice the average gap between the remaining pairs.
         if (emptySecondColumn && pairs.size >= 2) {
             val gaps = pairs.zipWithNext { a, b -> b.first - a.first }
-            val avgGap = gaps.average()
             val firstGap = gaps.first()
-            if (kotlin.math.abs(firstGap - 2 * avgGap) > avgGap * 0.5) return null
+            val otherGaps = gaps.drop(1)
+            if (otherGaps.isEmpty()) return null   // need at least one more gap to compare
+            val avgOtherGap = otherGaps.average()
+            if (kotlin.math.abs(firstGap - 2 * avgOtherGap) > avgOtherGap * 0.5) return null
         }
 
         return pairs
@@ -38,24 +51,30 @@ object EdgeReconstructor {
 
     /**
      * Returns the raw pair list without any validation. Useful for debugging.
+     * (Still uses the original constants – only for debugging.)
      */
     fun getRawPairs(proj: FloatArray, offset: Int): List<Pair<Int, Int>> {
         val rawPeaks = PeakFinder.findRawPeaks(proj, offset)
         val merged = PeakFinder.mergeClosePeaks(rawPeaks)
-        return pairEdges(merged)
+        return pairEdges(merged, GridConstants.EXPECTED_WIDTH_MIN, GridConstants.EXPECTED_WIDTH_MAX)
     }
 
     /**
-     * Greedy peak‑pairing within a fixed width range (20‑40 px).
+     * Greedy peak‑pairing within the given (minGap, maxGap) range.
      */
-    fun pairEdges(peaks: List<Int>): List<Pair<Int, Int>> {
+    fun pairEdges(
+        peaks: List<Int>,
+        minGap: Int,
+        maxGap: Int,
+        maxLookAhead: Int = 10
+    ): List<Pair<Int, Int>> {
         val pairs = mutableListOf<Pair<Int, Int>>()
         val used = BooleanArray(peaks.size)
         for (i in peaks.indices) {
             if (used[i]) continue
-            for (j in i + 1 until minOf(i + 10, peaks.size)) {
+            for (j in i + 1 until minOf(i + maxLookAhead, peaks.size)) {
                 val gap = peaks[j] - peaks[i]
-                if (gap in 20..40 && !used[j]) {
+                if (gap in minGap..maxGap && !used[j]) {
                     pairs.add(peaks[i] to peaks[j])
                     used[i] = true
                     used[j] = true

@@ -1,12 +1,11 @@
 package hu.kdea.szavazas
 
-import org.opencv.core.Mat
-import org.opencv.core.Rect
+import boofcv.struct.image.GrayU8
 
 class GridDetectionOrchestrator(private val debugImageSaver: DebugImageSaver) {
 
     fun detect(
-        binaryClosed: Mat,
+        binaryClosed: GrayU8,
         searchRect: Rect,
         expectedCols: Int,
         expectedRows: Int,
@@ -24,25 +23,31 @@ class GridDetectionOrchestrator(private val debugImageSaver: DebugImageSaver) {
         val data = ProjectionData(colProj, rowProj, roi.x, roi.y + cropTop, roi.width, croppedHeight)
         val saver = GridDebugSaver(debugImageSaver, binaryClosed, roi)
 
-        // Always save projection debug image
         saver.saveProjectionDebug(data)
 
-        // Extract raw peaks and pairs for diagnostic logging and drawing
         val colRawPeaks = PeakFinder.findRawPeaks(colProj, roi.x)
         val colMerged = PeakFinder.mergeClosePeaks(colRawPeaks)
-        val colPairs = EdgeReconstructor.pairEdges(colMerged)
+
+        val colSpan = colProj.size
+        val colAvgSlot = colSpan.toDouble() / expectedCols
+        val colMinGap = (colAvgSlot * 0.3).toInt()
+        val colMaxGap = (colAvgSlot * 0.7).toInt()
+        val colPairs = EdgeReconstructor.pairEdges(colMerged, colMinGap, colMaxGap)
 
         val rowRawPeaks = PeakFinder.findRawPeaks(rowProj, roi.y + cropTop)
         val rowMerged = PeakFinder.mergeClosePeaks(rowRawPeaks)
-        val rowPairs = EdgeReconstructor.pairEdges(rowMerged)
+
+        val rowSpan = rowProj.size
+        val rowAvgSlot = rowSpan.toDouble() / expectedRows
+        val rowMinGap = (rowAvgSlot * 0.3).toInt()
+        val rowMaxGap = (rowAvgSlot * 0.7).toInt()
+        val rowPairs = EdgeReconstructor.pairEdges(rowMerged, rowMinGap, rowMaxGap)
 
         Logger.d("GridDetector", "Raw col peaks: $colRawPeaks, merged: $colMerged, pairs: $colPairs")
         Logger.d("GridDetector", "Raw row peaks: $rowRawPeaks, merged: $rowMerged, pairs: $rowPairs")
 
-        // Draw raw pairs and peaks even if final detection fails
         saver.saveRawPeaksAndPairs(data, colMerged, colPairs, rowMerged, rowPairs)
 
-        // Try to build the final, validated grid
         val colEdges = EdgeReconstructor.reconstructViaPairs(colProj, roi.x, expectedCols, emptySecondColumn)
         val rowEdges = EdgeReconstructor.reconstructViaPairs(rowProj, roi.y + cropTop, expectedRows, false)
 
@@ -63,11 +68,11 @@ class GridDetectionOrchestrator(private val debugImageSaver: DebugImageSaver) {
         return boxes
     }
 
-    private fun ensureInside(img: Mat, rect: Rect): Rect {
+    private fun ensureInside(img: GrayU8, rect: Rect): Rect {
         val x = maxOf(0, rect.x)
         val y = maxOf(0, rect.y)
-        val w = minOf(rect.width, img.width() - x)
-        val h = minOf(rect.height, img.height() - y)
+        val w = minOf(rect.width, img.width - x)
+        val h = minOf(rect.height, img.height - y)
         return Rect(x, y, w, h)
     }
 }

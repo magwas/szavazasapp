@@ -1,0 +1,73 @@
+# 2026-05-12T10:37:09.222531992Z:
+test_suite_meta_data {
+  scheduled_test_case_count: 1
+}
+test_status: FAILED
+test_result {
+  test_case {
+    test_class: "BallotDetectionTest"
+    test_package: "hu.kdea.szavazas"
+    test_method: "runAllTests"
+    start_time {
+      seconds: 1778582226
+      nanos: 610000000
+    }
+    end_time {
+      seconds: 1778582226
+      nanos: 663000000
+    }
+  }
+  test_status: FAILED
+  error {
+    error_message: "java.io.FileNotFoundException: test_images/test_ballot_001.jpg\nat android.content.res.AssetManager.nativeOpenAsset(Native Method)\nat android.content.res.AssetManager.open(AssetManager.java:885)\nat android.content.res.AssetManager.open(AssetManager.java:862)\nat hu.kdea.szavazas.BallotDetectionTest.runAllTests(BallotDetectionTest.kt:37)\n"
+    error_type: "java.io.FileNotFoundException"
+    stack_trace: "java.io.FileNotFoundException: test_images/test_ballot_001.jpg\nat android.content.res.AssetManager.nativeOpenAsset(Native Method)\nat android.content.res.AssetManager.open(AssetManager.java:885)\nat android.content.res.AssetManager.open(AssetManager.java:862)\nat hu.kdea.szavazas.BallotDetectionTest.runAllTests(BallotDetectionTest.kt:37)\n"
+  }
+  output_artifact {
+    label {
+      label: "logcat"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/mag/AndroidStudioProjects/Szavazas/app/build/outputs/androidTest-results/connected/debug/S75 - 12/logcat-hu.kdea.szavazas.BallotDetectionTest-runAllTests.txt"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/mag/AndroidStudioProjects/Szavazas/app/build/outputs/androidTest-results/connected/debug/S75 - 12/device-info.pb"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.meminfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/mag/AndroidStudioProjects/Szavazas/app/build/outputs/androidTest-results/connected/debug/S75 - 12/meminfo"
+    }
+  }
+  output_artifact {
+    label {
+      label: "device-info.cpuinfo"
+      namespace: "android"
+    }
+    source_path {
+      path: "/home/mag/AndroidStudioProjects/Szavazas/app/build/outputs/androidTest-results/connected/debug/S75 - 12/cpuinfo"
+    }
+  }
+}
+output_artifact {
+  label {
+    label: "test-results.log"
+    namespace: "com.google.testing.platform.runtime.android.driver.AndroidInstrumentationDriver"
+  }
+  source_path {
+    path: "/home/mag/AndroidStudioProjects/Szavazas/app/build/outputs/androidTest-results/connected/debug/S75 - 12/testlog/test-results.log"
+  }
+  type: TEST_DATA
+  mime_type: "text/plain"
+}

@@ -1,10 +1,9 @@
 package hu.kdea.szavazas
 
 import android.content.Context
-import org.opencv.core.Mat
 
 class AndroidDebugImageSaver(private val context: Context) : DebugImageSaver {
-    override fun save(mat: Mat, fileName: String) {
-        ImageHelper.saveDebugImage(mat, fileName, context)
+    override fun save(image: Any, fileName: String) {
+        ImageHelper.saveDebugImage(image, fileName, context)
     }
 }

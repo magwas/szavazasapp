@@ -1,13 +1,14 @@
 package hu.kdea.szavazas
 
-import android.content.Context
 import android.graphics.Bitmap
-import android.util.Log
-import org.opencv.android.Utils
-import org.opencv.core.*
-import org.opencv.imgproc.Imgproc
+import boofcv.alg.filter.binary.ThresholdImageOps
+import boofcv.alg.filter.blur.BlurImageOps
+import boofcv.struct.image.GrayF32
+import boofcv.struct.image.GrayU8
+import boofcv.struct.image.Planar
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
+import kotlin.math.min
 
 data class BallotResult(
     val qrRaw: String,
@@ -17,80 +18,38 @@ data class BallotResult(
 )
 
 class BallotProcessor(
-    private val context: Context,
     private val debugImageSaver: DebugImageSaver,
     private val onResult: (BallotResult) -> Unit,
     private val onError: (String) -> Unit,
-    private val qrProcessor: IQRProcessor = QRProcessor(),
-    private val openCVLoader: IOpenCVLoader = AndroidOpenCVLoader()
+    private val qrProcessor: IQRProcessor = ZXingQRProcessor()
 ) {
     private val scaleFactor = 2
-    private val arucoDetector = ArucoDetector()
+    private val arucoDetector: IArucoDetector = BoofCVArucoDetector()
     private val gridOrchestrator = GridDetectionOrchestrator(debugImageSaver)
     private val xDetector = XDetector()
 
-    init {
-        var loaded = false
+    fun process(srcBitmap: Bitmap) {
+        Logger.d("BallotProcessor", "Processing started: ${srcBitmap.width}x${srcBitmap.height}")
         try {
-            openCVLoader.load()
-            loaded = true
-        } catch (e: UnsatisfiedLinkError) { }
-        if (!loaded) {
-            try {
-                System.loadLibrary("opencv_java4")
-                loaded = true
-            } catch (e: UnsatisfiedLinkError) { }
-        }
-        if (!loaded) {
-            try {
-                System.loadLibrary("opencv_java")
-                loaded = true
-            } catch (e: UnsatisfiedLinkError) { }
-        }
-        try {
-            Core.getVersionMajor()
-        } catch (e: UnsatisfiedLinkError) {
-            onError("OpenCV library load failed")
-        }
-    }
+            val srcGray = ImageHelper.bitmapToGray(srcBitmap)
+            debugImageSaver.save(srcGray, "debug_capture.jpg")
 
-    fun process(bitmap: Bitmap) {
-        Log.d("BallotProcessor", "Processing started: ${bitmap.width}x${bitmap.height}")
-        try {
-            val rotated = ImageHelper.rotateBitmap(bitmap, context)
-            val srcMat = ImageHelper.bitmapToMat(rotated)
-            debugImageSaver.save(srcMat, "debug_capture.jpg")
-
-            val gray = Mat()
-            Imgproc.cvtColor(srcMat, gray, Imgproc.COLOR_RGBA2GRAY)
-            debugImageSaver.save(gray, "debug_gray.jpg")
-
-            val markers = arucoDetector.findBallotCorners(gray)
+            val markers = arucoDetector.findBallotCorners(srcGray)
             if (markers == null) {
                 onError("Could not detect 4 ArUco markers")
                 return
             }
 
-            val debugMarkersMat = srcMat.clone()
-            for (point in markers) {
-                Imgproc.circle(debugMarkersMat, point, 10, Scalar(0.0, 255.0, 0.0, 255.0), 3)
-            }
-            debugImageSaver.save(debugMarkersMat, "debug_aruco_corners.jpg")
-            debugMarkersMat.release()
+            val srcPlanar = ImageHelper.bitmapToPlanar(srcBitmap)
+            val warpedRgba = arucoDetector.warpBallot(srcPlanar, markers)
+            val warpedGray = convertToGray(warpedRgba)
+            debugImageSaver.save(warpedGray, "debug_warped.jpg")
 
-            val warpedRgba = arucoDetector.warpBallot(srcMat, markers)
-            val warpedBgr = Mat()
-            Imgproc.cvtColor(warpedRgba, warpedBgr, Imgproc.COLOR_RGBA2BGR)
-            warpedRgba.release()
-            debugImageSaver.save(warpedBgr, "debug_warped.jpg")
-
-            val scaled = ImageHelper.scale(warpedBgr, scaleFactor)
+            val scaled = ImageHelper.scale(warpedGray, scaleFactor)
             debugImageSaver.save(scaled, "debug_scaled.jpg")
 
-            // --- QR detection ---
-            val qrBitmap = Bitmap.createBitmap(scaled.width(), scaled.height(), Bitmap.Config.ARGB_8888)
-            Utils.matToBitmap(scaled, qrBitmap)
-
+            // QR detection
+            val qrBitmap = ImageHelper.grayToBitmap(scaled)
             var qrRaw: String? = null
             var numSupport = 0
             var numRows = 0
@@ -98,173 +57,135 @@ class BallotProcessor(
             val latch = CountDownLatch(1)
             qrProcessor.detect(qrBitmap) { qrResult ->
                 if (qrResult != null) {
-                    qrRaw = qrResult.raw        // from QrResult data class
+                    qrRaw = qrResult.raw
                     numSupport = qrResult.numSupport
                     numRows = qrResult.numCandidates
                     qrRect = qrResult.boundingBox
-                    Log.d("BallotProcessor", "QR detected: raw=$qrRaw, support=$numSupport, rows=$numRows, box=$qrRect")
+                    Logger.d(
+                        "BallotProcessor",
+                        "QR detected: raw=$qrRaw, support=$numSupport, rows=$numRows"
+                    )
                 } else {
-                    Log.e("BallotProcessor", "QR detection failed")
+                    Logger.e("BallotProcessor", "QR detection failed")
                 }
                 latch.countDown()
             }
-            try {
-                if (!latch.await(5, TimeUnit.SECONDS)) {
-                    onError("QR detection timed out")
-                    return
-                }
-            } catch (e: InterruptedException) {
-                onError("QR detection interrupted")
+            if (!latch.await(5, TimeUnit.SECONDS)) {
+                onError("QR detection timed out")
                 return
             }
             if (qrRaw == null || qrRect == null) {
                 onError("QR code detection failed")
                 return
             }
-            // qrRect is now guaranteed non-null because we returned if null
-            val finalQrRect = qrRect!!
-            val qrRectOCV = Rect(finalQrRect.left, finalQrRect.top,
-                finalQrRect.width(), finalQrRect.height())
-            val qrCentreX = qrRectOCV.x + qrRectOCV.width / 2
-            val qrBottomY = qrRectOCV.y + qrRectOCV.height
+            qrBitmap.recycle()
 
-            // --- Boundary line search ---
-            val fullGray = Mat()
-            Imgproc.cvtColor(scaled, fullGray, Imgproc.COLOR_BGR2GRAY)
-            val invertedGray = Mat()
-            Core.bitwise_not(fullGray, invertedGray)
-            fullGray.release()
+            val qrCentreX = qrRect!!.centerX()
+            val qrBottomY = qrRect!!.bottom
 
-            val fullRowProj = FloatArray(invertedGray.rows())
-            for (y in 0 until invertedGray.rows()) {
-                val row = invertedGray.row(y)
-                fullRowProj[y] = Core.sumElems(row).`val`[0].toFloat()
-                row.release()
+            // Invert image for projection
+            val inverted = GrayU8(scaled.width, scaled.height)
+            for (y in 0 until scaled.height) {
+                for (x in 0 until scaled.width) {
+                    inverted.set(x, y, 255 - scaled.get(x, y))
+                }
             }
-            invertedGray.release()
+            val fullRowProj = FloatArray(inverted.height)
+            for (y in 0 until inverted.height) {
+                var sum = 0
+                for (x in 0 until inverted.width) sum += inverted.get(x, y)
+                fullRowProj[y] = sum.toFloat()
+            }
 
-            val searchTopY = qrBottomY
             val markerTopY = arucoDetector.bottomMarkerTopInScaled(scaleFactor.toDouble())
             val marginToMarkers = 20
             val searchBottomY = if (markerTopY != null) {
-                minOf(scaled.height() - 1, (markerTopY - marginToMarkers).toInt())
+                min(scaled.height - 1, (markerTopY - marginToMarkers).toInt())
             } else {
-                (scaled.height() * 0.95).toInt()
+                (scaled.height * 0.95).toInt()
             }
-            val searchRange = maxOf(1, searchBottomY - searchTopY)
-            val upperSearchEnd = searchTopY + searchRange / 3
-            val lowerSearchStart = searchTopY + 2 * searchRange / 3
 
-            var topPeakY = searchTopY
-            var topPeakVal = 0f
-            for (y in searchTopY..upperSearchEnd) {
-                if (fullRowProj[y] > topPeakVal) {
-                    topPeakVal = fullRowProj[y]; topPeakY = y
+            val searchProj = fullRowProj.sliceArray(qrBottomY..searchBottomY)
+            val allPeaks = PeakFinder.findRawPeaks(searchProj, qrBottomY)
+            if (allPeaks.size < 2) {
+                onError("Not enough peaks for grid boundaries")
+                return
+            }
+            val sortedByStrength = allPeaks.sortedByDescending { fullRowProj[it] }
+            val (peakA, peakB) = sortedByStrength[0] to sortedByStrength[1]
+            val topPeak = minOf(peakA, peakB)
+            val bottomPeak = maxOf(peakA, peakB)
+
+            val cropTop = maxOf(0, topPeak + GridConstants.BOUNDARY_MARGIN)
+            val cropBottom = minOf(scaled.height - 1, bottomPeak - GridConstants.BOUNDARY_MARGIN)
+            val cropRight = scaled.width
+
+            // Manual crop to avoid BinaryImageOps.crop issues
+            val croppedWidth = cropRight - qrCentreX
+            val croppedHeight = cropBottom - cropTop + 1
+            val cropped = GrayU8(croppedWidth, croppedHeight)
+            for (y in 0 until croppedHeight) {
+                for (x in 0 until croppedWidth) {
+                    cropped.set(x, y, scaled.get(qrCentreX + x, cropTop + y))
                 }
             }
-            var bottomPeakY = searchBottomY
-            var bottomPeakVal = 0f
-            for (y in lowerSearchStart..searchBottomY) {
-                if (fullRowProj[y] > bottomPeakVal) {
-                    bottomPeakVal = fullRowProj[y]; bottomPeakY = y
+
+            // Illumination normalization using Gaussian blur
+            val croppedF32 = GrayF32(cropped.width, cropped.height)
+            for (y in 0 until cropped.height) {
+                for (x in 0 until cropped.width) {
+                    croppedF32.set(x, y, cropped.get(x, y).toFloat())
                 }
             }
-            Log.d("BallotProcessor", "Boundary lines (constrained): top=$topPeakY, bottom=$bottomPeakY")
+            val blur = GrayF32(cropped.width, cropped.height)
+            // gaussian(input, output, sigma, radius, borderType)
+            BlurImageOps.gaussian(croppedF32, blur, 101.0, -1, null)
+            val normalizedF32 = GrayF32(cropped.width, cropped.height)
+            for (y in 0 until cropped.height) {
+                for (x in 0 until cropped.width) {
+                    val v = croppedF32.get(x, y) / blur.get(x, y) * 255f
+                    normalizedF32.set(x, y, v.coerceIn(0f, 255f))
+                }
+            }
+            val normalized8u = GrayU8(cropped.width, cropped.height)
+            for (y in 0 until cropped.height) {
+                for (x in 0 until cropped.width) {
+                    normalized8u.set(x, y, normalizedF32.get(x, y).toInt())
+                }
+            }
+            val projectionInput = GrayU8(cropped.width, cropped.height)
+            // threshold(input, output, threshold, down)
+            ThresholdImageOps.threshold(normalized8u, projectionInput, 128, true)
 
-            val margin = 10
-            val cropTop = maxOf(0, topPeakY + margin)
-            val cropBottom = minOf(scaled.height() - 1, bottomPeakY - margin)
-            val cropLeft = qrCentreX
-            val cropRight = scaled.width()
-            val croppedWidth = maxOf(1, cropRight - cropLeft)
-            val croppedHeight = maxOf(1, cropBottom - cropTop)
-            val cropRect = Rect(cropLeft, cropTop, croppedWidth, croppedHeight)
-
-            val croppedMat = Mat(scaled, cropRect)
-            val cropped = croppedMat.clone()
-            croppedMat.release()
-
-            val debugCropped = scaled.clone()
-            Imgproc.rectangle(debugCropped, cropRect, Scalar(255.0, 0.0, 0.0), 3)
-            debugImageSaver.save(debugCropped, "debug_cropped.jpg")
-            debugCropped.release()
-
-            // --- Preprocessing ---
-            val croppedGray = Mat()
-            Imgproc.cvtColor(cropped, croppedGray, Imgproc.COLOR_BGR2GRAY)
-
-            val illumination = Mat()
-            Imgproc.GaussianBlur(croppedGray, illumination, Size(101.0, 101.0), 0.0)
-
-            val grayFloat = Mat()
-            croppedGray.convertTo(grayFloat, CvType.CV_32F)
-            val illumFloat = Mat()
-            illumination.convertTo(illumFloat, CvType.CV_32F)
-
-            val normalizedFloat = Mat()
-            Core.divide(grayFloat, illumFloat, normalizedFloat, 255.0, CvType.CV_32F)
-
-            val normalized8u = Mat()
-            normalizedFloat.convertTo(normalized8u, CvType.CV_8U)
-
-            val projectionInput = Mat()
-            Imgproc.threshold(normalized8u, projectionInput, 0.0, 255.0,
-                Imgproc.THRESH_BINARY_INV or Imgproc.THRESH_TRIANGLE)
-
-            illumination.release(); grayFloat.release(); illumFloat.release()
-            normalizedFloat.release(); normalized8u.release(); croppedGray.release()
-
-            saveDebugGray(projectionInput, "debug_projection_input.jpg")
-
-            // --- Grid detection ---
+            // Grid detection
             val expectedCols = numSupport + 1
             val checkboxes = gridOrchestrator.detect(
                 binaryClosed = projectionInput,
-                searchRect = Rect(0, 0, projectionInput.width(), projectionInput.height()),
+                searchRect = Rect(0, 0, projectionInput.width, projectionInput.height),
                 expectedCols = expectedCols,
                 expectedRows = numRows,
                 skipBoundaries = true,
                 emptySecondColumn = true
             )
-
             if (checkboxes.isEmpty()) {
                 onError("Grid detection failed")
                 return
             }
-            Log.d("BallotProcessor", "Grid built: ${checkboxes.size} cells (rows=$numRows, cols=$expectedCols)")
 
             val fullCheckboxes = checkboxes.map { box ->
-                Rect(box.x + cropLeft, box.y + cropTop, box.width, box.height)
+                Rect(box.x + qrCentreX, box.y + cropTop, box.width, box.height)
             }
 
-            val debugGrid = scaled.clone()
-            fullCheckboxes.forEach { Imgproc.rectangle(debugGrid, it, Scalar(0.0, 255.0, 0.0), 2) }
-            debugImageSaver.save(debugGrid, "debug_grid_final.jpg")
-            debugGrid.release()
-
-            // --- X detection ---
-            val debugEroded = scaled.clone()
-            val debugSkeleton = scaled.clone()
-            val debugBranches = scaled.clone()
-
-            val results = fullCheckboxes.map { cellInScaled ->
+            val results = fullCheckboxes.map { cell ->
                 val cellInBinary = Rect(
-                    cellInScaled.x - cropLeft,
-                    cellInScaled.y - cropTop,
-                    cellInScaled.width,
-                    cellInScaled.height
+                    cell.x - qrCentreX,
+                    cell.y - cropTop,
+                    cell.width,
+                    cell.height
                 )
-                xDetector.detect(projectionInput, cellInBinary, debugSkeleton, debugBranches, debugEroded)
+                xDetector.detect(projectionInput, cellInBinary)
             }
 
-            debugImageSaver.save(debugEroded, "debug_eroded.jpg")
-            debugImageSaver.save(debugSkeleton, "debug_skeleton.jpg")
-            debugImageSaver.save(debugBranches, "debug_branch_points.jpg")
-            debugEroded.release()
-            debugSkeleton.release()
-            debugBranches.release()
-
-            // Convert results to list of (row, col)
             val xCells = mutableListOf<Pair<Int, Int>>()
             for (row in 0 until numRows) {
                 for (col in 0 until expectedCols) {
@@ -275,35 +196,25 @@ class BallotProcessor(
                 }
             }
 
-            Log.d("BallotProcessor", "Final X cells: $xCells")
-
-            // Cleanup
-            qrBitmap.recycle()
-            projectionInput.release()
-            cropped.release()
-            scaled.release()
-            warpedBgr.release()
-            srcMat.release()
-            gray.release()
-
-            // Return result via callback
-            onResult(BallotResult(
-                qrRaw = qrRaw!!,
-                numRows = numRows,
-                numSupport = numSupport,
-                xCells = xCells
-            ))
+            onResult(BallotResult(qrRaw!!, numRows, numSupport, xCells))
 
         } catch (e: Exception) {
-            Log.e("BallotProcessor", "Processing error", e)
+            Logger.e("BallotProcessor", "Processing error: ${e.message}")
             onError(e.message ?: "Processing error")
         }
     }
 
-    private fun saveDebugGray(mat: Mat, fileName: String) {
-        val bgr = Mat()
-        Imgproc.cvtColor(mat, bgr, Imgproc.COLOR_GRAY2BGR)
-        debugImageSaver.save(bgr, fileName)
-        bgr.release()
+    private fun convertToGray(planar: Planar<GrayU8>): GrayU8 {
+        val gray = GrayU8(planar.width, planar.height)
+        for (y in 0 until planar.height) {
+            for (x in 0 until planar.width) {
+                val r = planar.getBand(0).get(x, y)
+                val g = planar.getBand(1).get(x, y)
+                val b = planar.getBand(2).get(x, y)
+                val grayVal = (0.299 * r + 0.587 * g + 0.114 * b).toInt()
+                gray.set(x, y, grayVal)
+            }
+        }
+        return gray
     }
 }
