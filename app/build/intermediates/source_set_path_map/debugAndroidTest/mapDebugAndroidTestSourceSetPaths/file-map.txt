@@ -1,6 +1,0 @@
-hu.kdea.szavazas.test.app-annotation-experimental-1.3.1-0 /home/mag/.gradle/caches/8.9/transforms/6c470f7e303e0e37abd48d94ac0e9afb/transformed/annotation-experimental-1.3.1/res
-hu.kdea.szavazas.test.app-core-1.5.0-1 /home/mag/.gradle/caches/8.9/transforms/91b2b2e65e41ea1ee361e46f24fdbeb5/transformed/core-1.5.0/res
-hu.kdea.szavazas.test.app-androidTest-2 /home/mag/AndroidStudioProjects/Szavazas/app/build/generated/res/resValues/androidTest/debug
-hu.kdea.szavazas.test.app-mergeDebugAndroidTestResources-3 /home/mag/AndroidStudioProjects/Szavazas/app/build/intermediates/incremental/debugAndroidTest/mergeDebugAndroidTestResources/merged.dir
-hu.kdea.szavazas.test.app-mergeDebugAndroidTestResources-4 /home/mag/AndroidStudioProjects/Szavazas/app/build/intermediates/incremental/debugAndroidTest/mergeDebugAndroidTestResources/stripped.dir
-hu.kdea.szavazas.test.app-debugAndroidTest-5 /home/mag/AndroidStudioProjects/Szavazas/app/build/intermediates/merged_res/debugAndroidTest/mergeDebugAndroidTestResources

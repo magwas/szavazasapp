@@ -1,7 +1,9 @@
+// MainActivity.kt (complete file)
 package hu.kdea.szavazas
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.widget.Button
@@ -9,6 +11,9 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.view.PreviewView
+import boofcv.android.ConvertBitmap
+import boofcv.struct.image.GrayU8
+import boofcv.struct.image.Planar
 
 class MainActivity : AppCompatActivity() {
     private lateinit var previewView: PreviewView
@@ -61,14 +66,14 @@ class MainActivity : AppCompatActivity() {
 
     private fun setupProcessors(debugSaver: DebugImageSaver) {
         ballotProcessor = BallotProcessor(
-            debugImageSaver = debugSaver,
-            onResult = { results ->
+            debugSaver = debugSaver,
+            onResult = { results: BallotResult ->
                 runOnUiThread {
                     Toast.makeText(this, "Results: $results", Toast.LENGTH_LONG).show()
                     isProcessing = false
                 }
             },
-            onError = { message ->
+            onError = { message: String ->
                 runOnUiThread {
                     Toast.makeText(this, "Error: $message", Toast.LENGTH_LONG).show()
                     isProcessing = false
@@ -77,9 +82,13 @@ class MainActivity : AppCompatActivity() {
         )
     }
 
-    private fun processBallot(bitmap: android.graphics.Bitmap) {
+    private fun processBallot(bitmap: Bitmap) {
         isProcessing = true
-        ballotProcessor.process(bitmap)
+        // Convert Bitmap to Planar<GrayU8> using BoofCV's Android helper
+        val planar = Planar(GrayU8::class.java, bitmap.width, bitmap.height, 3)
+        ConvertBitmap.bitmapToPlanar(bitmap, planar, null, null)
+        ballotProcessor.process(planar)
+        bitmap.recycle()
     }
 
     override fun onDestroy() {

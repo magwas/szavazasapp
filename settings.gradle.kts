@@ -24,3 +24,4 @@ dependencyResolutionManagement {
 rootProject.name = "Szavazas"
 include(":app")
 
+include(":test-utils")

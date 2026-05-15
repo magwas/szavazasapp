@@ -2,7 +2,18 @@ plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
 }
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
+    if (name.contains("UnitTest", ignoreCase = true)) {
+        kotlinOptions {
+            jvmTarget = "17"
+            freeCompilerArgs += listOf("-Xadd-modules=java.desktop")
+        }
+    }
+}
 
+tasks.withType<Test>().configureEach {
+    jvmArgs("--add-modules=java.desktop")
+}
 android {
     namespace = "hu.kdea.szavazas"
     compileSdk = 34
@@ -33,6 +44,11 @@ android {
 
     kotlinOptions {
         jvmTarget = "17"
+    }
+    packaging {
+        resources {
+            pickFirsts.add("META-INF/sisu/javax.inject.Named")
+        }
     }
 }
 
@@ -79,7 +95,6 @@ dependencies {
     testImplementation("org.boofcv:boofcv-core:1.2.0")   // essential for ConvertBufferedImage
     testImplementation("org.boofcv:boofcv-geo:1.2.0")
     testImplementation("org.boofcv:boofcv-io:1.2.0")
-    testImplementation("org.robolectric:robolectric:4.11.1")
     // Android instrumentation tests
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")

@@ -62,7 +62,7 @@ object ImageHelper {
 
     fun saveDebugImage(image: Any, name: String, context: Context) {
         try {
-            val dir = context.getExternalFilesDir(null) ?: context.cacheDir
+            val dir = context.cacheDir
             val file = File(dir, name)
             val bmp = when (image) {
                 is GrayU8 -> grayToBitmap(image)
@@ -79,15 +79,4 @@ object ImageHelper {
         }
     }
 
-    fun scale(image: GrayU8, factor: Int): GrayU8 {
-        val scaled = GrayU8(image.width * factor, image.height * factor)
-        for (y in 0 until scaled.height) {
-            for (x in 0 until scaled.width) {
-                val srcX = x / factor
-                val srcY = y / factor
-                scaled.set(x, y, image.get(srcX, srcY))
-            }
-        }
-        return scaled
-    }
 }

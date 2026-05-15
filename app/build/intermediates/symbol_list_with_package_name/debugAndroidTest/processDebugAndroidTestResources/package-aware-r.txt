@@ -1,3 +1,0 @@
-hu.kdea.szavazas.test
-style WhiteBackgroundDialogTheme
-style WhiteBackgroundTheme
