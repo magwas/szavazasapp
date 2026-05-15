@@ -1,8 +1,9 @@
 package hu.kdea.szavazas
 
 import boofcv.struct.image.GrayU8
+import java.io.File
 
-class GridDetectionOrchestrator(private val debugImageSaver: DebugImageSaver) {
+class GridDetectionOrchestrator {   // no more debug parameters
 
     fun detect(
         binaryClosed: GrayU8,
@@ -21,9 +22,16 @@ class GridDetectionOrchestrator(private val debugImageSaver: DebugImageSaver) {
         val rowProj = ProjectionUtils.rowProjection(binaryClosed, roi, cropTop, croppedHeight)
 
         val data = ProjectionData(colProj, rowProj, roi.x, roi.y + cropTop, roi.width, croppedHeight)
-        val saver = GridDebugSaver(debugImageSaver, binaryClosed, roi)
 
-        saver.saveProjectionDebug(data)
+        // Debug drawing inlined (temporary AWT dependency)
+        val debugDir = File("/tmp/ballot_debug")
+        debugDir.mkdirs()
+        val renderer = AwtDebugImageRenderer()
+        val saver = FileDebugImageSaver(debugDir)
+
+        // saveProjectionDebug
+        renderer.drawProjection(data.colProj, data.colOffset, "Column Projection", "col_proj", saver)
+        renderer.drawProjection(data.rowProj, data.rowOffset, "Row Projection", "row_proj", saver)
 
         val colRawPeaks = PeakFinder.findRawPeaks(colProj, roi.x)
         val colMerged = PeakFinder.mergeClosePeaks(colRawPeaks)
@@ -31,7 +39,7 @@ class GridDetectionOrchestrator(private val debugImageSaver: DebugImageSaver) {
         val colSpan = colProj.size
         val totalCols = if (emptySecondColumn) expectedCols + 1 else expectedCols
         val colAvgSlot = colSpan.toDouble() / totalCols
-        val colMinGap = (colAvgSlot * 0.2).toInt()   // more relaxed
+        val colMinGap = (colAvgSlot * 0.2).toInt()
         val colMaxGap = (colAvgSlot * 0.9).toInt()
         val colPairs = EdgeReconstructor.pairEdges(colMerged, colMinGap, colMaxGap)
 
@@ -47,7 +55,15 @@ class GridDetectionOrchestrator(private val debugImageSaver: DebugImageSaver) {
         Logger.d("GridDetector", "Raw col peaks: $colRawPeaks, merged: $colMerged, pairs: $colPairs")
         Logger.d("GridDetector", "Raw row peaks: $rowRawPeaks, merged: $rowMerged, pairs: $rowPairs")
 
-        saver.saveRawPeaksAndPairs(data, colMerged, colPairs, rowMerged, rowPairs)
+        // saveRawPeaksAndPairs
+        renderer.drawProjectionWithPeaksAndPairs(
+            data.colProj, colMerged, colPairs, data.colOffset,
+            "Column Peaks & Pairs", "col_peaks_pairs", saver
+        )
+        renderer.drawProjectionWithPeaksAndPairs(
+            data.rowProj, rowMerged, rowPairs, data.rowOffset,
+            "Row Peaks & Pairs", "row_peaks_pairs", saver
+        )
 
         val colEdges = EdgeReconstructor.reconstructViaPairs(colProj, roi.x, expectedCols, emptySecondColumn)
         val rowEdges = EdgeReconstructor.reconstructViaPairs(rowProj, roi.y + cropTop, expectedRows, false)
@@ -57,7 +73,9 @@ class GridDetectionOrchestrator(private val debugImageSaver: DebugImageSaver) {
             return emptyList()
         }
 
-        saver.saveOverlay(data, colEdges, rowEdges)
+        // saveOverlay
+        renderer.drawGridOverlay(binaryClosed, roi, colEdges, rowEdges, data, saver)
+
         return buildBoxes(rowEdges, colEdges)
     }
 

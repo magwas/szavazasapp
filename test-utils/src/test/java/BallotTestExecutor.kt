@@ -14,9 +14,9 @@ class BallotTestExecutor {
     private val debugBaseDir = File("/tmp/ballot_detector_test")
 
     fun executeTest(imageName: String) {
-        // Per-image output directory – creates /tmp/ballot_detector_test/image3/ etc.
         val imageDebugDir = File(debugBaseDir, imageName)
-        val debugSaver = FileDebugImageSaver(imageDebugDir)
+        // We no longer need a debug saver to pass around, but we can ensure the dir exists
+        imageDebugDir.mkdirs()
 
         val captureFile = File(testResources, "${imageName}_capture.jpg")
         val jsonFile = File(testResources, "$imageName.json")
@@ -41,8 +41,8 @@ class BallotTestExecutor {
         var actualResult: BallotResult? = null
         var errorMessage: String? = null
 
+        // The processor now creates its own debug machinery internally
         val processor = BallotProcessor(
-            debugSaver = debugSaver,
             onResult = { actualResult = it },
             onError = { errorMessage = it },
             qrProcessor = SyncQRProcessor()

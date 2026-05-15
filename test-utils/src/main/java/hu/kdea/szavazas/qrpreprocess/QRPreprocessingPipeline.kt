@@ -1,10 +1,11 @@
+// QRPreprocessingPipeline.kt
 package hu.kdea.szavazas.qrpreprocess
 
 import boofcv.struct.image.GrayU8
-import hu.kdea.szavazas.DebugImageSaver
+import hu.kdea.szavazas.FileDebugImageSaver
 
 class QRPreprocessingPipeline(
-    private val debugSaver: DebugImageSaver,
+    private val debugSaver: FileDebugImageSaver,   // now concrete
     private val steps: List<PreprocessingStep>
 ) {
     fun execute(input: GrayU8, baseName: String): GrayU8 {

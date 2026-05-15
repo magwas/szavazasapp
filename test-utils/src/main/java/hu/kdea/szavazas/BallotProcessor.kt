@@ -7,35 +7,41 @@ import hu.kdea.szavazas.qrpreprocess.ContrastEnhancementStep
 import hu.kdea.szavazas.qrpreprocess.MorphologicalClosingStep
 import hu.kdea.szavazas.qrpreprocess.QRPreprocessingPipeline
 import hu.kdea.szavazas.qrpreprocess.SharpeningStep
+import java.io.File
 
 class BallotProcessor(
-    private val debugSaver: DebugImageSaver,
     private val onResult: (BallotResult) -> Unit,
     private val onError: (String) -> Unit,
     private val qrProcessor: IQRProcessor = ZXingQRProcessor()
+    // debug parameters removed
 ) {
     private val arucoDetector: IArucoDetector = BoofCVArucoDetector()
-    private val preprocessor = BallotPreprocessor(debugSaver, arucoDetector)
+    private val preprocessor = BallotPreprocessor(arucoDetector)   // no debugSaver
     private val qrDetector = QRDetectorStep(qrProcessor)
     private val regionExtractor = GridRegionExtractor()
-    private val gridDetector = GridDetectorStep(GridDetectionOrchestrator(debugSaver))
-    private val xDetector = XMarkDetectorStep(XDetector(), debugSaver)
+    private val gridDetector = GridDetectorStep(GridDetectionOrchestrator())
+    private val xDetector = XMarkDetectorStep(XDetector())
 
     fun process(planar: Planar<GrayU8>) {
         try {
+            // Temporary AWT debug saver for top‑level saves
+            val debugDir = File("/tmp/ballot_debug")
+            debugDir.mkdirs()
+            val saver = FileDebugImageSaver(debugDir)
+
             val pre = preprocessor.process(planar) ?: return onError("Could not detect 4 ArUco markers")
-            val warpedGray = pre.scaledGray   // full warped image (no scaling)
+            val warpedGray = pre.scaledGray
 
             // Crop to top fourth of the middle fifth – typical QR location
-            val cropX = 2 * warpedGray.width / 5          // start of middle fifth
-            val cropY = 0                                 // top
-            val cropWidth = warpedGray.width / 5          // width = middle fifth
-            val cropHeight = warpedGray.height / 4        // height = top fourth
+            val cropX = 2 * warpedGray.width / 5
+            val cropY = 0
+            val cropWidth = warpedGray.width / 5
+            val cropHeight = warpedGray.height / 4
             val qrCrop = Crop.crop(warpedGray, cropX, cropY, cropWidth, cropHeight)
-            debugSaver.save(qrCrop, "debug_qr_crop.jpg")
+            saver.save(qrCrop, "debug_qr_crop.jpg")
 
             val pipeline = QRPreprocessingPipeline(
-                debugSaver,
+                saver,
                 listOf(
                     ContrastEnhancementStep(),
                     SharpeningStep(),
@@ -44,15 +50,14 @@ class BallotProcessor(
                 )
             )
             val preprocessedQrCrop = pipeline.execute(qrCrop, "qr_preprocess")
-            debugSaver.save(preprocessedQrCrop, "debug_qr_crop.jpg")
+            saver.save(preprocessedQrCrop, "debug_qr_crop.jpg")
 
             val qr = qrDetector.detect(preprocessedQrCrop)
             if (qr == null) {
-                debugSaver.save(qrCrop, "debug_qr_failed.jpg")   // keep for inspection
+                saver.save(qrCrop, "debug_qr_failed.jpg")
                 return onError("QR detection failed")
             }
 
-            // Map the QR bounding box back to the full warped image coordinates
             val adjustedBBox = Rect(
                 qr.bbox.x + cropX,
                 qr.bbox.y + cropY,
@@ -64,10 +69,14 @@ class BallotProcessor(
             val region = regionExtractor.extract(
                 warpedGray, adjustedQr.bbox.centerX(), adjustedQr.bbox.bottom(), pre.markerTopY
             ) ?: return onError("Grid region extraction failed")
+
+            saver.save(region.projectionInput, "debug_grid_input.jpg")
+
             val checkboxes = gridDetector.detect(
                 region.projectionInput, region.cropTop, region.qrCentreX,
                 adjustedQr.numSupport + 1, adjustedQr.numRows
             ) ?: return onError("Grid detection failed")
+
             val marks = xDetector.detect(
                 region.projectionInput, checkboxes, region.qrCentreX,
                 region.cropTop, adjustedQr.numRows, adjustedQr.numSupport + 1

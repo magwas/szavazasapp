@@ -1,39 +1,21 @@
+// BallotPreprocessor.kt (only the changed part)
 package hu.kdea.szavazas
 
-import boofcv.io.image.ConvertBufferedImage
 import boofcv.struct.image.GrayU8
 import boofcv.struct.image.Planar
 import georegression.struct.point.Point2D_F64
-import java.awt.BasicStroke
-import java.awt.Color
-import java.awt.Graphics2D
-import java.awt.image.BufferedImage
+import java.io.File   // <-- add this import
 
 class BallotPreprocessor(
-    private val debugSaver: DebugImageSaver,
     private val arucoDetector: IArucoDetector
 ) {
     fun process(planar: Planar<GrayU8>): PreprocessResult? {
         val gray = convertToGray(planar)
-        debugSaver.save(gray, "debug_capture.jpg")
-
+        FileDebugImageSaver(File("/tmp/ballot_debug")).save(gray, "debug_capture.jpg")
         val markers = arucoDetector.findBallotCorners(gray) ?: return null
-
-        // Debug: draw red circles on the colour image
-        val debugImage = ConvertBufferedImage.convertTo(planar, null, true)
-        val g2d = debugImage.createGraphics()
-        g2d.color = Color.RED
-        g2d.stroke = BasicStroke(3f)
-        for (pt in markers) {
-            g2d.drawOval(pt.x.toInt() - 10, pt.y.toInt() - 10, 20, 20)
-        }
-        g2d.dispose()
-        debugSaver.save(debugImage, "debug_corners.jpg")
-
         val warpedPlanar = arucoDetector.warpBallot(planar, markers)
         val warpedGray = convertToGray(warpedPlanar)
-        debugSaver.save(warpedGray, "debug_warped.jpg")
-
+        FileDebugImageSaver(File("/tmp/ballot_debug")).save(warpedGray, "debug_warped.jpg")
         val markerTopY = arucoDetector.bottomMarkerTopInScaled(1.0)
         return PreprocessResult(warpedGray, markerTopY)
     }

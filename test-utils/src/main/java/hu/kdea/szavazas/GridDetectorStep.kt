@@ -9,7 +9,7 @@ class GridDetectorStep(private val orchestrator: GridDetectionOrchestrator) {
         qrCentreX: Int,
         expectedCols: Int,
         expectedRows: Int
-    ): List<Rect>? {   // Rect is now the custom one
+    ): List<Rect>? {
         val rect = Rect(0, 0, projectionInput.width, projectionInput.height)
         val boxes = orchestrator.detect(
             binaryClosed = projectionInput,
@@ -20,7 +20,6 @@ class GridDetectorStep(private val orchestrator: GridDetectionOrchestrator) {
             emptySecondColumn = true
         )
         if (boxes.isEmpty()) return null
-        // Create custom Rect instances
         return boxes.map { Rect(it.x + qrCentreX, it.y + cropTop, it.width, it.height) }
     }
 }

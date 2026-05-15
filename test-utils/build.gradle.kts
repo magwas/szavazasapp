@@ -16,8 +16,8 @@ kotlin {
 
 dependencies {
     // BoofCV for image processing
-    implementation("org.boofcv:boofcv-core:0.41")
-    implementation("org.boofcv:boofcv-io:0.41")    // needed by UtilImageIO
+    implementation("org.boofcv:boofcv-core:1.2.0")
+    implementation("org.boofcv:boofcv-io:1.2.0")    // needed by UtilImageIO
 
     // ZXing for QR decoding
     implementation("com.google.zxing:core:3.5.1")

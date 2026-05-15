@@ -1,3 +1,4 @@
+// FileDebugImageSaver.kt
 package hu.kdea.szavazas
 
 import boofcv.io.image.ConvertBufferedImage
@@ -7,13 +8,13 @@ import java.awt.image.BufferedImage
 import java.io.File
 import javax.imageio.ImageIO
 
-class FileDebugImageSaver(private val outputDir: File) : DebugImageSaver {
+class FileDebugImageSaver(private val outputDir: File) {   // no interface
 
     init {
         outputDir.mkdirs()
     }
 
-    override fun save(image: Any, fileName: String) {
+    fun save(image: Any, fileName: String) {
         try {
             val buffered: BufferedImage = when (image) {
                 is GrayU8 -> ConvertBufferedImage.convertTo(image, null, true)
@@ -21,7 +22,7 @@ class FileDebugImageSaver(private val outputDir: File) : DebugImageSaver {
                     val band = (image as Planar<GrayU8>).getBand(0)
                     ConvertBufferedImage.convertTo(band, null, true)
                 }
-                is BufferedImage -> image   // new: direct support
+                is BufferedImage -> image
                 else -> throw IllegalArgumentException("Unsupported image type: ${image::class.java}")
             }
             val outFile = File(outputDir, fileName)
