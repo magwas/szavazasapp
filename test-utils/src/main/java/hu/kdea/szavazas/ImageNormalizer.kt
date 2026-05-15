@@ -8,14 +8,14 @@ object ImageNormalizer {
     fun normalizeAndThreshold(gray: GrayU8, sigma: Double = 0.0): GrayU8 {
         // Region width ~1/30 of image size, minimum 10 pixels
         val maxDim = maxOf(gray.width, gray.height).toDouble()
-        val regionWidth = maxOf(10.0, maxDim / 30.0)
+        val regionWidth = maxDim /GridConstants.NORMALIZE_SIZE_DIVIDER
 
         val binary = GrayU8(gray.width, gray.height)
 
         GThresholdImageOps.localMean(
             gray, binary,
             ConfigLength.fixed(regionWidth),   // Double
-            0.85,                               // scale
+            GridConstants.NORMALIZE_SCALE,                               // scale
             true,                              // down: darker pixels become 1
             null, null, null
         )

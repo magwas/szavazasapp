@@ -13,9 +13,6 @@ data class CellDebugData(
 )
 
 class XDetector {
-    companion object {
-        private const val MARGIN = 4
-    }
 
     /**
      * Simple detection – returns only true/false.
@@ -39,10 +36,10 @@ class XDetector {
         outerRect: Rect
     ): Pair<Boolean, CellDebugData?> {
         val innerRect = Rect(
-            outerRect.x + MARGIN,
-            outerRect.y + MARGIN,
-            outerRect.width - 2 * MARGIN,
-            outerRect.height - 2 * MARGIN
+            outerRect.x + GridConstants.X_MARGIN,
+            outerRect.y + GridConstants.X_MARGIN,
+            outerRect.width - 2 * GridConstants.X_MARGIN,
+            outerRect.height - 2 * GridConstants.X_MARGIN
         )
 
         if (innerRect.width <= 0 || innerRect.height <= 0) {

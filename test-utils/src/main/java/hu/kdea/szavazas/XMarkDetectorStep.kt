@@ -175,9 +175,19 @@ class XMarkDetectorStep(
                 DrawingUtils.fillRect(canvas, ir.x + pt.x - 3, ir.y + pt.y - 3, 6, 6, 0xFF0000FF.toInt())
             }
         }
+
+        // ---- NEW: label each cell with its branch-point count ----
+        for (cd in cellDataList) {
+            val r = cd.outerRect
+            val count = cd.branchPoints.size
+            // Position the count just to the right of the cell, vertically centred
+            val textX = r.x + r.width + 8
+            val textY = r.y + r.height / 2
+            BitmapFont5x7.drawString(canvas, count.toString(), textX, textY, 0xFF0000FF.toInt())
+        }
+
         saver.save(canvas, "debug_x_branchpoints.jpg")
     }
-
     /** Creates an RGB canvas from a binary GrayU8 (white background, black foreground). */
     private fun binaryGridToCanvas(binary: GrayU8): Planar<GrayU8> {
         val canvas = Planar(GrayU8::class.java, binary.width, binary.height, 3)

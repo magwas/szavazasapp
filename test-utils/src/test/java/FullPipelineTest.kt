@@ -12,4 +12,7 @@ class FullPipelineTest {
     @Test fun testImage6() = executor.executeTest("image6")
     @Test fun testImage7() = executor.executeTest("image7")
     @Test fun testImage8() = executor.executeTest("image8")
+    @Test fun testImage9() = executor.executeTest("image9")
+    @Test fun testImage10() = executor.executeTest("image10")
+    @Test fun testImage11() = executor.executeTest("image11")
 }
