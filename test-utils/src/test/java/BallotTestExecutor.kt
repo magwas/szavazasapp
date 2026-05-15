@@ -11,11 +11,11 @@ import javax.imageio.ImageIO
 class BallotTestExecutor {
 
     private val testResources = File("src/test/resources/test_images")
-    private val debugBaseDir = File("/tmp/ballot_detector_test")
+    private val debugBaseDir = File("/tmp/ballot_debug")
 
     fun executeTest(imageName: String) {
+        // Per‑image debug directory
         val imageDebugDir = File(debugBaseDir, imageName)
-        // We no longer need a debug saver to pass around, but we can ensure the dir exists
         imageDebugDir.mkdirs()
 
         val captureFile = File(testResources, "${imageName}_capture.jpg")
@@ -41,11 +41,14 @@ class BallotTestExecutor {
         var actualResult: BallotResult? = null
         var errorMessage: String? = null
 
-        // The processor now creates its own debug machinery internally
+        // Use AWT debug saver for desktop tests (null to disable)
+        val debugSaver: ImageSaver? = AwtImageSaver(imageDebugDir)
+
         val processor = BallotProcessor(
             onResult = { actualResult = it },
             onError = { errorMessage = it },
-            qrProcessor = SyncQRProcessor()
+            qrProcessor = SyncQRProcessor(),
+            debugSaver = debugSaver
         )
         processor.process(planar)
 

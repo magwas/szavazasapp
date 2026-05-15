@@ -1,34 +1,28 @@
+// BallotProcessor.kt
 package hu.kdea.szavazas
 
 import boofcv.struct.image.GrayU8
 import boofcv.struct.image.Planar
 import hu.kdea.szavazas.qrpreprocess.AdaptiveBinarizeStep
 import hu.kdea.szavazas.qrpreprocess.ContrastEnhancementStep
-import hu.kdea.szavazas.qrpreprocess.MorphologicalClosingStep
 import hu.kdea.szavazas.qrpreprocess.QRPreprocessingPipeline
 import hu.kdea.szavazas.qrpreprocess.SharpeningStep
-import java.io.File
 
 class BallotProcessor(
     private val onResult: (BallotResult) -> Unit,
     private val onError: (String) -> Unit,
-    private val qrProcessor: IQRProcessor = ZXingQRProcessor()
-    // debug parameters removed
+    private val qrProcessor: IQRProcessor = ZXingQRProcessor(),
+    private val debugSaver: ImageSaver? = null      // nullable – no debug if null
 ) {
     private val arucoDetector: IArucoDetector = BoofCVArucoDetector()
-    private val preprocessor = BallotPreprocessor(arucoDetector)   // no debugSaver
+    private val preprocessor = BallotPreprocessor(arucoDetector, debugSaver)
     private val qrDetector = QRDetectorStep(qrProcessor)
     private val regionExtractor = GridRegionExtractor()
-    private val gridDetector = GridDetectorStep(GridDetectionOrchestrator())
-    private val xDetector = XMarkDetectorStep(XDetector())
+    private val gridDetector = GridDetectorStep(GridDetectionOrchestrator(debugSaver))
+    private val xDetector = XMarkDetectorStep(XDetector(), debugSaver)
 
     fun process(planar: Planar<GrayU8>) {
         try {
-            // Temporary AWT debug saver for top‑level saves
-            val debugDir = File("/tmp/ballot_debug")
-            debugDir.mkdirs()
-            val saver = FileDebugImageSaver(debugDir)
-
             val pre = preprocessor.process(planar) ?: return onError("Could not detect 4 ArUco markers")
             val warpedGray = pre.scaledGray
 
@@ -38,23 +32,17 @@ class BallotProcessor(
             val cropWidth = warpedGray.width / 5
             val cropHeight = warpedGray.height / 4
             val qrCrop = Crop.crop(warpedGray, cropX, cropY, cropWidth, cropHeight)
-            saver.save(qrCrop, "debug_qr_crop.jpg")
 
+            // QR preprocessing pipeline (uses debugSaver if available)
             val pipeline = QRPreprocessingPipeline(
-                saver,
-                listOf(
-                    ContrastEnhancementStep(),
-                    SharpeningStep(),
-                    AdaptiveBinarizeStep(),
-                    //MorphologicalClosingStep()
-                )
+                debugSaver,
+                listOf(ContrastEnhancementStep(), SharpeningStep(), AdaptiveBinarizeStep())
             )
             val preprocessedQrCrop = pipeline.execute(qrCrop, "qr_preprocess")
-            saver.save(preprocessedQrCrop, "debug_qr_crop.jpg")
 
             val qr = qrDetector.detect(preprocessedQrCrop)
             if (qr == null) {
-                saver.save(qrCrop, "debug_qr_failed.jpg")
+                debugSaver?.save(preprocessedQrCrop, "debug_qr_failed.jpg")
                 return onError("QR detection failed")
             }
 
@@ -70,7 +58,7 @@ class BallotProcessor(
                 warpedGray, adjustedQr.bbox.centerX(), adjustedQr.bbox.bottom(), pre.markerTopY
             ) ?: return onError("Grid region extraction failed")
 
-            saver.save(region.projectionInput, "debug_grid_input.jpg")
+            debugSaver?.save(region.projectionInput, "debug_grid_input.jpg")
 
             val checkboxes = gridDetector.detect(
                 region.projectionInput, region.cropTop, region.qrCentreX,

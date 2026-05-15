@@ -1,4 +1,3 @@
-// MainActivity.kt (debug version)
 package hu.kdea.szavazas
 
 import android.Manifest
@@ -37,8 +36,26 @@ class MainActivity : AppCompatActivity() {
         previewView = findViewById(R.id.previewView)
         captureButton = findViewById(R.id.captureButton)
 
-        val debugSaver = AndroidDebugImageSaver(this)
-        setupProcessors(debugSaver)
+        // Optional: inject an Android debug saver for debug images.
+        // Set to null to disable debug output.
+        val debugSaver: ImageSaver? = AndroidImageSaver(this)
+
+        ballotProcessor = BallotProcessor(
+            onResult = { result ->
+                runOnUiThread {
+                    Toast.makeText(this, "Results: $result", Toast.LENGTH_LONG).show()
+                    isProcessing = false
+                }
+            },
+            onError = { message ->
+                runOnUiThread {
+                    Toast.makeText(this, "Error: $message", Toast.LENGTH_LONG).show()
+                    isProcessing = false
+                }
+            },
+            qrProcessor = ZXingQRProcessor(),
+            debugSaver = debugSaver   // null = no debug images
+        )
 
         cameraManager = CameraManager(
             context = this,
@@ -66,30 +83,6 @@ class MainActivity : AppCompatActivity() {
         else permissionLauncher.launch(Manifest.permission.CAMERA)
     }
 
-    private fun setupProcessors(debugSaver: DebugImageSaver) {
-
-        val debugRenderer = AndroidDebugImageRenderer()
-        val xMarkRenderer = AndroidXMarkDebugRenderer()
-
-        ballotProcessor = BallotProcessor(
-            debugSaver = debugSaver,
-            debugImageRenderer = debugRenderer,
-            xMarkDebugRenderer = xMarkRenderer,
-            onResult = { results: BallotResult ->
-                runOnUiThread {
-                    Toast.makeText(this, "Results: $results", Toast.LENGTH_LONG).show()
-                    isProcessing = false
-                }
-            },
-            onError = { message: String ->
-                runOnUiThread {
-                    Toast.makeText(this, "Error: $message", Toast.LENGTH_LONG).show()
-                    isProcessing = false
-                }
-            }
-        )
-    }
-
     private fun processBallot(bitmap: Bitmap) {
         isProcessing = true
 
@@ -98,17 +91,6 @@ class MainActivity : AppCompatActivity() {
         val canvas = Canvas(safeBitmap)
         canvas.drawBitmap(bitmap, 0f, 0f, null)
         bitmap.recycle()
-
-        // --- DEBUG: log bitmap details and BoofCV version ---
-        Log.d("BallotDebug", "Bitmap config: ${safeBitmap.config}, size: ${safeBitmap.width}x${safeBitmap.height}")
-        try {
-            // Try to get BoofCV version (available in BoofCV 1.x)
-            val version = boofcv.BoofVersion.VERSION
-            Log.d("BallotDebug", "BoofCV version: $version")
-        } catch (e: Exception) {
-            Log.d("BallotDebug", "Could not read BoofCV version: ${e.message}")
-        }
-        // ------------------------------------------------
 
         val planar = Planar(GrayU8::class.java, safeBitmap.width, safeBitmap.height, 3)
         ConvertBitmap.bitmapToPlanar(safeBitmap, planar, GrayU8::class.java, null)

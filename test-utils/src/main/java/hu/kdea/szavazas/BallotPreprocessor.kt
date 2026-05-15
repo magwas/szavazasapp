@@ -1,21 +1,23 @@
-// BallotPreprocessor.kt (only the changed part)
+// BallotPreprocessor.kt
 package hu.kdea.szavazas
 
 import boofcv.struct.image.GrayU8
 import boofcv.struct.image.Planar
 import georegression.struct.point.Point2D_F64
-import java.io.File   // <-- add this import
 
 class BallotPreprocessor(
-    private val arucoDetector: IArucoDetector
+    private val arucoDetector: IArucoDetector,
+    private val debugSaver: ImageSaver? = null   // nullable
 ) {
     fun process(planar: Planar<GrayU8>): PreprocessResult? {
         val gray = convertToGray(planar)
-        FileDebugImageSaver(File("/tmp/ballot_debug")).save(gray, "debug_capture.jpg")
+        debugSaver?.save(gray, "debug_capture.jpg")
+
         val markers = arucoDetector.findBallotCorners(gray) ?: return null
         val warpedPlanar = arucoDetector.warpBallot(planar, markers)
         val warpedGray = convertToGray(warpedPlanar)
-        FileDebugImageSaver(File("/tmp/ballot_debug")).save(warpedGray, "debug_warped.jpg")
+        debugSaver?.save(warpedGray, "debug_warped.jpg")
+
         val markerTopY = arucoDetector.bottomMarkerTopInScaled(1.0)
         return PreprocessResult(warpedGray, markerTopY)
     }
