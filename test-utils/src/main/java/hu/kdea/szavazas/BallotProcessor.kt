@@ -19,7 +19,7 @@ class BallotProcessor(
     private val qrDetector = QRDetectorStep(qrProcessor)
     private val regionExtractor = GridRegionExtractor()
     private val gridDetector = GridDetectorStep(GridDetectionOrchestrator(debugSaver))
-    private val xDetector = XMarkDetectorStep(XDetector())
+    private val xDetector = XMarkDetectorStep(XDetector(), debugSaver)
 
     fun process(planar: Planar<GrayU8>) {
         try {
@@ -72,7 +72,7 @@ class BallotProcessor(
                 region.projectionInput, checkboxes, region.qrCentreX,
                 region.cropTop, adjustedQr.numRows, adjustedQr.numSupport + 1
             )
-            onResult(BallotResult(adjustedQr.raw, adjustedQr.numRows, adjustedQr.numSupport, marks))
+            onResult(BallotResult(adjustedQr.raw, adjustedQr.numSupport, adjustedQr.numRows, marks))
         } catch (e: Exception) {
             onError(e.message ?: "Processing error")
         }

@@ -29,9 +29,10 @@ class GridDetectionOrchestrator(private val debugImageSaver: DebugImageSaver) {
         val colMerged = PeakFinder.mergeClosePeaks(colRawPeaks)
 
         val colSpan = colProj.size
-        val colAvgSlot = colSpan.toDouble() / expectedCols
-        val colMinGap = (colAvgSlot * 0.3).toInt()
-        val colMaxGap = (colAvgSlot * 0.7).toInt()
+        val totalCols = if (emptySecondColumn) expectedCols + 1 else expectedCols
+        val colAvgSlot = colSpan.toDouble() / totalCols
+        val colMinGap = (colAvgSlot * 0.2).toInt()   // more relaxed
+        val colMaxGap = (colAvgSlot * 0.9).toInt()
         val colPairs = EdgeReconstructor.pairEdges(colMerged, colMinGap, colMaxGap)
 
         val rowRawPeaks = PeakFinder.findRawPeaks(rowProj, roi.y + cropTop)
