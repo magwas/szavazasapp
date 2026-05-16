@@ -1,4 +1,4 @@
-package hu.kdea.szavazas.ballotprocessor
+package hu.kdea.szavazas.ballotprocessor.debug
 
 /**
  * 5x7 pixel font glyphs (Adafruit GFX, public domain).

@@ -1,8 +1,8 @@
 // QRPreprocessingPipeline.kt
-package hu.kdea.szavazas.ballotprocessor.qrpreprocess
+package hu.kdea.szavazas.ballotprocessor.qr.preprocess
 
 import boofcv.struct.image.GrayU8
-import hu.kdea.szavazas.ballotprocessor.ImageSaver
+import hu.kdea.szavazas.ballotprocessor.debug.ImageSaver
 
 class QRPreprocessingPipeline(
     private val debugSaver: ImageSaver?,   // nullable – no saving if null

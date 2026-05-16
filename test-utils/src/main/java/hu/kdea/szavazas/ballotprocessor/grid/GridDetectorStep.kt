@@ -1,6 +1,7 @@
-package hu.kdea.szavazas.ballotprocessor
+package hu.kdea.szavazas.ballotprocessor.grid
 
 import boofcv.struct.image.GrayU8
+import hu.kdea.szavazas.ballotprocessor.common.Rect
 
 class GridDetectorStep(private val orchestrator: GridDetectionOrchestrator) {
     fun detect(

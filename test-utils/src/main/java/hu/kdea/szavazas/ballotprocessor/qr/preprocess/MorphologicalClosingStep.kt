@@ -1,4 +1,4 @@
-package hu.kdea.szavazas.ballotprocessor.qrpreprocess
+package hu.kdea.szavazas.ballotprocessor.qr.preprocess
 
 import boofcv.alg.filter.binary.BinaryImageOps
 import boofcv.struct.image.GrayU8

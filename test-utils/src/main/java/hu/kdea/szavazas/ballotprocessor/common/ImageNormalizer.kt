@@ -1,8 +1,9 @@
-package hu.kdea.szavazas.ballotprocessor
+package hu.kdea.szavazas.ballotprocessor.common
 
 import boofcv.alg.filter.binary.GThresholdImageOps
 import boofcv.struct.ConfigLength
 import boofcv.struct.image.GrayU8
+import hu.kdea.szavazas.ballotprocessor.GridConstants
 
 object ImageNormalizer {
     fun normalizeAndThreshold(gray: GrayU8, sigma: Double = 0.0): GrayU8 {

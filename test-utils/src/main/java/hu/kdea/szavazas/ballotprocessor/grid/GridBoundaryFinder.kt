@@ -1,4 +1,7 @@
-package hu.kdea.szavazas.ballotprocessor
+package hu.kdea.szavazas.ballotprocessor.grid
+
+import hu.kdea.szavazas.ballotprocessor.GridConstants
+import hu.kdea.szavazas.ballotprocessor.projection.PeakFinder
 
 object GridBoundaryFinder {
     private fun calcSearchBottomY(markerTopY: Double?, height: Int): Int {

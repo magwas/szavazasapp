@@ -1,6 +1,16 @@
-package hu.kdea.szavazas.ballotprocessor
+package hu.kdea.szavazas.ballotprocessor.grid
 
 import boofcv.struct.image.GrayU8
+import hu.kdea.szavazas.ballotprocessor.Logger
+import hu.kdea.szavazas.ballotprocessor.common.Rect
+import hu.kdea.szavazas.ballotprocessor.debug.GridOverlayDebugRenderer
+import hu.kdea.szavazas.ballotprocessor.debug.ImageSaver
+import hu.kdea.szavazas.ballotprocessor.debug.ProjectionDebugRenderer
+import hu.kdea.szavazas.ballotprocessor.projection.AxisPeaks
+import hu.kdea.szavazas.ballotprocessor.projection.EdgeReconstructor
+import hu.kdea.szavazas.ballotprocessor.projection.PeakFinder
+import hu.kdea.szavazas.ballotprocessor.projection.ProjectionData
+import hu.kdea.szavazas.ballotprocessor.projection.ProjectionUtils
 
 class GridDetectionOrchestrator(private val debugSaver: ImageSaver? = null) {
 

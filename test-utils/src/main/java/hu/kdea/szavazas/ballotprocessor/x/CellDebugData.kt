@@ -1,6 +1,8 @@
-package hu.kdea.szavazas.ballotprocessor
+package hu.kdea.szavazas.ballotprocessor.x
 
 import boofcv.struct.image.GrayU8
+import hu.kdea.szavazas.ballotprocessor.common.Point
+import hu.kdea.szavazas.ballotprocessor.common.Rect
 
 data class CellDebugData(
     val outerRect: Rect,            // original cell rectangle (including margin)

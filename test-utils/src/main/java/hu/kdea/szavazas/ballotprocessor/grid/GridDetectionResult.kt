@@ -1,4 +1,4 @@
-package hu.kdea.szavazas.ballotprocessor
+package hu.kdea.szavazas.ballotprocessor.grid
 
 data class GridDetectionResult(
     val colEdges: List<Pair<Int, Int>>,

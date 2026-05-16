@@ -1,6 +1,10 @@
-package hu.kdea.szavazas.ballotprocessor
+package hu.kdea.szavazas.ballotprocessor.grid
 
 import boofcv.struct.image.GrayU8
+import hu.kdea.szavazas.ballotprocessor.common.Crop
+import hu.kdea.szavazas.ballotprocessor.common.ImageNormalizer
+import hu.kdea.szavazas.ballotprocessor.common.Inverter
+import hu.kdea.szavazas.ballotprocessor.projection.RowProjectionComputer
 
 class GridRegionExtractor {
     fun extract(

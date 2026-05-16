@@ -1,5 +1,7 @@
 // QRResult.kt
-package hu.kdea.szavazas.ballotprocessor
+package hu.kdea.szavazas.ballotprocessor.qr
+
+import hu.kdea.szavazas.ballotprocessor.common.Rect
 
 data class QrResult(
     val raw: String,

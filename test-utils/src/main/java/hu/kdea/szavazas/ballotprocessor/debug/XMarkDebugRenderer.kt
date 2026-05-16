@@ -1,7 +1,8 @@
-package hu.kdea.szavazas.ballotprocessor
+package hu.kdea.szavazas.ballotprocessor.debug
 
 import boofcv.struct.image.GrayU8
 import boofcv.struct.image.Planar
+import hu.kdea.szavazas.ballotprocessor.x.CellDebugData
 
 class XMarkDebugRenderer(private val saver: ImageSaver) {
 

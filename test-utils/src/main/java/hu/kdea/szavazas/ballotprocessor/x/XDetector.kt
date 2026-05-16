@@ -1,7 +1,11 @@
-package hu.kdea.szavazas.ballotprocessor
+package hu.kdea.szavazas.ballotprocessor.x
 
 import boofcv.alg.filter.binary.BinaryImageOps
 import boofcv.struct.image.GrayU8
+import hu.kdea.szavazas.ballotprocessor.GridConstants
+import hu.kdea.szavazas.ballotprocessor.Logger
+import hu.kdea.szavazas.ballotprocessor.common.Point
+import hu.kdea.szavazas.ballotprocessor.common.Rect
 
 class XDetector {
 

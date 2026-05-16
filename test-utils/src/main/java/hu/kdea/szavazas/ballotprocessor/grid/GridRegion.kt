@@ -1,4 +1,4 @@
-package hu.kdea.szavazas.ballotprocessor
+package hu.kdea.szavazas.ballotprocessor.grid
 
 import boofcv.struct.image.GrayU8
 

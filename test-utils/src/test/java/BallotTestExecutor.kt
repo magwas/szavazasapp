@@ -5,7 +5,7 @@ import boofcv.struct.image.GrayU8
 import boofcv.struct.image.Planar
 import hu.kdea.szavazas.ballotprocessor.BallotProcessor
 import hu.kdea.szavazas.ballotprocessor.BallotResult
-import hu.kdea.szavazas.ballotprocessor.ImageSaver
+import hu.kdea.szavazas.ballotprocessor.debug.ImageSaver
 import org.junit.Assert.*
 import java.awt.image.BufferedImage
 import java.io.File

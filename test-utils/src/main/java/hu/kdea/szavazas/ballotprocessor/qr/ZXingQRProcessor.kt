@@ -1,9 +1,11 @@
-package hu.kdea.szavazas.ballotprocessor
+package hu.kdea.szavazas.ballotprocessor.qr
 
 import boofcv.struct.image.GrayU8
 import com.google.zxing.*
 import com.google.zxing.common.HybridBinarizer
 import com.google.zxing.common.GlobalHistogramBinarizer
+import hu.kdea.szavazas.ballotprocessor.Logger
+import hu.kdea.szavazas.ballotprocessor.common.Rect
 
 class ZXingQRProcessor : IQRProcessor {
 

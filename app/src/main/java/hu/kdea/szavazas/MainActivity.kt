@@ -15,7 +15,7 @@ import boofcv.android.ConvertBitmap
 import boofcv.struct.image.GrayU8
 import boofcv.struct.image.Planar
 import hu.kdea.szavazas.ballotprocessor.BallotProcessor
-import hu.kdea.szavazas.ballotprocessor.ZXingQRProcessor
+import hu.kdea.szavazas.ballotprocessor.qr.ZXingQRProcessor
 
 class MainActivity : AppCompatActivity() {
     private lateinit var previewView: PreviewView

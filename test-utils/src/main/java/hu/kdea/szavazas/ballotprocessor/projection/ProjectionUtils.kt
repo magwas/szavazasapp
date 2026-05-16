@@ -1,6 +1,8 @@
-package hu.kdea.szavazas.ballotprocessor
+package hu.kdea.szavazas.ballotprocessor.projection
 
 import boofcv.struct.image.GrayU8
+import hu.kdea.szavazas.ballotprocessor.GridConstants
+import hu.kdea.szavazas.ballotprocessor.common.Rect
 
 object ProjectionUtils {
 

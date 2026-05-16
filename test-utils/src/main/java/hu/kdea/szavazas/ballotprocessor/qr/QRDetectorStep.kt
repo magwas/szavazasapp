@@ -1,5 +1,5 @@
 // QRDetectorStep.kt
-package hu.kdea.szavazas.ballotprocessor
+package hu.kdea.szavazas.ballotprocessor.qr
 
 import boofcv.struct.image.GrayU8
 import java.util.concurrent.CountDownLatch

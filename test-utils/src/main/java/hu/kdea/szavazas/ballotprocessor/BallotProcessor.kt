@@ -3,10 +3,24 @@ package hu.kdea.szavazas.ballotprocessor
 
 import boofcv.struct.image.GrayU8
 import boofcv.struct.image.Planar
-import hu.kdea.szavazas.ballotprocessor.qrpreprocess.AdaptiveBinarizeStep
-import hu.kdea.szavazas.ballotprocessor.qrpreprocess.ContrastEnhancementStep
-import hu.kdea.szavazas.ballotprocessor.qrpreprocess.QRPreprocessingPipeline
-import hu.kdea.szavazas.ballotprocessor.qrpreprocess.SharpeningStep
+import hu.kdea.szavazas.ballotprocessor.aruco.BoofCVArucoDetector
+import hu.kdea.szavazas.ballotprocessor.aruco.IArucoDetector
+import hu.kdea.szavazas.ballotprocessor.common.Crop
+import hu.kdea.szavazas.ballotprocessor.common.Rect
+import hu.kdea.szavazas.ballotprocessor.debug.ImageSaver
+import hu.kdea.szavazas.ballotprocessor.grid.GridDetectionOrchestrator
+import hu.kdea.szavazas.ballotprocessor.grid.GridDetectorStep
+import hu.kdea.szavazas.ballotprocessor.grid.GridRegionExtractor
+import hu.kdea.szavazas.ballotprocessor.qr.IQRProcessor
+import hu.kdea.szavazas.ballotprocessor.qr.QRDetectorStep
+import hu.kdea.szavazas.ballotprocessor.qr.QrData
+import hu.kdea.szavazas.ballotprocessor.qr.ZXingQRProcessor
+import hu.kdea.szavazas.ballotprocessor.qr.preprocess.AdaptiveBinarizeStep
+import hu.kdea.szavazas.ballotprocessor.qr.preprocess.ContrastEnhancementStep
+import hu.kdea.szavazas.ballotprocessor.qr.preprocess.QRPreprocessingPipeline
+import hu.kdea.szavazas.ballotprocessor.qr.preprocess.SharpeningStep
+import hu.kdea.szavazas.ballotprocessor.x.XDetector
+import hu.kdea.szavazas.ballotprocessor.x.XMarkDetectorStep
 
 class BallotProcessor(
     private val onResult: (BallotResult) -> Unit,

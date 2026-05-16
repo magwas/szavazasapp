@@ -1,5 +1,5 @@
 // ImageSaver.kt
-package hu.kdea.szavazas.ballotprocessor
+package hu.kdea.szavazas.ballotprocessor.debug
 
 interface ImageSaver {
     /**

@@ -1,4 +1,4 @@
-package hu.kdea.szavazas.ballotprocessor
+package hu.kdea.szavazas.ballotprocessor.aruco
 
 import boofcv.abst.fiducial.FiducialDetector
 import boofcv.alg.distort.RemovePerspectiveDistortion
@@ -16,6 +16,7 @@ import georegression.struct.homography.UtilHomography_F64
 import georegression.struct.point.Point2D_F64
 import georegression.struct.shapes.Polygon2D_F64
 import georegression.transform.homography.HomographyPointOps_F64
+import hu.kdea.szavazas.ballotprocessor.Logger
 import org.ejml.data.DMatrixRMaj
 import kotlin.math.hypot
 import kotlin.math.min

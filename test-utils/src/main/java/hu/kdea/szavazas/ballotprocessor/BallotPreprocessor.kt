@@ -3,7 +3,8 @@ package hu.kdea.szavazas.ballotprocessor
 
 import boofcv.struct.image.GrayU8
 import boofcv.struct.image.Planar
-import georegression.struct.point.Point2D_F64
+import hu.kdea.szavazas.ballotprocessor.aruco.IArucoDetector
+import hu.kdea.szavazas.ballotprocessor.debug.ImageSaver
 
 class BallotPreprocessor(
     private val arucoDetector: IArucoDetector,

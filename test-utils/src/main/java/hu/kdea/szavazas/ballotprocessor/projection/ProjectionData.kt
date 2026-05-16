@@ -1,4 +1,4 @@
-package hu.kdea.szavazas.ballotprocessor
+package hu.kdea.szavazas.ballotprocessor.projection
 
 data class ProjectionData(
     val colProj: FloatArray,

@@ -1,9 +1,9 @@
 package hu.kdea.szavazas
 
 import boofcv.struct.image.GrayU8
-import hu.kdea.szavazas.ballotprocessor.IQRProcessor
-import hu.kdea.szavazas.ballotprocessor.QrResult
-import hu.kdea.szavazas.ballotprocessor.ZXingQRProcessor
+import hu.kdea.szavazas.ballotprocessor.qr.IQRProcessor
+import hu.kdea.szavazas.ballotprocessor.qr.QrResult
+import hu.kdea.szavazas.ballotprocessor.qr.ZXingQRProcessor
 
 class SyncQRProcessor : IQRProcessor {
     override fun detect(image: GrayU8, onResult: (QrResult?) -> Unit) {

@@ -1,6 +1,9 @@
-package hu.kdea.szavazas.ballotprocessor
+package hu.kdea.szavazas.ballotprocessor.x
 
 import boofcv.struct.image.GrayU8
+import hu.kdea.szavazas.ballotprocessor.common.Rect
+import hu.kdea.szavazas.ballotprocessor.debug.ImageSaver
+import hu.kdea.szavazas.ballotprocessor.debug.XMarkDebugRenderer
 
 class XMarkDetectorStep(
     private val xDetector: XDetector,

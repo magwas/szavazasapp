@@ -1,7 +1,9 @@
-package hu.kdea.szavazas.ballotprocessor
+package hu.kdea.szavazas.ballotprocessor.debug
 
 import boofcv.struct.image.GrayU8
 import boofcv.struct.image.Planar
+import hu.kdea.szavazas.ballotprocessor.common.Rect
+import hu.kdea.szavazas.ballotprocessor.projection.ProjectionData
 
 class GridOverlayDebugRenderer(private val saver: ImageSaver) {
 

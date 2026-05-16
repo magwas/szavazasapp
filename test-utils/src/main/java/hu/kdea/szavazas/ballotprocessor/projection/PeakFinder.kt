@@ -1,4 +1,6 @@
-package hu.kdea.szavazas.ballotprocessor
+package hu.kdea.szavazas.ballotprocessor.projection
+
+import hu.kdea.szavazas.ballotprocessor.GridConstants
 
 object PeakFinder {
 
