@@ -66,7 +66,7 @@ tasks.withType<JavaCompile>().configureEach {
 
 dependencies {
     // BoofCV for all image processing
-    implementation(project(":test-utils"))
+    implementation(project(":szavazas-core"))
     implementation("org.boofcv:boofcv-android:1.2.0")
     implementation("org.boofcv:boofcv-core:1.2.0")
     implementation("org.boofcv:boofcv-geo:1.2.0")
