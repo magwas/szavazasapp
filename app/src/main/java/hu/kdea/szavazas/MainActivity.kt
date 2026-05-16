@@ -15,7 +15,6 @@ import boofcv.android.ConvertBitmap
 import boofcv.struct.image.GrayU8
 import boofcv.struct.image.Planar
 import hu.kdea.szavazas.ballotprocessor.BallotProcessor
-import hu.kdea.szavazas.ballotprocessor.ImageSaver
 import hu.kdea.szavazas.ballotprocessor.ZXingQRProcessor
 
 class MainActivity : AppCompatActivity() {
@@ -38,48 +37,42 @@ class MainActivity : AppCompatActivity() {
         previewView = findViewById(R.id.previewView)
         captureButton = findViewById(R.id.captureButton)
 
-        // Optional: inject an Android debug saver for debug images.
-        // Set to null to disable debug output.
-        val debugSaver: ImageSaver? = AndroidImageSaver(this)
+        ballotProcessor = buildBallotProcessor()
+        cameraManager = CameraManager(this, this, previewView)
+        captureButton.setOnClickListener { onCaptureClicked() }
+        requestCameraIfNeeded()
+    }
 
-        ballotProcessor = BallotProcessor(
-            onResult = { result ->
-                runOnUiThread {
-                    Toast.makeText(this, "Results: $result", Toast.LENGTH_LONG).show()
-                    isProcessing = false
-                }
-            },
-            onError = { message ->
-                runOnUiThread {
-                    Toast.makeText(this, "Error: $message", Toast.LENGTH_LONG).show()
-                    isProcessing = false
-                }
-            },
-            qrProcessor = ZXingQRProcessor(),
-            debugSaver = debugSaver   // null = no debug images
-        )
+    override fun onDestroy() {
+        super.onDestroy()
+        cameraManager.shutdown()
+    }
 
-        cameraManager = CameraManager(
-            context = this,
-            lifecycleOwner = this,
-            previewView = previewView
-        )
+    private fun buildBallotProcessor(): BallotProcessor = BallotProcessor(
+        onResult = { result -> toastOnUi("Results: $result") },
+        onError = { message -> toastOnUi("Error: $message") },
+        qrProcessor = ZXingQRProcessor(),
+        debugSaver = AndroidImageSaver(this)
+    )
 
-        captureButton.setOnClickListener {
-            if (!isProcessing) {
-                cameraManager.capturePhoto { file ->
-                    val bitmap = BitmapFactory.decodeFile(file.absolutePath)
-                    if (bitmap != null) {
-                        processBallot(bitmap)
-                    } else {
-                        Toast.makeText(this, "Failed to load image", Toast.LENGTH_SHORT).show()
-                    }
-                }
-            } else {
-                Toast.makeText(this, "Processing", Toast.LENGTH_SHORT).show()
-            }
+    private fun toastOnUi(text: String) = runOnUiThread {
+        Toast.makeText(this, text, Toast.LENGTH_LONG).show()
+        isProcessing = false
+    }
+
+    private fun onCaptureClicked() {
+        if (isProcessing) {
+            Toast.makeText(this, "Processing", Toast.LENGTH_SHORT).show()
+            return
         }
+        cameraManager.capturePhoto { file ->
+            val bitmap = BitmapFactory.decodeFile(file.absolutePath)
+            if (bitmap != null) processBallot(bitmap)
+            else Toast.makeText(this, "Failed to load image", Toast.LENGTH_SHORT).show()
+        }
+    }
 
+    private fun requestCameraIfNeeded() {
         if (checkSelfPermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED)
             cameraManager.start()
         else permissionLauncher.launch(Manifest.permission.CAMERA)
@@ -87,22 +80,17 @@ class MainActivity : AppCompatActivity() {
 
     private fun processBallot(bitmap: Bitmap) {
         isProcessing = true
-
-        // Force ARGB_8888 via Canvas (guaranteed format)
-        val safeBitmap = Bitmap.createBitmap(bitmap.width, bitmap.height, Bitmap.Config.ARGB_8888)
-        val canvas = Canvas(safeBitmap)
-        canvas.drawBitmap(bitmap, 0f, 0f, null)
+        val safeBitmap = forceArgb8888(bitmap)
         bitmap.recycle()
-
         val planar = Planar(GrayU8::class.java, safeBitmap.width, safeBitmap.height, 3)
         ConvertBitmap.bitmapToPlanar(safeBitmap, planar, GrayU8::class.java, null)
         ballotProcessor.process(planar)
-
         safeBitmap.recycle()
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        cameraManager.shutdown()
+    private fun forceArgb8888(bitmap: Bitmap): Bitmap {
+        val out = Bitmap.createBitmap(bitmap.width, bitmap.height, Bitmap.Config.ARGB_8888)
+        Canvas(out).drawBitmap(bitmap, 0f, 0f, null)
+        return out
     }
 }

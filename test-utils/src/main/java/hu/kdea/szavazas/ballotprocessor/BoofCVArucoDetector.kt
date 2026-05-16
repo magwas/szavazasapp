@@ -22,12 +22,12 @@ import kotlin.math.min
 
 class BoofCVArucoDetector : IArucoDetector {
 
-    // The four fixed ArUco marker IDs on the ballot corners
     private companion object {
         const val TOP_LEFT_ID = 37
         const val TOP_RIGHT_ID = 50
         const val BOTTOM_LEFT_ID = 44
         const val BOTTOM_RIGHT_ID = 219
+        val REQUIRED_IDS = setOf(TOP_LEFT_ID, TOP_RIGHT_ID, BOTTOM_LEFT_ID, BOTTOM_RIGHT_ID)
     }
 
     private var bottomLeftTopOriginal: Point2D_F64? = null
@@ -35,124 +35,137 @@ class BoofCVArucoDetector : IArucoDetector {
     private var homography: Homography2D_F64? = null
 
     override fun findBallotCorners(gray: GrayU8): List<Point2D_F64>? {
-        val config = ConfigHammingMarker.loadDictionary(HammingDictionary.ARUCO_MIP_16h3)
-        val detector: FiducialDetector<GrayU8> =
-            FactoryFiducial.squareHamming(config, null, GrayU8::class.java)
+        val markers = scanMarkers(gray) ?: return null
+        captureBottomMidpoints(markers)
+        Logger.d("ArUco", "Ballot corners detected successfully (IDs: ${markers.keys})")
+        return extractOuterCorners(markers)
+    }
+
+    override fun warpBallot(src: Planar<GrayU8>, srcPoints: List<Point2D_F64>): Planar<GrayU8> {
+        val (width, height) = computeOutputSize(srcPoints)
+        homography = computeHomography(srcPoints, width, height)
+        val srcF32 = convertU8ToF32(src)
+        val outF32 = applyPerspective(srcF32, srcPoints, width, height)
+        return convertF32ToU8(outF32, width, height)
+    }
+
+    override fun bottomMarkerTopInScaled(scaleFactor: Double): Double? {
+        val h = homography ?: return null
+        val bl = bottomLeftTopOriginal ?: return null
+        val br = bottomRightTopOriginal ?: return null
+        val ty1 = HomographyPointOps_F64.transform(h, bl, null).y
+        val ty2 = HomographyPointOps_F64.transform(h, br, null).y
+        return minOf(ty1, ty2) * scaleFactor
+    }
+
+    private fun scanMarkers(gray: GrayU8): Map<Int, List<Point2D_F64>>? {
+        val detector = createDetector()
         detector.detect(gray)
-
         Logger.d("ArUco", "Total markers found: ${detector.totalFound()}")
-
-        val requiredIds = setOf(TOP_LEFT_ID, TOP_RIGHT_ID, BOTTOM_LEFT_ID, BOTTOM_RIGHT_ID)
         val markers = mutableMapOf<Int, List<Point2D_F64>>()
-
         for (i in 0 until detector.totalFound()) {
-            val id = detector.getId(i).toInt()
-            val bounds = Polygon2D_F64()
-            detector.getBounds(i, bounds)
-            val corners = (0 until bounds.size()).map { bounds.get(it) }
-            val cx = corners.map { it.x }.average()
-            val cy = corners.map { it.y }.average()
-            Logger.d("ArUco", "  id=$id  center=(${cx.toInt()},${cy.toInt()})")
-
-            // Fail fast if a required ID appears more than once
-            if (id in requiredIds && markers.containsKey(id)) {
+            val (id, corners) = readMarker(detector, i)
+            logMarker(id, corners)
+            if (id in REQUIRED_IDS && markers.containsKey(id)) {
                 Logger.d("ArUco", "Duplicate required marker id $id – failing")
                 return null
             }
             markers[id] = corners
         }
-
-        if (!markers.keys.containsAll(requiredIds)) {
+        if (!markers.keys.containsAll(REQUIRED_IDS)) {
             Logger.d("ArUco", "Missing required markers. Found IDs: ${markers.keys}")
             return null
         }
-
-// Outward-facing corners (outer corners of the markers)
-        val topLeftOuter = markers[TOP_LEFT_ID]!![1]          // top-left corner of top-left marker
-        val topRightOuter = markers[TOP_RIGHT_ID]!![2]        // top-right corner of top-right marker
-        val bottomRightOuter = markers[BOTTOM_RIGHT_ID]!![3]  // bottom-right corner of bottom-right marker
-        val bottomLeftOuter = markers[BOTTOM_LEFT_ID]!![0]    // bottom-left corner of bottom-left marker
-
-        // Bottom marker top midpoints for later use
-        val blCorners = markers[BOTTOM_LEFT_ID]!!
-        bottomLeftTopOriginal = Point2D_F64(
-            (blCorners[0].x + blCorners[1].x) / 2.0,
-            min(blCorners[0].y, blCorners[1].y)
-        )
-        val brCorners = markers[BOTTOM_RIGHT_ID]!!
-        bottomRightTopOriginal = Point2D_F64(
-            (brCorners[0].x + brCorners[1].x) / 2.0,
-            min(brCorners[0].y, brCorners[1].y)
-        )
-
-        Logger.d("ArUco", "Ballot corners detected successfully (IDs: ${markers.keys})")
-
-        return listOf(topLeftOuter, topRightOuter, bottomRightOuter, bottomLeftOuter)
+        return markers
     }
 
-    override fun warpBallot(src: Planar<GrayU8>, srcPoints: List<Point2D_F64>): Planar<GrayU8> {
-        fun distance(p1: Point2D_F64, p2: Point2D_F64) = hypot(p1.x - p2.x, p1.y - p2.y)
-        val topEdge = distance(srcPoints[0], srcPoints[1])
-        val bottomEdge = distance(srcPoints[2], srcPoints[3])
-        val width = ((topEdge + bottomEdge) / 2).toInt()
-        val leftEdge = distance(srcPoints[0], srcPoints[3])
-        val rightEdge = distance(srcPoints[1], srcPoints[2])
-        val height = ((leftEdge + rightEdge) / 2).toInt()
+    private fun createDetector(): FiducialDetector<GrayU8> {
+        val config = ConfigHammingMarker.loadDictionary(HammingDictionary.ARUCO_MIP_16h3)
+        return FactoryFiducial.squareHamming(config, null, GrayU8::class.java)
+    }
 
-        val topLeft = srcPoints[0]
-        val topRight = srcPoints[1]
-        val bottomRight = srcPoints[2]
-        val bottomLeft = srcPoints[3]
+    private fun readMarker(
+        detector: FiducialDetector<GrayU8>, i: Int
+    ): Pair<Int, List<Point2D_F64>> {
+        val id = detector.getId(i).toInt()
+        val bounds = Polygon2D_F64()
+        detector.getBounds(i, bounds)
+        val corners = (0 until bounds.size()).map { bounds.get(it) }
+        return id to corners
+    }
 
-        // Compute homography
+    private fun logMarker(id: Int, corners: List<Point2D_F64>) {
+        val cx = corners.map { it.x }.average()
+        val cy = corners.map { it.y }.average()
+        Logger.d("ArUco", "  id=$id  center=(${cx.toInt()},${cy.toInt()})")
+    }
+
+    private fun extractOuterCorners(markers: Map<Int, List<Point2D_F64>>) = listOf(
+        markers[TOP_LEFT_ID]!![1],
+        markers[TOP_RIGHT_ID]!![2],
+        markers[BOTTOM_RIGHT_ID]!![3],
+        markers[BOTTOM_LEFT_ID]!![0]
+    )
+
+    private fun captureBottomMidpoints(markers: Map<Int, List<Point2D_F64>>) {
+        bottomLeftTopOriginal = topMidpoint(markers[BOTTOM_LEFT_ID]!!)
+        bottomRightTopOriginal = topMidpoint(markers[BOTTOM_RIGHT_ID]!!)
+    }
+
+    private fun topMidpoint(corners: List<Point2D_F64>): Point2D_F64 =
+        Point2D_F64((corners[0].x + corners[1].x) / 2.0, min(corners[0].y, corners[1].y))
+
+    private fun computeOutputSize(srcPoints: List<Point2D_F64>): Pair<Int, Int> {
+        fun d(a: Point2D_F64, b: Point2D_F64) = hypot(a.x - b.x, a.y - b.y)
+        val width = ((d(srcPoints[0], srcPoints[1]) + d(srcPoints[2], srcPoints[3])) / 2).toInt()
+        val height = ((d(srcPoints[0], srcPoints[3]) + d(srcPoints[1], srcPoints[2])) / 2).toInt()
+        return width to height
+    }
+
+    private fun computeHomography(
+        srcPoints: List<Point2D_F64>, width: Int, height: Int
+    ): Homography2D_F64 {
         val dst = listOf(
             Point2D_F64(0.0, 0.0),
             Point2D_F64((width - 1).toDouble(), 0.0),
             Point2D_F64((width - 1).toDouble(), (height - 1).toDouble()),
             Point2D_F64(0.0, (height - 1).toDouble())
         )
-        val pairs = srcPoints.zip(dst).map { (src, dst) -> AssociatedPair(src, dst) }
-        val dlt = HomographyDirectLinearTransform(true)
+        val pairs = srcPoints.zip(dst).map { (s, d) -> AssociatedPair(s, d) }
         val matrix = DMatrixRMaj(3, 3)
-        if (!dlt.process(pairs, matrix)) throw RuntimeException("Failed to compute homography")
-        homography = UtilHomography_F64.convert(matrix, null)
-
-        // Convert to GrayF32 for perspective removal
-        val srcF32 = Planar(GrayF32::class.java, src.width, src.height, 3)
-        for (band in 0 until 3) {
-            val srcU8 = src.getBand(band)
-            val dstF32 = srcF32.getBand(band)
-            for (y in 0 until src.height) for (x in 0 until src.width) {
-                dstF32.set(x, y, srcU8.get(x, y).toFloat())
-            }
-        }
-
-        val removePerspective = RemovePerspectiveDistortion<Planar<GrayF32>>(
-            width, height, ImageType.pl(3, GrayF32::class.java)
-        )
-        if (!removePerspective.apply(srcF32, topLeft, topRight, bottomRight, bottomLeft))
-            throw RuntimeException("Failed to remove perspective")
-
-        val outputF32 = removePerspective.getOutput()
-
-        // Convert back to Planar<GrayU8>
-        val output = Planar(GrayU8::class.java, width, height, 3)
-        for (band in 0 until 3) {
-            val srcF32Band = outputF32.getBand(band)
-            val dstU8 = output.getBand(band)
-            for (y in 0 until height) for (x in 0 until width) {
-                val v = srcF32Band.get(x, y).toInt()
-                dstU8.set(x, y, v.coerceIn(0, 255))
-            }
-        }
-        return output
+        if (!HomographyDirectLinearTransform(true).process(pairs, matrix))
+            throw RuntimeException("Failed to compute homography")
+        return UtilHomography_F64.convert(matrix, null)
     }
 
-    override fun bottomMarkerTopInScaled(scaleFactor: Double): Double? {
-        if (homography == null || bottomLeftTopOriginal == null || bottomRightTopOriginal == null)
-            return null
-        val transformedLeft = HomographyPointOps_F64.transform(homography!!, bottomLeftTopOriginal!!, null)
-        val transformedRight = HomographyPointOps_F64.transform(homography!!, bottomRightTopOriginal!!, null)
-        return listOf(transformedLeft.y, transformedRight.y).map { it * scaleFactor }.minOrNull()
+    private fun convertU8ToF32(src: Planar<GrayU8>): Planar<GrayF32> {
+        val out = Planar(GrayF32::class.java, src.width, src.height, 3)
+        for (band in 0 until 3) {
+            val s = src.getBand(band); val d = out.getBand(band)
+            for (y in 0 until src.height) for (x in 0 until src.width)
+                d.set(x, y, s.get(x, y).toFloat())
+        }
+        return out
+    }
+
+    private fun applyPerspective(
+        srcF32: Planar<GrayF32>, srcPoints: List<Point2D_F64>, width: Int, height: Int
+    ): Planar<GrayF32> {
+        val rp = RemovePerspectiveDistortion<Planar<GrayF32>>(
+            width, height, ImageType.pl(3, GrayF32::class.java)
+        )
+        if (!rp.apply(srcF32, srcPoints[0], srcPoints[1], srcPoints[2], srcPoints[3]))
+            throw RuntimeException("Failed to remove perspective")
+        return rp.getOutput()
+    }
+
+    private fun convertF32ToU8(srcF32: Planar<GrayF32>, width: Int, height: Int): Planar<GrayU8> {
+        val out = Planar(GrayU8::class.java, width, height, 3)
+        for (band in 0 until 3) {
+            val s = srcF32.getBand(band); val d = out.getBand(band)
+            for (y in 0 until height) for (x in 0 until width)
+                d.set(x, y, s.get(x, y).toInt().coerceIn(0, 255))
+        }
+        return out
     }
 }

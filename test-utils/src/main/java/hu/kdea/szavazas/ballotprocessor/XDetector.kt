@@ -5,71 +5,17 @@ import boofcv.struct.image.GrayU8
 
 class XDetector {
 
-    /**
-     * Simple detection – returns only true/false.
-     * Uses [detectWithDebug] internally and discards the debug data.
-     */
-    fun detect(binary: GrayU8, outerRect: Rect): Boolean {
-        return detectWithDebug(binary, outerRect)?.first ?: false
-    }
+    fun detect(binary: GrayU8, outerRect: Rect): Boolean =
+        detectWithDebug(binary, outerRect).first
 
-    /**
-     * Performs X‑mark detection on a single cell and returns both the decision and
-     * all intermediate image data needed for debugging.
-     *
-     * @param binary   the full grid binary image (white background, black foreground)
-     * @param outerRect the cell’s bounding box (including any margin)
-     * @return a pair of (X‑detected, debug data) – debug data is null when the inner
-     *         rectangle is invalid (width/height ≤ 0).
-     */
-    fun detectWithDebug(
-        binary: GrayU8,
-        outerRect: Rect
-    ): Pair<Boolean, CellDebugData?> {
-        val innerRect = Rect(
-            outerRect.x + GridConstants.X_MARGIN,
-            outerRect.y + GridConstants.X_MARGIN,
-            outerRect.width - 2 * GridConstants.X_MARGIN,
-            outerRect.height - 2 * GridConstants.X_MARGIN
-        )
+    fun detectWithDebug(binary: GrayU8, outerRect: Rect): Pair<Boolean, CellDebugData?> {
+        val innerRect = computeInnerRect(outerRect)
+        if (innerRect.width <= 0 || innerRect.height <= 0) return false to null
 
-        if (innerRect.width <= 0 || innerRect.height <= 0) {
-            return false to null
-        }
-
-        // --- Extract original cell content ---
-        val originalCell = GrayU8(innerRect.width, innerRect.height)
-        for (y in 0 until innerRect.height) {
-            for (x in 0 until innerRect.width) {
-                originalCell.set(x, y, binary.get(innerRect.x + x, innerRect.y + y))
-            }
-        }
-
-        // --- Optional erosion ---
-        var erodedCell: GrayU8? = null
-        var workMat: GrayU8 = originalCell
-
-        if (GridConstants.ERODE_KERNEL_SIZE > 0 && GridConstants.ERODE_ITERATIONS > 0) {
-            val eroded = BinaryImageOps.erode8(originalCell, GridConstants.ERODE_ITERATIONS, null)
-            erodedCell = eroded
-            workMat = eroded
-        }
-
-        // --- Skeletonisation ---
+        val originalCell = cropCell(binary, innerRect)
+        val (workMat, erodedCell) = maybeErode(originalCell)
         val skeleton = BinaryImageOps.thin(workMat, -1, null)
-
-        // --- Branch points ---
         val branchPoints = findBranchPoints(skeleton)
-
-        val debugData = CellDebugData(
-            outerRect = outerRect,
-            innerRect = innerRect,
-            originalCell = originalCell,
-            erodedCell = erodedCell,
-            skeleton = skeleton,
-            branchPoints = branchPoints
-        )
-
         val hasX = branchPoints.size >= GridConstants.MIN_BRANCHES
 
         Logger.d(
@@ -77,7 +23,32 @@ class XDetector {
             "Cell $outerRect: ${branchPoints.size} branch point(s) -> ${if (hasX) "X" else "no X"}"
         )
 
-        return hasX to debugData
+        val debug = CellDebugData(outerRect, innerRect, originalCell, erodedCell, skeleton, branchPoints)
+        return hasX to debug
+    }
+
+    private fun computeInnerRect(outer: Rect): Rect = Rect(
+        outer.x + GridConstants.X_MARGIN,
+        outer.y + GridConstants.X_MARGIN,
+        outer.width - 2 * GridConstants.X_MARGIN,
+        outer.height - 2 * GridConstants.X_MARGIN
+    )
+
+    private fun cropCell(source: GrayU8, rect: Rect): GrayU8 {
+        val out = GrayU8(rect.width, rect.height)
+        for (y in 0 until rect.height) {
+            for (x in 0 until rect.width) {
+                out.set(x, y, source.get(rect.x + x, rect.y + y))
+            }
+        }
+        return out
+    }
+
+    private fun maybeErode(cell: GrayU8): Pair<GrayU8, GrayU8?> {
+        if (GridConstants.ERODE_KERNEL_SIZE <= 0 || GridConstants.ERODE_ITERATIONS <= 0)
+            return cell to null
+        val eroded = BinaryImageOps.erode8(cell, GridConstants.ERODE_ITERATIONS, null)
+        return eroded to eroded
     }
 
     private fun findBranchPoints(skel: GrayU8): List<Point> {
@@ -94,11 +65,9 @@ class XDetector {
 
     private fun neighbourCount(img: GrayU8, x: Int, y: Int): Int {
         var cnt = 0
-        for (dy in -1..1) {
-            for (dx in -1..1) {
-                if (dx == 0 && dy == 0) continue
-                if (img.get(x + dx, y + dy) != 0) cnt++
-            }
+        for (dy in -1..1) for (dx in -1..1) {
+            if (dx == 0 && dy == 0) continue
+            if (img.get(x + dx, y + dy) != 0) cnt++
         }
         return cnt
     }
