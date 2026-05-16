@@ -5,6 +5,7 @@ import android.graphics.Bitmap
 import boofcv.android.ConvertBitmap
 import boofcv.struct.image.GrayU8
 import boofcv.struct.image.Planar
+import hu.kdea.szavazas.ballotprocessor.ImageSaver
 import java.io.File
 import java.io.FileOutputStream
 
