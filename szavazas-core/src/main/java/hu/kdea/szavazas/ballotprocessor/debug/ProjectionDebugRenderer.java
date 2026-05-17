@@ -8,7 +8,7 @@ import hu.kdea.szavazas.ballotprocessor.draw.DrawLineService;
 import hu.kdea.szavazas.ballotprocessor.draw.FillOvalService;
 import hu.kdea.szavazas.ballotprocessor.draw.SetPixelService;
 import hu.kdea.szavazas.ballotprocessor.draw.RectFillService;
-import hu.kdea.szavazas.ballotprocessor.projection.AxisPeaks;
+import hu.kdea.szavazas.ballotprocessor.projection.AxisPeaksData;
 import hu.kdea.szavazas.ballotprocessor.projection.ProjectionData;
 import java.util.List;
 import javax.inject.Inject;
@@ -42,11 +42,11 @@ public class ProjectionDebugRenderer {
         this(saver, new DrawTextService(new SetPixelService()), new DrawLineService(new SetPixelService()), new RectFillService(new SetPixelService()), new FillOvalService(new SetPixelService()));
     }
 
-    public void renderAll(ProjectionData data, AxisPeaks colAxis, AxisPeaks rowAxis) {
-        drawProjection(data.getColProj(), data.getColOffset(), "Column Projection", "col_proj");
-        drawProjection(data.getRowProj(), data.getRowOffset(), "Row Projection", "row_proj");
-        drawWithPeaksAndPairs(data.getColProj(), colAxis.getMerged(), colAxis.getPairs(), data.getColOffset(), "Column Peaks & Pairs", "col_peaks_pairs");
-        drawWithPeaksAndPairs(data.getRowProj(), rowAxis.getMerged(), rowAxis.getPairs(), data.getRowOffset(), "Row Peaks & Pairs", "row_peaks_pairs");
+    public void renderAll(ProjectionData data, AxisPeaksData colAxis, AxisPeaksData rowAxis) {
+        drawProjection(data.colProj(), data.colOffset(), "Column Projection", "col_proj");
+        drawProjection(data.rowProj(), data.rowOffset(), "Row Projection", "row_proj");
+        drawWithPeaksAndPairs(data.colProj(), colAxis.merged(), colAxis.pairs(), data.colOffset(), "Column Peaks & Pairs", "col_peaks_pairs");
+        drawWithPeaksAndPairs(data.rowProj(), rowAxis.merged(), rowAxis.pairs(), data.rowOffset(), "Row Peaks & Pairs", "row_peaks_pairs");
     }
 
     private void drawProjection(float[] proj, int offset, String title, String fileName) {
@@ -100,14 +100,13 @@ public class ProjectionDebugRenderer {
     private void drawPeaks(Planar<GrayU8> canvas, float[] proj, List<Integer> peaks, int offset, float maxVal) {
         double scaleX = (double) WIDTH / (proj.length - 1);
         double scaleY = (double) (HEIGHT - 20) / maxVal;
-        for (Integer peak : peaks) {
+        for (int peak : peaks) {
             int idx = peak - offset;
-            if (idx < 0 || idx >= proj.length) {
-                continue;
+            if (idx >= 0 && idx < proj.length) {
+                int x = (int) (idx * scaleX);
+                int y = HEIGHT - 10 - (int) (proj[idx] * scaleY);
+                ovalFillService.apply(canvas, x - 3, y - 3, 6, 6, COLOR_RED);
             }
-            int x = (int) (idx * scaleX);
-            int y = HEIGHT - 10 - (int) (proj[idx] * scaleY);
-            ovalFillService.apply(canvas, x - 4, y - 4, 8, 8, COLOR_RED);
         }
     }
 
@@ -115,20 +114,19 @@ public class ProjectionDebugRenderer {
         double scaleX = (double) WIDTH / (proj.length - 1);
         double scaleY = (double) (HEIGHT - 20) / maxVal;
         for (EdgeSegmentData pair : pairs) {
-            int idx1 = pair.start() - offset;
-            int idx2 = pair.end() - offset;
-            if (idx1 < 0 || idx1 >= proj.length || idx2 < 0 || idx2 >= proj.length) {
-                continue;
+            int startIdx = pair.start() - offset;
+            int endIdx = pair.end() - offset;
+            if (startIdx >= 0 && endIdx < proj.length) {
+                int x1 = (int) (startIdx * scaleX);
+                int y1 = HEIGHT - 10 - (int) (proj[startIdx] * scaleY);
+                int x2 = (int) (endIdx * scaleX);
+                int y2 = HEIGHT - 10 - (int) (proj[endIdx] * scaleY);
+                lineDrawService.apply(canvas, x1, y1, x2, y2, COLOR_BLUE);
             }
-            int x1 = (int) (idx1 * scaleX);
-            int x2 = (int) (idx2 * scaleX);
-            int y = HEIGHT - 10 - (int) (((proj[idx1] + proj[idx2]) / 2.0) * scaleY);
-            lineDrawService.apply(canvas, x1, y, x2, y, COLOR_BLUE);
-            bitmapFont5x7Service.apply(canvas, (pair.end() - pair.start()) + "px", (x1 + x2) / 2, y - 5, COLOR_BLUE, 12f);
         }
     }
 
-    private float maxOrOne(float[] proj) {
+    private static float maxOrOne(float[] proj) {
         float max = 0f;
         for (float v : proj) {
             if (v > max) {

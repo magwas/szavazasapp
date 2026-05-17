@@ -27,8 +27,8 @@ public class GridOverlayDebugRenderer {
 
     public void render(GrayU8 binaryClosed, RectangleData roi, List<EdgeSegmentData> colEdges, List<EdgeSegmentData> rowEdges, ProjectionData data) {
         Planar<GrayU8> canvas = renderBinaryToCanvas(binaryClosed, roi);
-        drawColumnLines(canvas, colEdges, data.getColOffset(), roi.height());
-        drawRowLines(canvas, rowEdges, data.getRowOffset(), roi.width());
+        drawColumnLines(canvas, colEdges, data.colOffset(), roi.height());
+        drawRowLines(canvas, rowEdges, data.rowOffset(), roi.width());
         saver.apply(canvas, "debug_grid_overlay.jpg");
     }
 

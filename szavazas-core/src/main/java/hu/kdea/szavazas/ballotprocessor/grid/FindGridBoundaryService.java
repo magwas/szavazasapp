@@ -2,7 +2,7 @@ package hu.kdea.szavazas.ballotprocessor.grid;
 
 import hu.kdea.szavazas.ballotprocessor.GridConstants;
 import hu.kdea.szavazas.ballotprocessor.common.RowBoundaryData;
-import hu.kdea.szavazas.ballotprocessor.projection.PeakFinder;
+import hu.kdea.szavazas.ballotprocessor.projection.FindRawPeakService;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -12,11 +12,11 @@ public final class FindGridBoundaryService {
     private FindGridBoundaryService() {
     }
 
-    public static RowBoundaryData apply(float[] projection, int qrBottomY, Double markerTopY) {
+    public static RowBoundaryData apply(float[] projection, int qrBottomY, Double markerTopY, FindRawPeakService findRawPeakService) {
         int searchBottomY = calcSearchBottomY(markerTopY, projection.length);
         float[] searchProjection = new float[searchBottomY - qrBottomY + 1];
         System.arraycopy(projection, qrBottomY, searchProjection, 0, searchProjection.length);
-        List<Integer> peaks = PeakFinder.findRawPeaks(searchProjection, qrBottomY);
+        List<Integer> peaks = findRawPeakService.apply(searchProjection, qrBottomY);
         if (peaks.size() < 2) {
             return null;
         }

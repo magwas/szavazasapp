@@ -16,7 +16,7 @@
 
 ## Dependency Injection with Dagger
 
-- Use **constructor injection** exclusively for all injectable types.
+- Use **constructor injection** exclusively for all injectable types. If there is nothing to inject, no explicit constructor.
 - Annotate constructors with `@Inject`.
 - Dependencies are stored as `private final` fields.
 - Dagger modules (`@Module`) and components (`@Component`) are allowed as infrastructure (treated as Glue).
@@ -26,7 +26,7 @@
 
 ### Service Unit
 - Holds application logic.
-- Class name ends with `Service`.
+- Class name ends with `Service`. Name is a verb (e.g. SelectBestFitService)
 - **Has exactly one public method: `apply`** (no other public methods).
 - Implements a corresponding `Constants` interface (for constants used by the service).
 - Dependencies are constructor parameters, annotated with `@Inject`, stored in `private final` fields.
@@ -37,18 +37,18 @@
 - External operations that hinder testing (network, filesystem, console, OS services) must be injected as dependencies (ultimately a `Wrapper`).
 
 ### Constant Unit
-- Holds constants.
+- Holds constants. Name is the name of the package or the class the constants relate to (e.g. SelectBestFitConstants)
 - Interface with name ending in `Constants`.
 - Contains only `static final` fields (primitive, `String`, or immutable collections).
 
 ### Data Unit
-- Describes immutable data structures.
+- Describes immutable data structures. Name is a noun (e.g. RectangleData).
 - `record` with name ending in `Data`.
 - Only field declarations – no methods.
 - Collections and maps use immutable types (e.g., `List.of`, `Map.of`, or Guava immutable collections).
 
 ### State Unit
-- Holds transient, non‑persistent state.
+- Holds transient, non‑persistent state. Name is a noun (e.g. BallotState).
 - Class name ends with `State`.
 - Annotated with `@Inject` on a default or empty constructor (if no dependencies) or constructor with dependencies.
 - Fields are `public` (or `private` with getters – but `public` is preferred for simplicity).
@@ -56,7 +56,7 @@
 - Corresponding `Stub` unit exists (see below).
 
 ### Repository Unit
-- Manages persistent data or collections that are modified.
+- Manages persistent data or collections that are modified. Name is a noun (e.g. BallotRepository).
 - Interface name ends with `Repository`.
 - Defines CRUD methods appropriate for the domain (no extension of Spring Data interfaces).  
   Example:
@@ -73,7 +73,7 @@
 - Corresponding `Stub` unit for testing.
 
 ### Delegate Unit
-- Provides an OOP API over data + logic.
+- Provides an OOP API over data + logic. Name is part of public API, always ask for it.
 - Class annotated with `@io.github.magwas.konveyor.annotations.Delegate`.
 - Contains zero or one `self` field of a `State` unit.
 - Dependencies are constructor parameters (same as Service) and stored in `private final` fields.
@@ -83,6 +83,7 @@
 ### Wrapper Unit
 - Wraps external dependencies (I/O, network, OS, third‑party libraries) to make services testable.
 - Do not create a Wrapper for an interface whose implementation is provided by the caller (e.g., a callback or strategy injected via Dagger). Only wrap external dependencies that the module itself controls (I/O, network, OS, third-party libraries).
+- Group wrapped interfaces by functionality. This sometimes correlate with dependency.
 - Class name ends with `Wrapper`.
 - Annotated with `@Inject` on constructor (may be default constructor if no dependencies).
 - Can have `public` non‑static fields and methods.
@@ -103,7 +104,7 @@
 Test code resides in packages corresponding to the tested code, with `.test` appended.
 
 ### TestData Unit
-- Provides test data constants.
+- Provides test data constants. Name is the data unit nae or the package (e.g. RectangleTestData).
 - Interface name ends with `TestData`.
 - Contains only `static final` constants.
 - For each `Data` unit there is one corresponding `TestData` unit containing instances of that `Data` type and possibly collections thereof.
@@ -112,7 +113,7 @@ Test code resides in packages corresponding to the tested code, with `.test` app
 
 ### Stub Unit
 - Provides a Mockito mock for a `Service`, `State`, `Repository`, or `Wrapper` unit.
-- Name starts with the stubbed unit name and ends with `Stub`.
+- Name starts with the stubbed unit name and ends with `Stub`. (e.g. SelectBestFitStub)
 - Either:
   - Annotated with `@io.github.magwas.konveyor.testing.IndirectlyTested` and has an empty body (for state units and simple services whose main path is tested elsewhere), **or**
   - Contains a `public static <StubbedType> stub()` method that returns a fully configured Mockito mock. All stubbing is defined inside `stub()`, never in tests.
@@ -123,7 +124,7 @@ Test code resides in packages corresponding to the tested code, with `.test` app
 
 ### Test Unit
 - Tests a specific behaviour of a `Service` or a bug.
-- Class name: `<ServiceName><BehaviourNameOrBugId>Test`. Behaviour name may be omitted if the test covers the whole service.
+- Class name: `<ServiceName><BehaviourNameOrBugId>Test`. Behaviour name may be omitted if the test covers the whole service. (e.g. SelectBestFit2445Test)
 - Each discovered bug has a dedicated test unit reproducing the bug.
 - The tested service is instantiated manually using its constructor, passing mocks obtained from `Stub` units.  
   Example: `userService = new UserService(userRepositoryStub, emailWrapperStub);`
@@ -167,3 +168,4 @@ Test code resides in packages corresponding to the tested code, with `.test` app
 - No file contains more than one top‑level unit.
 - Never create Spring configuration classes or beans. Use Dagger modules and components instead.
 - Dagger `@Provides` methods are allowed inside modules (which are Glue units).
+
