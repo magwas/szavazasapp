@@ -7,15 +7,15 @@ import hu.kdea.szavazas.ballotprocessor.debug.ImageSaver;
 import hu.kdea.szavazas.ballotprocessor.grid.DetectGridRegionAndCheckboxService;
 import hu.kdea.szavazas.ballotprocessor.grid.GridDetectionResultData;
 import hu.kdea.szavazas.ballotprocessor.qr.PreprocessQRCropService;
-import hu.kdea.szavazas.ballotprocessor.qr.QRDetectorStep;
 import hu.kdea.szavazas.ballotprocessor.qr.QrCropResultData;
 import hu.kdea.szavazas.ballotprocessor.qr.QrData;
+import hu.kdea.szavazas.ballotprocessor.qr.QrProcessingService;
 import hu.kdea.szavazas.ballotprocessor.x.XMarkDetectionAndResultService;
 import javax.inject.Inject;
 
 public class BallotProcessingService {
     private final BallotPreprocessService ballotPreprocess;
-    private final QRDetectorStep qrDetectorStep;
+    private final QrProcessingService qrProcessingService;
     private final PreprocessQRCropService qrCropPreprocessingService;
     private final DetectGridRegionAndCheckboxService gridRegionAndCheckboxDetectionService;
     private final XMarkDetectionAndResultService xMarkDetectionAndResultService;
@@ -25,7 +25,7 @@ public class BallotProcessingService {
     @Inject
     public BallotProcessingService(
         BallotPreprocessService ballotPreprocess,
-        QRDetectorStep qrDetectorStep,
+        QrProcessingService qrProcessingService,
         PreprocessQRCropService qrCropPreprocessingService,
         DetectGridRegionAndCheckboxService gridRegionAndCheckboxDetectionService,
         XMarkDetectionAndResultService xMarkDetectionAndResultService,
@@ -33,7 +33,7 @@ public class BallotProcessingService {
         @DebugImageSaver ImageSaver imageSaver
     ) {
         this.ballotPreprocess = ballotPreprocess;
-        this.qrDetectorStep = qrDetectorStep;
+        this.qrProcessingService = qrProcessingService;
         this.qrCropPreprocessingService = qrCropPreprocessingService;
         this.gridRegionAndCheckboxDetectionService = gridRegionAndCheckboxDetectionService;
         this.xMarkDetectionAndResultService = xMarkDetectionAndResultService;
@@ -52,13 +52,13 @@ public class BallotProcessingService {
         }
     }
 
-    private BallotProcessingOutcomeData process(Planar<GrayU8> planar) throws InterruptedException {
+    private BallotProcessingOutcomeData process(Planar<GrayU8> planar) {
         PreprocessResult pre = ballotPreprocess.apply(planar);
         if (pre == null) {
             return new BallotProcessingOutcomeData(null, new BallotErrorData(messageService.apply("ballot.error.markers")));
         }
         GrayU8 warpedGray = pre.scaledGray();
-        QrCropResultData qrCropResultData = qrCropPreprocessingService.apply(warpedGray, qrDetectorStep);
+        QrCropResultData qrCropResultData = qrCropPreprocessingService.apply(warpedGray, qrProcessingService);
         QrData adjustedQr = qrCropResultData.adjustedQr();
         if (adjustedQr == null) {
             if (imageSaver != null) {

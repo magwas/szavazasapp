@@ -2,6 +2,7 @@ package hu.kdea.szavazas.ballotprocessor.qr;
 
 import boofcv.struct.image.GrayU8;
 import hu.kdea.szavazas.ballotprocessor.common.CropService;
+import hu.kdea.szavazas.ballotprocessor.common.RectangleData;
 import hu.kdea.szavazas.ballotprocessor.debug.DebugImageSaver;
 import hu.kdea.szavazas.ballotprocessor.debug.ImageSaver;
 import hu.kdea.szavazas.ballotprocessor.qr.preprocess.AdaptiveBinarizeService;
@@ -22,7 +23,7 @@ public class PreprocessQRCropService {
         this.imageSaver = imageSaver;
     }
 
-    public QrCropResultData apply(GrayU8 warpedGray, QRDetectorStep qrDetector) throws InterruptedException {
+    public QrCropResultData apply(GrayU8 warpedGray, QrProcessingService qrProcessingService) {
         int cropX = 2 * warpedGray.width / 5;
         int cropY = 0;
         int cropWidth = warpedGray.width / 5;
@@ -30,7 +31,19 @@ public class PreprocessQRCropService {
         GrayU8 qrCrop = crop.apply(warpedGray, cropX, cropY, cropWidth, cropHeight);
         List<PreprocessingStep> steps = List.of(new EnhanceContrastService(), new SharpenService(), new AdaptiveBinarizeService());
         GrayU8 preprocessedQrCrop = new PreprocessQRService(imageSaver, steps).apply(qrCrop, "qr_preprocess");
-        QrData qr = qrDetector.detect(preprocessedQrCrop);
-        return qr == null ? new QrCropResultData(preprocessedQrCrop, null) : new QrCropResultData(preprocessedQrCrop, QrCropResultData.adjust(qr, cropX, cropY));
+        QrProcessingOutcomeData outcome = qrProcessingService.apply(preprocessedQrCrop);
+        QrData qr = outcome.result();
+        QrData adjustedQr = qr == null ? null : new QrData(
+            qr.raw(),
+            qr.numSupport(),
+            qr.numRows(),
+            new RectangleData(
+                qr.bbox().x() + cropX,
+                qr.bbox().y() + cropY,
+                qr.bbox().width(),
+                qr.bbox().height()
+            )
+        );
+        return new QrCropResultData(preprocessedQrCrop, adjustedQr);
     }
 }

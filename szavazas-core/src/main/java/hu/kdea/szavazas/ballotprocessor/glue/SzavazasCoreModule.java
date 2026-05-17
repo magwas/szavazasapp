@@ -7,7 +7,6 @@ import hu.kdea.szavazas.ballotprocessor.DefaultBallotProcessingApi;
 import hu.kdea.szavazas.ballotprocessor.debug.DebugImageSaver;
 import hu.kdea.szavazas.ballotprocessor.debug.DebugImageSaver;
 import hu.kdea.szavazas.ballotprocessor.debug.ImageSaver;
-import hu.kdea.szavazas.ballotprocessor.qr.ZXingQRProcessor;
 import io.github.magwas.konveyor.annotations.Glue;
 
 @Glue

@@ -7,14 +7,14 @@ import javax.inject.Inject;
 
 public class QrProcessingService {
     private final ConvertGrayU8ToRgbPixelsService convertGrayU8ToRgbPixelsService;
-    private final DecodeWithZxingService decodeWithZxingService;
+    private final DecodeQRService decodeWithZxingService;
     private final ParseQrResultService parseQrResultService;
     private final MessageService messageService;
 
     @Inject
     public QrProcessingService(
             ConvertGrayU8ToRgbPixelsService convertGrayU8ToRgbPixelsService,
-            DecodeWithZxingService decodeWithZxingService,
+            DecodeQRService decodeWithZxingService,
             ParseQrResultService parseQrResultService,
             MessageService messageService) {
         this.convertGrayU8ToRgbPixelsService = convertGrayU8ToRgbPixelsService;
@@ -29,7 +29,7 @@ public class QrProcessingService {
         if (result == null) {
             return new QrProcessingOutcomeData(null, new QrErrorData(messageService.apply("qr.error.failed")));
         }
-        QrResultData qrResult = parseQrResultService.apply(result);
+        QrData qrResult = parseQrResultService.apply(result);
         return new QrProcessingOutcomeData(qrResult, null);
     }
 }

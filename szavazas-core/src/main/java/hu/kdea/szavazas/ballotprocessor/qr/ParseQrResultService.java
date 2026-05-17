@@ -10,12 +10,12 @@ public class ParseQrResultService {
     public ParseQrResultService() {
     }
 
-    public QrResultData apply(Result result) {
+    public QrData apply(Result result) {
         String raw = result.getText();
         int numSupport = parse(raw, 1, 3);
         int numRows = parse(raw, 2, 11);
         RectangleData bbox = box(result);
-        return new QrResultData(raw, numSupport, numRows, bbox);
+        return new QrData(raw, numSupport, numRows, bbox);
     }
 
     private int parse(String raw, int index, int fallback) {

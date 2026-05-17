@@ -9,9 +9,9 @@ import com.google.zxing.common.GlobalHistogramBinarizer;
 import com.google.zxing.common.HybridBinarizer;
 import javax.inject.Inject;
 
-public class DecodeWithZxingService {
+public class DecodeQRService {
     @Inject
-    public DecodeWithZxingService() {
+    public DecodeQRService() {
     }
 
     public Result apply(int[] pixels, int width, int height) {
