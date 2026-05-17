@@ -20,7 +20,7 @@ public class BallotPreprocessService {
         this.imageSaver = imageSaver;
     }
 
-    public PreprocessResult apply(Planar<GrayU8> planar) {
+    public PreprocessResultData apply(Planar<GrayU8> planar) {
         GrayU8 gray = grayPlanarToGrayService.apply(planar);
         if (imageSaver != null) {
             imageSaver.apply(gray, "debug_capture.jpg");
@@ -33,6 +33,6 @@ public class BallotPreprocessService {
         if (imageSaver != null) {
             imageSaver.apply(warpedGray, "debug_warped.jpg");
         }
-        return new PreprocessResult(warpedGray, arucoDetectionResultData.markerTopY());
+        return new PreprocessResultData(warpedGray, arucoDetectionResultData.markerTopY());
     }
 }

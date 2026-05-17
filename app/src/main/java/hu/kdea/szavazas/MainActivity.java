@@ -6,6 +6,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.Toast;
 import androidx.activity.result.ActivityResultLauncher;
@@ -17,6 +18,7 @@ import boofcv.android.ConvertBitmap;
 import boofcv.struct.image.GrayU8;
 import boofcv.struct.image.Planar;
 import hu.kdea.szavazas.ballotprocessor.BallotProcessingApi;
+import hu.kdea.szavazas.ballotprocessor.Logger;
 import java.io.File;
 
 public class MainActivity extends AppCompatActivity {
@@ -40,6 +42,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        Logger.setDelegate((tag, msg) -> Log.d(tag, msg));
         previewView = findViewById(R.id.previewView);
         captureButton = findViewById(R.id.captureButton);
         ballotProcessingApi = DaggerAndroidSzavazasComponent.builder().context(this).build().ballotProcessingApi();

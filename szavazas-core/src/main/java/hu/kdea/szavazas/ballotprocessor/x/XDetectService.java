@@ -1,24 +1,24 @@
 package hu.kdea.szavazas.ballotprocessor.x;
 
-import boofcv.alg.filter.binary.BinaryImageOps;
 import boofcv.struct.image.GrayU8;
-import hu.kdea.szavazas.ballotprocessor.GridConstants;
+import hu.kdea.szavazas.ballotprocessor.common.LoggerWrapper;
 import hu.kdea.szavazas.ballotprocessor.common.PointData;
 import hu.kdea.szavazas.ballotprocessor.common.RectangleData;
 import java.util.ArrayList;
 import java.util.List;
 import javax.inject.Inject;
 
-public class XDetector {
+public class XDetectService implements XDetectConstants {
+    private final BinaryImageOpsWrapper binaryImageOpsWrapper;
+    private final LoggerWrapper loggerWrapper;
+
     @Inject
-    public XDetector() {
+    public XDetectService(BinaryImageOpsWrapper binaryImageOpsWrapper, LoggerWrapper loggerWrapper) {
+        this.binaryImageOpsWrapper = binaryImageOpsWrapper;
+        this.loggerWrapper = loggerWrapper;
     }
 
-    public boolean detect(GrayU8 binary, RectangleData outerRect) {
-        return detectWithDebug(binary, outerRect).detected();
-    }
-
-    public XDetectionResultData detectWithDebug(GrayU8 binary, RectangleData outerRect) {
+    public XDetectionResultData apply(GrayU8 binary, RectangleData outerRect) {
         RectangleData innerRect = computeInnerRect(outerRect);
         if (innerRect.width() <= 0 || innerRect.height() <= 0) {
             return new XDetectionResultData(false, null);
@@ -27,19 +27,19 @@ public class XDetector {
         ErosionResultData erosionResult = maybeErode(originalCell);
         GrayU8 workMat = erosionResult.processed();
         GrayU8 erodedCell = erosionResult.eroded();
-        GrayU8 skeleton = BinaryImageOps.thin(workMat, -1, null);
+        GrayU8 skeleton = binaryImageOpsWrapper.thin(workMat, -1, null);
         List<PointData> branchPoints = findBranchPoints(skeleton);
-        boolean hasX = branchPoints.size() >= GridConstants.MIN_BRANCHES;
+        boolean hasX = branchPoints.size() >= MIN_BRANCHES;
         CellDebugData debug = new CellDebugData(outerRect, innerRect, originalCell, erodedCell, skeleton, branchPoints, hasX);
         return new XDetectionResultData(hasX, debug);
     }
 
     private RectangleData computeInnerRect(RectangleData outer) {
         return new RectangleData(
-            outer.x() + GridConstants.X_MARGIN,
-            outer.y() + GridConstants.X_MARGIN,
-            outer.width() - 2 * GridConstants.X_MARGIN,
-            outer.height() - 2 * GridConstants.X_MARGIN
+            outer.x() + X_MARGIN,
+            outer.y() + X_MARGIN,
+            outer.width() - 2 * X_MARGIN,
+            outer.height() - 2 * X_MARGIN
         );
     }
 
@@ -54,10 +54,10 @@ public class XDetector {
     }
 
     private ErosionResultData maybeErode(GrayU8 cell) {
-        if (GridConstants.ERODE_KERNEL_SIZE <= 0 || GridConstants.ERODE_ITERATIONS <= 0) {
+        if (ERODE_KERNEL_SIZE <= 0 || ERODE_ITERATIONS <= 0) {
             return new ErosionResultData(cell, null);
         }
-        GrayU8 eroded = BinaryImageOps.erode8(cell, GridConstants.ERODE_ITERATIONS, null);
+        GrayU8 eroded = binaryImageOpsWrapper.erode8(cell, ERODE_ITERATIONS, null);
         return new ErosionResultData(eroded, eroded);
     }
 

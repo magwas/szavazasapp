@@ -1,27 +1,26 @@
 package hu.kdea.szavazas.ballotprocessor.x;
 
 import boofcv.struct.image.GrayU8;
-import hu.kdea.szavazas.ballotprocessor.Logger;
 import hu.kdea.szavazas.ballotprocessor.common.CellPositionData;
+import hu.kdea.szavazas.ballotprocessor.common.LoggerWrapper;
 import hu.kdea.szavazas.ballotprocessor.common.RectangleData;
-import hu.kdea.szavazas.ballotprocessor.debug.DebugImageSaver;
-import hu.kdea.szavazas.ballotprocessor.debug.ImageSaver;
-import hu.kdea.szavazas.ballotprocessor.debug.XMarkDebugRenderer;
 import java.util.ArrayList;
 import java.util.List;
 import javax.inject.Inject;
 
-public class XMarkDetectorStep {
-    private final XDetector xDetector;
-    private final ImageSaver debugSaver;
+public class XMarkDetectService {
+    private final XDetectService xDetectService;
+    private final XMarkDebugRendererWrapper xMarkDebugRendererWrapper;
+    private final LoggerWrapper loggerWrapper;
 
     @Inject
-    public XMarkDetectorStep(XDetector xDetector, @DebugImageSaver ImageSaver debugSaver) {
-        this.xDetector = xDetector;
-        this.debugSaver = debugSaver;
+    public XMarkDetectService(XDetectService xDetectService, XMarkDebugRendererWrapper xMarkDebugRendererWrapper, LoggerWrapper loggerWrapper) {
+        this.xDetectService = xDetectService;
+        this.xMarkDebugRendererWrapper = xMarkDebugRendererWrapper;
+        this.loggerWrapper = loggerWrapper;
     }
 
-    public List<CellPositionData> detect(
+    public List<CellPositionData> apply(
         GrayU8 projectionInput,
         List<RectangleData> fullCheckboxes,
         int qrCentreX,
@@ -35,9 +34,7 @@ public class XMarkDetectorStep {
             RectangleData box = fullCheckboxes.get(index);
             processCell(projectionInput, index, box, qrCentreX, cropTop, expectedCols, marks, debugList);
         }
-        if (debugSaver != null) {
-            new XMarkDebugRenderer(debugSaver).render(projectionInput, debugList);
-        }
+        xMarkDebugRendererWrapper.render(projectionInput, debugList);
         return marks;
     }
 
@@ -52,12 +49,12 @@ public class XMarkDetectorStep {
         List<CellDebugData> debugList
     ) {
         RectangleData cellRect = new RectangleData(box.x() - qrCentreX, box.y() - cropTop, box.width(), box.height());
-        XDetectionResultData result = xDetector.detectWithDebug(input, cellRect);
+        XDetectionResultData result = xDetectService.apply(input, cellRect);
         boolean hasX = result.detected();
         CellDebugData debugData = result.debug();
         if (debugData != null) {
             debugList.add(debugData);
-            Logger.INSTANCE.d("XDetector", "cell=" + index + " branches=" + debugData.branchPoints().size() + " xDetected=" + debugData.xDetected());
+            loggerWrapper.d("XDetector", "cell=" + index + " branches=" + debugData.branchPoints().size() + " xDetected=" + debugData.xDetected());
         }
         if (hasX) {
             marks.add(new CellPositionData(index / expectedCols, index % expectedCols));
