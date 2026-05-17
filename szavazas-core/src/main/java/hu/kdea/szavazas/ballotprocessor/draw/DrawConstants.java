@@ -1,6 +1,6 @@
-package hu.kdea.szavazas.ballotprocessor.debug;
+package hu.kdea.szavazas.ballotprocessor.draw;
 
-interface BitmapFont5x7Constants {
+interface DrawConstants {
     int GLYPH_WIDTH = 5;
     int GLYPH_HEIGHT = 7;
     int CHAR_ADVANCE = GLYPH_WIDTH + 1;

@@ -1,12 +1,16 @@
-package hu.kdea.szavazas.ballotprocessor.debug;
+package hu.kdea.szavazas.ballotprocessor.draw;
 
 import boofcv.struct.image.GrayU8;
 import boofcv.struct.image.Planar;
+
 import javax.inject.Inject;
 
-public class BitmapFont5x7Service implements BitmapFont5x7Constants {
+public class DrawTextService implements DrawConstants {
+    private final SetPixelService pixelSetService;
+
     @Inject
-    public BitmapFont5x7Service() {
+    public DrawTextService(SetPixelService pixelSetService) {
+        this.pixelSetService = pixelSetService;
     }
 
     public void apply(Planar<GrayU8> image, String text, int x, int y, int color, float fontSize) {
@@ -26,7 +30,7 @@ public class BitmapFont5x7Service implements BitmapFont5x7Constants {
             int line = GLYPHS[glyphIndex + column];
             for (int row = 0; row < GLYPH_HEIGHT; row++) {
                 if ((line & (1 << row)) != 0) {
-                    DrawingUtils.setPixel(image, x + column, y + row, color);
+                    pixelSetService.apply(image, x + column, y + row, color);
                 }
             }
         }

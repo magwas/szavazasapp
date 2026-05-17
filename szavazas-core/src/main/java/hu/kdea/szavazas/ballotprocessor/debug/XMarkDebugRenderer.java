@@ -4,6 +4,11 @@ import boofcv.struct.image.GrayU8;
 import boofcv.struct.image.Planar;
 import hu.kdea.szavazas.ballotprocessor.common.PointData;
 import hu.kdea.szavazas.ballotprocessor.common.RectangleData;
+import hu.kdea.szavazas.ballotprocessor.draw.DrawTextService;
+import hu.kdea.szavazas.ballotprocessor.draw.DrawLineService;
+import hu.kdea.szavazas.ballotprocessor.draw.DrawRectangleService;
+import hu.kdea.szavazas.ballotprocessor.draw.SetPixelService;
+import hu.kdea.szavazas.ballotprocessor.draw.RectFillService;
 import hu.kdea.szavazas.ballotprocessor.x.CellDebugData;
 import java.util.List;
 import javax.inject.Inject;
@@ -16,16 +21,22 @@ public class XMarkDebugRenderer {
     private static final int COLOR_RED = 0xFFCC0000;
 
     private final ImageSaver saver;
-    private final BitmapFont5x7Service bitmapFont5x7Service;
+    private final DrawTextService bitmapFont5x7Service;
+    private final SetPixelService pixelSetService;
+    private final DrawRectangleService rectDrawService;
+    private final RectFillService rectFillService;
 
     @Inject
-    public XMarkDebugRenderer(ImageSaver saver, BitmapFont5x7Service bitmapFont5x7Service) {
+    public XMarkDebugRenderer(ImageSaver saver, DrawTextService bitmapFont5x7Service, SetPixelService pixelSetService, DrawRectangleService rectDrawService, RectFillService rectFillService) {
         this.saver = saver;
         this.bitmapFont5x7Service = bitmapFont5x7Service;
+        this.pixelSetService = pixelSetService;
+        this.rectDrawService = rectDrawService;
+        this.rectFillService = rectFillService;
     }
 
     public XMarkDebugRenderer(ImageSaver saver) {
-        this(saver, new BitmapFont5x7Service());
+        this(saver, new DrawTextService(new SetPixelService()), new SetPixelService(), new DrawRectangleService(new DrawLineService(new SetPixelService())), new RectFillService(new SetPixelService()));
     }
 
     public void render(GrayU8 gridBinary, List<CellDebugData> cells) {
@@ -54,7 +65,7 @@ public class XMarkDebugRenderer {
         Planar<GrayU8> canvas = binaryGridToCanvas(grid);
         for (CellDebugData cd : cells) {
             RectangleData r = cd.outerRect();
-            DrawingUtils.drawRect(canvas, r.x(), r.y(), r.width(), r.height(), COLOR_BLUE);
+            rectDrawService.apply(canvas, r.x(), r.y(), r.width(), r.height(), COLOR_BLUE);
         }
         saver.apply(canvas, "debug_x_grid_outline.jpg");
     }
@@ -106,7 +117,7 @@ public class XMarkDebugRenderer {
         for (int y = 0; y < binary.height; y++) {
             for (int x = 0; x < binary.width; x++) {
                 int v = binary.get(x, y) == 0 ? 0xFF : 0x00;
-                DrawingUtils.setPixel(canvas, x, y, grayColor(v));
+                pixelSetService.apply(canvas, x, y, grayColor(v));
             }
         }
         return canvas;
@@ -123,7 +134,7 @@ public class XMarkDebugRenderer {
         for (int y = 0; y < ir.height(); y++) {
             for (int x = 0; x < ir.width(); x++) {
                 int v = cd.originalCell().get(x, y) != 0 ? 0 : 255;
-                DrawingUtils.setPixel(canvas, ir.x() + x, ir.y() + y, grayColor(v));
+                pixelSetService.apply(canvas, ir.x() + x, ir.y() + y, grayColor(v));
             }
         }
     }
@@ -133,7 +144,7 @@ public class XMarkDebugRenderer {
         for (int y = 0; y < ir.height(); y++) {
             for (int x = 0; x < ir.width(); x++) {
                 if (cd.originalCell().get(x, y) != 0 && eroded.get(x, y) == 0) {
-                    DrawingUtils.setPixel(canvas, ir.x() + x, ir.y() + y, COLOR_YELLOW);
+                    pixelSetService.apply(canvas, ir.x() + x, ir.y() + y, COLOR_YELLOW);
                 }
             }
         }
@@ -144,7 +155,7 @@ public class XMarkDebugRenderer {
         for (int y = 0; y < ir.height(); y++) {
             for (int x = 0; x < ir.width(); x++) {
                 if (cd.skeleton().get(x, y) != 0) {
-                    DrawingUtils.setPixel(canvas, ir.x() + x, ir.y() + y, COLOR_MAGENTA);
+                    pixelSetService.apply(canvas, ir.x() + x, ir.y() + y, COLOR_MAGENTA);
                 }
             }
         }
@@ -153,7 +164,7 @@ public class XMarkDebugRenderer {
     private void paintBranchMarkers(Planar<GrayU8> canvas, CellDebugData cd) {
         RectangleData ir = cd.innerRect();
         for (PointData pt : cd.branchPoints()) {
-            DrawingUtils.fillRect(canvas, ir.x() + pt.x() - 3, ir.y() + pt.y() - 3, 6, 6, COLOR_BLUE);
+            rectFillService.apply(canvas, ir.x() + pt.x() - 3, ir.y() + pt.y() - 3, 6, 6, COLOR_BLUE);
         }
     }
 

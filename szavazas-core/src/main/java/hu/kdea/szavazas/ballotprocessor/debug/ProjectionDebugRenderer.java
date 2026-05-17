@@ -3,6 +3,11 @@ package hu.kdea.szavazas.ballotprocessor.debug;
 import boofcv.struct.image.GrayU8;
 import boofcv.struct.image.Planar;
 import hu.kdea.szavazas.ballotprocessor.common.EdgeSegmentData;
+import hu.kdea.szavazas.ballotprocessor.draw.DrawTextService;
+import hu.kdea.szavazas.ballotprocessor.draw.DrawLineService;
+import hu.kdea.szavazas.ballotprocessor.draw.FillOvalService;
+import hu.kdea.szavazas.ballotprocessor.draw.SetPixelService;
+import hu.kdea.szavazas.ballotprocessor.draw.RectFillService;
 import hu.kdea.szavazas.ballotprocessor.projection.AxisPeaks;
 import hu.kdea.szavazas.ballotprocessor.projection.ProjectionData;
 import java.util.List;
@@ -19,16 +24,22 @@ public class ProjectionDebugRenderer {
     private static final int COLOR_BLUE = 0xFF0000FF;
 
     private final ImageSaver saver;
-    private final BitmapFont5x7Service bitmapFont5x7Service;
+    private final DrawTextService bitmapFont5x7Service;
+    private final DrawLineService lineDrawService;
+    private final RectFillService rectFillService;
+    private final FillOvalService ovalFillService;
 
     @Inject
-    public ProjectionDebugRenderer(ImageSaver saver, BitmapFont5x7Service bitmapFont5x7Service) {
+    public ProjectionDebugRenderer(ImageSaver saver, DrawTextService bitmapFont5x7Service, DrawLineService lineDrawService, RectFillService rectFillService, FillOvalService ovalFillService) {
         this.saver = saver;
         this.bitmapFont5x7Service = bitmapFont5x7Service;
+        this.lineDrawService = lineDrawService;
+        this.rectFillService = rectFillService;
+        this.ovalFillService = ovalFillService;
     }
 
     public ProjectionDebugRenderer(ImageSaver saver) {
-        this(saver, new BitmapFont5x7Service());
+        this(saver, new DrawTextService(new SetPixelService()), new DrawLineService(new SetPixelService()), new RectFillService(new SetPixelService()), new FillOvalService(new SetPixelService()));
     }
 
     public void renderAll(ProjectionData data, AxisPeaks colAxis, AxisPeaks rowAxis) {
@@ -70,7 +81,7 @@ public class ProjectionDebugRenderer {
 
     private Planar<GrayU8> blankCanvas() {
         Planar<GrayU8> canvas = new Planar<>(GrayU8.class, WIDTH, HEIGHT, 3);
-        DrawingUtils.fillRect(canvas, 0, 0, WIDTH, HEIGHT, COLOR_WHITE);
+        rectFillService.apply(canvas, 0, 0, WIDTH, HEIGHT, COLOR_WHITE);
         return canvas;
     }
 
@@ -82,7 +93,7 @@ public class ProjectionDebugRenderer {
             int y1 = HEIGHT - 10 - (int) (proj[i - 1] * scaleY);
             int x2 = (int) (i * scaleX);
             int y2 = HEIGHT - 10 - (int) (proj[i] * scaleY);
-            DrawingUtils.drawLine(canvas, x1, y1, x2, y2, color);
+            lineDrawService.apply(canvas, x1, y1, x2, y2, color);
         }
     }
 
@@ -96,7 +107,7 @@ public class ProjectionDebugRenderer {
             }
             int x = (int) (idx * scaleX);
             int y = HEIGHT - 10 - (int) (proj[idx] * scaleY);
-            DrawingUtils.fillOval(canvas, x - 4, y - 4, 8, 8, COLOR_RED);
+            ovalFillService.apply(canvas, x - 4, y - 4, 8, 8, COLOR_RED);
         }
     }
 
@@ -112,7 +123,7 @@ public class ProjectionDebugRenderer {
             int x1 = (int) (idx1 * scaleX);
             int x2 = (int) (idx2 * scaleX);
             int y = HEIGHT - 10 - (int) (((proj[idx1] + proj[idx2]) / 2.0) * scaleY);
-            DrawingUtils.drawLine(canvas, x1, y, x2, y, COLOR_BLUE);
+            lineDrawService.apply(canvas, x1, y, x2, y, COLOR_BLUE);
             bitmapFont5x7Service.apply(canvas, (pair.end() - pair.start()) + "px", (x1 + x2) / 2, y - 5, COLOR_BLUE, 12f);
         }
     }

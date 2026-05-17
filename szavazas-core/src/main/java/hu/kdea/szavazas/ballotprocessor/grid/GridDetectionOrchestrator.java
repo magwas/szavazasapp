@@ -7,6 +7,8 @@ import hu.kdea.szavazas.ballotprocessor.common.RowBoundaryData;
 import hu.kdea.szavazas.ballotprocessor.debug.DebugImageSaver;
 import hu.kdea.szavazas.ballotprocessor.debug.GridOverlayDebugRenderer;
 import hu.kdea.szavazas.ballotprocessor.debug.ImageSaver;
+import hu.kdea.szavazas.ballotprocessor.draw.DrawLineService;
+import hu.kdea.szavazas.ballotprocessor.draw.SetPixelService;
 import hu.kdea.szavazas.ballotprocessor.debug.ProjectionDebugRenderer;
 import hu.kdea.szavazas.ballotprocessor.projection.AxisPeaks;
 import hu.kdea.szavazas.ballotprocessor.projection.EdgeReconstructor;
@@ -23,8 +25,10 @@ public class GridDetectionOrchestrator {
 
     @Inject
     public GridDetectionOrchestrator(@DebugImageSaver ImageSaver imageSaver) {
+        SetPixelService pixelSetService = new SetPixelService();
+        DrawLineService lineDrawService = new DrawLineService(pixelSetService);
         this.projectionRenderer = imageSaver == null ? null : new ProjectionDebugRenderer(imageSaver);
-        this.overlayRenderer = imageSaver == null ? null : new GridOverlayDebugRenderer(imageSaver);
+        this.overlayRenderer = imageSaver == null ? null : new GridOverlayDebugRenderer(imageSaver, pixelSetService, lineDrawService);
     }
 
     public List<RectangleData> detect(GrayU8 binaryClosed, RectangleData searchRect, int expectedCols, int expectedRows, boolean skipBoundaries, boolean emptySecondColumn) {
