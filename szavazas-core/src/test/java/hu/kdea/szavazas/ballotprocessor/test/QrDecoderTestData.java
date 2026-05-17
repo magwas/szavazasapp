@@ -22,13 +22,14 @@ public interface QrDecoderTestData {
     int SAMPLE_NUM_SUPPORT = 5;
     int SAMPLE_NUM_ROWS = 12;
 
-    String QR_TEXT_MISSING_PARTS = "ballot";
-    int QR_TEXT_MISSING_PARTS_NUM_SUPPORT = 3;
-    int QR_TEXT_MISSING_PARTS_NUM_ROWS = 11;
-
-    String QR_TEXT_INVALID_NUMBERS = "ballot-abc-def";
-    int QR_TEXT_INVALID_NUMBERS_NUM_SUPPORT = 3;
-    int QR_TEXT_INVALID_NUMBERS_NUM_ROWS = 11;
+    String QR_TEXT_MISSING_SUPPORT = "ballot";
+    String QR_TEXT_MISSING_ROWS = "ballot-5";
+    String QR_TEXT_INVALID_SUPPORT = "ballot-abc-12";
+    String QR_TEXT_INVALID_ROWS = "ballot-5-def";
+    String QR_TEXT_ZERO_SUPPORT = "ballot-0-12";
+    String QR_TEXT_ZERO_ROWS = "ballot-5-0";
+    String QR_TEXT_NEGATIVE_SUPPORT = "ballot--1-12";
+    String QR_TEXT_NEGATIVE_ROWS = "ballot-5--2";
 
     ResultPoint[] SAMPLE_RESULT_POINTS = {
         new ResultPoint(10.0f, 10.0f),
@@ -44,4 +45,10 @@ public interface QrDecoderTestData {
     };
 
     RectangleData SINGLE_POINT_BBOX = new RectangleData(5, 5, 1, 1);
+
+    ResultPoint[] NULL_POINT_RESULT_POINTS = {
+        new ResultPoint(10.0f, 10.0f),
+        null,
+        new ResultPoint(20.0f, 20.0f)
+    };
 }

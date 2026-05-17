@@ -11,41 +11,59 @@ public class ParseQrResultService {
     }
 
     public QrData apply(Result result) {
-        String raw = result.getText();
-        int numSupport = parse(raw, 1, 3);
-        int numRows = parse(raw, 2, 11);
-        RectangleData bbox = box(result);
-        return new QrData(raw, numSupport, numRows, bbox);
+        Result validatedResult = validateResult(result);
+        String raw = validatedResult.getText();
+        String[] parts = raw.split("-");
+        int numSupport = parsePositive(parts, 1, "support count");
+        int numRows = parsePositive(parts, 2, "row count");
+        return new QrData(raw, numSupport, numRows, box(validatedResult.getResultPoints()));
     }
 
-    private int parse(String raw, int index, int fallback) {
-        String[] parts = raw.split("-");
-        if (parts.length <= index) {
-            return fallback;
+    private Result validateResult(Result result) {
+        if (result == null) {
+            throw new IllegalArgumentException("QR result must not be null");
+        }
+        if (result.getText() == null) {
+            throw new IllegalArgumentException("QR text must not be null");
+        }
+        if (result.getResultPoints() == null) {
+            throw new IllegalArgumentException("QR result points must not be null");
+        }
+        if (result.getResultPoints().length == 0) {
+            throw new IllegalArgumentException("QR result points must not be empty");
+        }
+        return result;
+    }
+
+    private int parsePositive(String[] parts, int index, String fieldName) {
+        if (parts.length <= index || parts[index].isBlank()) {
+            throw new IllegalArgumentException("QR " + fieldName + " is missing");
         }
         try {
-            return Integer.parseInt(parts[index]);
-        } catch (NumberFormatException e) {
-            return fallback;
+            int value = Integer.parseInt(parts[index]);
+            if (value <= 0) {
+                throw new IllegalArgumentException("QR " + fieldName + " must be positive");
+            }
+            return value;
+        } catch (NumberFormatException exception) {
+            throw new IllegalArgumentException("QR " + fieldName + " must be numeric", exception);
         }
     }
 
-    private RectangleData box(Result result) {
+    private RectangleData box(ResultPoint[] resultPoints) {
         int minX = Integer.MAX_VALUE;
         int minY = Integer.MAX_VALUE;
         int maxX = Integer.MIN_VALUE;
         int maxY = Integer.MIN_VALUE;
-        for (ResultPoint point : result.getResultPoints()) {
+        for (ResultPoint point : resultPoints) {
+            if (point == null) {
+                throw new IllegalArgumentException("QR result points must not contain nulls");
+            }
             minX = Math.min(minX, (int) point.getX());
             minY = Math.min(minY, (int) point.getY());
             maxX = Math.max(maxX, (int) point.getX());
             maxY = Math.max(maxY, (int) point.getY());
         }
-        return new RectangleData(
-            minX == Integer.MAX_VALUE ? 0 : minX,
-            minY == Integer.MAX_VALUE ? 0 : minY,
-            maxX == Integer.MIN_VALUE ? 1 : maxX - minX + 1,
-            maxY == Integer.MIN_VALUE ? 1 : maxY - minY + 1
-        );
+        return new RectangleData(minX, minY, maxX - minX + 1, maxY - minY + 1);
     }
 }

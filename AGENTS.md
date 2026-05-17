@@ -13,6 +13,7 @@
 - OOP APIs are provided by **Delegate** units.
 - Framework‑required classes are **Glue** units.
 - Testing is first‑class: **Test**, **TestData**, **Stub**, **TestUtil** units.
+- Fail fast, fail hard. No fallbacks except when explicitly specified.
 
 ## Dependency Injection with Dagger
 
@@ -135,7 +136,7 @@ Test code resides in packages corresponding to the tested code, with `.test` app
   - `public static String environmentState` (reset to `null` before each test)
   - `void given(String newState)` – sets `environmentState`
   - `void setUp()` (throws `Throwable`) – may be overridden for custom test setup
-- Tests use `@DisplayName` to document the tested behaviour.
+- Tests use `@DisplayName` to document the tested behaviour. The description of tested behaviour is about the logic, not the implementation.
 - All constants from implemented `TestData` interfaces.
 - No `when()` or `given()` calls in tests – stubbing belongs in `Stub` units.
 - No test data creation – use `TestData` units.

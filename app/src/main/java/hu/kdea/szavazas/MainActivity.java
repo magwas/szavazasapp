@@ -26,10 +26,8 @@ import boofcv.struct.image.Planar;
 import hu.kdea.szavazas.ballotprocessor.BallotProcessingApi;
 import hu.kdea.szavazas.ballotprocessor.BallotResultData;
 import hu.kdea.szavazas.ballotprocessor.Logger;
-import hu.kdea.szavazas.ballotprocessor.common.CellPositionData;
-import java.io.File;
-import java.util.HashSet;
-import java.util.Set;
+import hu.kdea.szavazas.review.ReviewCellData;
+import hu.kdea.szavazas.review.ReviewGridData;
 
 public class MainActivity extends AppCompatActivity {
     private LinearLayout startScreen;
@@ -45,7 +43,6 @@ public class MainActivity extends AppCompatActivity {
     private GridLayout reviewGrid;
     private CameraManager cameraManager;
     private BallotProcessingApi ballotProcessingApi;
-    private BallotFileRepository ballotFileRepository;
     private BallotResultData pendingResult;
     private boolean isProcessing;
     private final ActivityResultLauncher<String> permissionLauncher = registerForActivityResult(
@@ -66,7 +63,6 @@ public class MainActivity extends AppCompatActivity {
         Logger.setDelegate((tag, msg) -> Log.d(tag, msg));
         bindViews();
         ballotProcessingApi = DaggerAndroidSzavazasComponent.builder().context(this).build().ballotProcessingApi();
-        ballotFileRepository = new BallotFileRepository(this);
         cameraManager = new CameraManager(this, this, previewView);
         readBallotsButton.setOnClickListener(view -> showCameraScreen());
         captureButton.setOnClickListener(view -> onCaptureClicked());
@@ -114,48 +110,39 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void showReviewScreen(BallotResultData ballotResultData) {
+        ReviewGridData reviewGridData = ballotProcessingApi.review(ballotResultData);
         pendingResult = ballotResultData;
         isProcessing = false;
         startScreen.setVisibility(View.GONE);
         cameraScreen.setVisibility(View.GONE);
         reviewScreen.setVisibility(View.VISIBLE);
-        reviewTitle.setText(getString(R.string.review_title, voteName(ballotResultData.raw())));
-        renderReviewGrid(ballotResultData);
+        reviewTitle.setText(getString(R.string.review_title, reviewGridData.voteName()));
+        renderReviewGrid(reviewGridData);
     }
 
-    private void renderReviewGrid(BallotResultData ballotResultData) {
+    private void renderReviewGrid(ReviewGridData reviewGridData) {
         reviewGrid.removeAllViews();
-        reviewGrid.setColumnCount(ballotResultData.numSupport() + 2);
-        reviewGrid.setRowCount(ballotResultData.numRows());
-        Set<String> checkedCells = new HashSet<>();
-        for (CellPositionData cellPositionData : ballotResultData.xCells()) {
-            checkedCells.add(cellPositionData.row() + ":" + screenColumn(cellPositionData.col()));
-        }
-        for (int row = 0; row < ballotResultData.numRows(); row++) {
-            for (int col = 0; col < ballotResultData.numSupport() + 2; col++) {
-                CheckBox checkBox = new CheckBox(this);
-                checkBox.setClickable(false);
-                checkBox.setFocusable(false);
-                checkBox.setEnabled(false);
-                checkBox.setGravity(Gravity.CENTER);
-                checkBox.setChecked(col != 1 && checkedCells.contains(row + ":" + col));
-                if (col == 1) {
-                    checkBox.setVisibility(View.INVISIBLE);
-                }
-                GridLayout.LayoutParams params = new GridLayout.LayoutParams();
-                params.width = GridLayout.LayoutParams.WRAP_CONTENT;
-                params.height = GridLayout.LayoutParams.WRAP_CONTENT;
-                params.setMargins(8, 8, 8, 8);
-                params.rowSpec = GridLayout.spec(row);
-                params.columnSpec = GridLayout.spec(col);
-                checkBox.setLayoutParams(params);
-                reviewGrid.addView(checkBox);
+        reviewGrid.setColumnCount(reviewGridData.columnCount());
+        reviewGrid.setRowCount(reviewGridData.rowCount());
+        for (ReviewCellData reviewCellData : reviewGridData.cells()) {
+            CheckBox checkBox = new CheckBox(this);
+            checkBox.setClickable(false);
+            checkBox.setFocusable(false);
+            checkBox.setEnabled(false);
+            checkBox.setGravity(Gravity.CENTER);
+            checkBox.setChecked(reviewCellData.checked());
+            if (reviewCellData.hidden()) {
+                checkBox.setVisibility(View.INVISIBLE);
             }
+            GridLayout.LayoutParams params = new GridLayout.LayoutParams();
+            params.width = GridLayout.LayoutParams.WRAP_CONTENT;
+            params.height = GridLayout.LayoutParams.WRAP_CONTENT;
+            params.setMargins(8, 8, 8, 8);
+            params.rowSpec = GridLayout.spec(reviewCellData.row());
+            params.columnSpec = GridLayout.spec(reviewCellData.col());
+            checkBox.setLayoutParams(params);
+            reviewGrid.addView(checkBox);
         }
-    }
-
-    private int screenColumn(int ballotColumn) {
-        return ballotColumn == 0 ? 0 : ballotColumn + 1;
     }
 
     private void savePendingResult() {
@@ -164,7 +151,7 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
         try {
-            ballotFileRepository.save(pendingResult);
+            ballotProcessingApi.save(pendingResult);
             Toast.makeText(this, R.string.saved_ballot, Toast.LENGTH_LONG).show();
             showCameraScreen();
         } catch (IllegalStateException exception) {
@@ -216,11 +203,6 @@ public class MainActivity extends AppCompatActivity {
             isProcessing = false;
             Toast.makeText(this, getString(R.string.error_message, error == null ? getString(R.string.unknown_error) : error.message()), Toast.LENGTH_LONG).show();
         });
-    }
-
-    private String voteName(String raw) {
-        int separator = raw.indexOf('-');
-        return separator < 0 ? raw : raw.substring(0, separator);
     }
 
     private Bitmap forceArgb8888(Bitmap bitmap) {

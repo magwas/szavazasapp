@@ -18,7 +18,7 @@ public class ConvertGrayU8ToRgbPixelsServiceTest extends TestBase implements QrD
     }
 
     @Test
-    @DisplayName("apply converts GrayU8 image to int[] ARGB pixel array")
+    @DisplayName("converts GrayU8 image to int[] ARGB pixel array")
     public void apply() {
         GrayU8 image = TWO_BY_TWO_IMAGE;
         int[] result = convertGrayU8ToRgbPixelsService.apply(image);
