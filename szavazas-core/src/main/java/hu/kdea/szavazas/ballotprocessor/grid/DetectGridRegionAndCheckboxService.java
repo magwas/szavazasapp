@@ -7,13 +7,13 @@ import hu.kdea.szavazas.ballotprocessor.debug.ImageSaver;
 import hu.kdea.szavazas.ballotprocessor.qr.QrData;
 import javax.inject.Inject;
 
-public class GridRegionAndCheckboxDetectionService {
-    private final GridRegionExtractService gridRegionExtract;
-    private final GridDetectorStep gridDetectorStep;
+public class DetectGridRegionAndCheckboxService {
+    private final ExtractGridRegionService gridRegionExtract;
+    private final DetectGridService gridDetectorStep;
     private final ImageSaver imageSaver;
 
     @Inject
-    public GridRegionAndCheckboxDetectionService(GridRegionExtractService gridRegionExtract, GridDetectorStep gridDetectorStep, @DebugImageSaver ImageSaver imageSaver) {
+    public DetectGridRegionAndCheckboxService(ExtractGridRegionService gridRegionExtract, DetectGridService gridDetectorStep, @DebugImageSaver ImageSaver imageSaver) {
         this.gridRegionExtract = gridRegionExtract;
         this.gridDetectorStep = gridDetectorStep;
         this.imageSaver = imageSaver;
@@ -22,14 +22,14 @@ public class GridRegionAndCheckboxDetectionService {
     public GridDetectionResultData apply(GrayU8 warpedGray, QrData adjustedQr, Double markerTopY) {
         int qrCenterX = adjustedQr.bbox().x() + adjustedQr.bbox().width() / 2;
         int qrBottom = adjustedQr.bbox().y() + adjustedQr.bbox().height();
-        GridRegion region = gridRegionExtract.apply(warpedGray, qrCenterX, qrBottom, markerTopY);
+        GridRegionData region = gridRegionExtract.apply(warpedGray, qrCenterX, qrBottom, markerTopY);
         if (region == null) {
             return null;
         }
         if (imageSaver != null) {
             imageSaver.apply(region.projectionInput(), "debug_grid_input.jpg");
         }
-        java.util.List<RectangleData> checkboxes = gridDetectorStep.detect(
+        java.util.List<RectangleData> checkboxes = gridDetectorStep.apply(
             region.projectionInput(),
             region.cropTop(),
             region.qrCentreX(),

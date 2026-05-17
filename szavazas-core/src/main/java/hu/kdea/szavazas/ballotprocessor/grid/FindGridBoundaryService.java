@@ -8,11 +8,11 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-public final class GridBoundaryFinder {
-    private GridBoundaryFinder() {
+public final class FindGridBoundaryService {
+    private FindGridBoundaryService() {
     }
 
-    public static RowBoundaryData find(float[] projection, int qrBottomY, Double markerTopY) {
+    public static RowBoundaryData apply(float[] projection, int qrBottomY, Double markerTopY) {
         int searchBottomY = calcSearchBottomY(markerTopY, projection.length);
         float[] searchProjection = new float[searchBottomY - qrBottomY + 1];
         System.arraycopy(projection, qrBottomY, searchProjection, 0, searchProjection.length);

@@ -19,19 +19,19 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.inject.Inject;
 
-public class GridDetectionOrchestrator {
+public class OrchestrateGridDetectionService {
     private final ProjectionDebugRenderer projectionRenderer;
     private final GridOverlayDebugRenderer overlayRenderer;
 
     @Inject
-    public GridDetectionOrchestrator(@DebugImageSaver ImageSaver imageSaver) {
+    public OrchestrateGridDetectionService(@DebugImageSaver ImageSaver imageSaver) {
         SetPixelService pixelSetService = new SetPixelService();
         DrawLineService lineDrawService = new DrawLineService(pixelSetService);
         this.projectionRenderer = imageSaver == null ? null : new ProjectionDebugRenderer(imageSaver);
         this.overlayRenderer = imageSaver == null ? null : new GridOverlayDebugRenderer(imageSaver, pixelSetService, lineDrawService);
     }
 
-    public List<RectangleData> detect(GrayU8 binaryClosed, RectangleData searchRect, int expectedCols, int expectedRows, boolean skipBoundaries, boolean emptySecondColumn) {
+    public List<RectangleData> apply(GrayU8 binaryClosed, RectangleData searchRect, int expectedCols, int expectedRows, boolean skipBoundaries, boolean emptySecondColumn) {
         ProjectionBuildResultData projections = buildProjections(binaryClosed, searchRect, skipBoundaries);
         RectangleData roi = projections.roi();
         ProjectionData data = projections.data();

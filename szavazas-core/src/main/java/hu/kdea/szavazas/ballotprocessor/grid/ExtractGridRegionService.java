@@ -7,17 +7,17 @@ import hu.kdea.szavazas.ballotprocessor.common.RowBoundaryData;
 import hu.kdea.szavazas.ballotprocessor.projection.RowProjectionComputer;
 import javax.inject.Inject;
 
-public class GridRegionExtractService {
+public class ExtractGridRegionService {
     private final ImageNormalizerService imageNormalizer;
 
     @Inject
-    public GridRegionExtractService(ImageNormalizerService imageNormalizer) {
+    public ExtractGridRegionService(ImageNormalizerService imageNormalizer) {
         this.imageNormalizer = imageNormalizer;
     }
 
-    public GridRegion apply(GrayU8 scaledGray, int qrCentreX, int qrBottomY, Double markerTopY) {
+    public GridRegionData apply(GrayU8 scaledGray, int qrCentreX, int qrBottomY, Double markerTopY) {
         GrayU8 inverted = InverterService.apply(scaledGray);
-        RowBoundaryData boundary = GridBoundaryFinder.find(RowProjectionComputer.compute(inverted), qrBottomY, markerTopY);
+        RowBoundaryData boundary = FindGridBoundaryService.apply(RowProjectionComputer.compute(inverted), qrBottomY, markerTopY);
         if (boundary == null) {
             return null;
         }
@@ -34,6 +34,6 @@ public class GridRegionExtractService {
                 cropped.set(x, y, scaledGray.get(qrCentreX + x, cropTop + y));
             }
         }
-        return new GridRegion(imageNormalizer.apply(cropped), cropTop, qrCentreX);
+        return new GridRegionData(imageNormalizer.apply(cropped), cropTop, qrCentreX);
     }
 }

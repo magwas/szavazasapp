@@ -4,8 +4,8 @@ import boofcv.struct.image.GrayU8;
 import boofcv.struct.image.Planar;
 import hu.kdea.szavazas.ballotprocessor.debug.DebugImageSaver;
 import hu.kdea.szavazas.ballotprocessor.debug.ImageSaver;
+import hu.kdea.szavazas.ballotprocessor.grid.DetectGridRegionAndCheckboxService;
 import hu.kdea.szavazas.ballotprocessor.grid.GridDetectionResultData;
-import hu.kdea.szavazas.ballotprocessor.grid.GridRegionAndCheckboxDetectionService;
 import hu.kdea.szavazas.ballotprocessor.qr.QRDetectorStep;
 import hu.kdea.szavazas.ballotprocessor.qr.QrCropPreprocessingService;
 import hu.kdea.szavazas.ballotprocessor.qr.QrCropResultData;
@@ -17,7 +17,7 @@ public class BallotProcessingService {
     private final BallotPreprocessService ballotPreprocess;
     private final QRDetectorStep qrDetectorStep;
     private final QrCropPreprocessingService qrCropPreprocessingService;
-    private final GridRegionAndCheckboxDetectionService gridRegionAndCheckboxDetectionService;
+    private final DetectGridRegionAndCheckboxService gridRegionAndCheckboxDetectionService;
     private final XMarkDetectionAndResultService xMarkDetectionAndResultService;
     private final MessageService messageService;
     private final ImageSaver imageSaver;
@@ -27,7 +27,7 @@ public class BallotProcessingService {
         BallotPreprocessService ballotPreprocess,
         QRDetectorStep qrDetectorStep,
         QrCropPreprocessingService qrCropPreprocessingService,
-        GridRegionAndCheckboxDetectionService gridRegionAndCheckboxDetectionService,
+        DetectGridRegionAndCheckboxService gridRegionAndCheckboxDetectionService,
         XMarkDetectionAndResultService xMarkDetectionAndResultService,
         MessageService messageService,
         @DebugImageSaver ImageSaver imageSaver
