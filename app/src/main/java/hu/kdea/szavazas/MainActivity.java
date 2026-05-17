@@ -7,7 +7,13 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Gravity;
+import android.view.View;
 import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.GridLayout;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -18,14 +24,29 @@ import boofcv.android.ConvertBitmap;
 import boofcv.struct.image.GrayU8;
 import boofcv.struct.image.Planar;
 import hu.kdea.szavazas.ballotprocessor.BallotProcessingApi;
+import hu.kdea.szavazas.ballotprocessor.BallotResultData;
 import hu.kdea.szavazas.ballotprocessor.Logger;
+import hu.kdea.szavazas.ballotprocessor.common.CellPositionData;
 import java.io.File;
+import java.util.HashSet;
+import java.util.Set;
 
 public class MainActivity extends AppCompatActivity {
+    private LinearLayout startScreen;
+    private LinearLayout cameraScreen;
+    private View reviewScreen;
     private PreviewView previewView;
+    private Button readBallotsButton;
     private Button captureButton;
+    private Button finishButton;
+    private Button correctButton;
+    private Button failedButton;
+    private TextView reviewTitle;
+    private GridLayout reviewGrid;
     private CameraManager cameraManager;
     private BallotProcessingApi ballotProcessingApi;
+    private BallotFileRepository ballotFileRepository;
+    private BallotResultData pendingResult;
     private boolean isProcessing;
     private final ActivityResultLauncher<String> permissionLauncher = registerForActivityResult(
             new ActivityResultContracts.RequestPermission(),
@@ -33,7 +54,7 @@ public class MainActivity extends AppCompatActivity {
                 if (granted) {
                     cameraManager.start();
                 } else {
-                    Toast.makeText(this, "Camera required", Toast.LENGTH_LONG).show();
+                    Toast.makeText(this, R.string.camera_required, Toast.LENGTH_LONG).show();
                 }
             }
     );
@@ -43,12 +64,16 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         Logger.setDelegate((tag, msg) -> Log.d(tag, msg));
-        previewView = findViewById(R.id.previewView);
-        captureButton = findViewById(R.id.captureButton);
+        bindViews();
         ballotProcessingApi = DaggerAndroidSzavazasComponent.builder().context(this).build().ballotProcessingApi();
+        ballotFileRepository = new BallotFileRepository(this);
         cameraManager = new CameraManager(this, this, previewView);
+        readBallotsButton.setOnClickListener(view -> showCameraScreen());
         captureButton.setOnClickListener(view -> onCaptureClicked());
-        requestCameraIfNeeded();
+        finishButton.setOnClickListener(view -> showStartScreen());
+        failedButton.setOnClickListener(view -> showCameraScreen());
+        correctButton.setOnClickListener(view -> savePendingResult());
+        showStartScreen();
     }
 
     @Override
@@ -57,24 +82,111 @@ public class MainActivity extends AppCompatActivity {
         cameraManager.shutdown();
     }
 
-    private void toastOnUi(String text) {
-        runOnUiThread(() -> {
-            Toast.makeText(this, text, Toast.LENGTH_LONG).show();
-            isProcessing = false;
-        });
+    private void bindViews() {
+        startScreen = findViewById(R.id.startScreen);
+        cameraScreen = findViewById(R.id.cameraScreen);
+        reviewScreen = findViewById(R.id.reviewScreen);
+        previewView = findViewById(R.id.previewView);
+        readBallotsButton = findViewById(R.id.readBallotsButton);
+        captureButton = findViewById(R.id.captureButton);
+        finishButton = findViewById(R.id.finishButton);
+        correctButton = findViewById(R.id.correctButton);
+        failedButton = findViewById(R.id.failedButton);
+        reviewTitle = findViewById(R.id.reviewTitle);
+        reviewGrid = findViewById(R.id.reviewGrid);
+    }
+
+    private void showStartScreen() {
+        pendingResult = null;
+        isProcessing = false;
+        startScreen.setVisibility(View.VISIBLE);
+        cameraScreen.setVisibility(View.GONE);
+        reviewScreen.setVisibility(View.GONE);
+    }
+
+    private void showCameraScreen() {
+        pendingResult = null;
+        isProcessing = false;
+        startScreen.setVisibility(View.GONE);
+        cameraScreen.setVisibility(View.VISIBLE);
+        reviewScreen.setVisibility(View.GONE);
+        requestCameraIfNeeded();
+    }
+
+    private void showReviewScreen(BallotResultData ballotResultData) {
+        pendingResult = ballotResultData;
+        isProcessing = false;
+        startScreen.setVisibility(View.GONE);
+        cameraScreen.setVisibility(View.GONE);
+        reviewScreen.setVisibility(View.VISIBLE);
+        reviewTitle.setText(getString(R.string.review_title, voteName(ballotResultData.raw())));
+        renderReviewGrid(ballotResultData);
+    }
+
+    private void renderReviewGrid(BallotResultData ballotResultData) {
+        reviewGrid.removeAllViews();
+        reviewGrid.setColumnCount(ballotResultData.numSupport() + 2);
+        reviewGrid.setRowCount(ballotResultData.numRows());
+        Set<String> checkedCells = new HashSet<>();
+        for (CellPositionData cellPositionData : ballotResultData.xCells()) {
+            checkedCells.add(cellPositionData.row() + ":" + screenColumn(cellPositionData.col()));
+        }
+        for (int row = 0; row < ballotResultData.numRows(); row++) {
+            for (int col = 0; col < ballotResultData.numSupport() + 2; col++) {
+                CheckBox checkBox = new CheckBox(this);
+                checkBox.setClickable(false);
+                checkBox.setFocusable(false);
+                checkBox.setEnabled(false);
+                checkBox.setGravity(Gravity.CENTER);
+                checkBox.setChecked(col != 1 && checkedCells.contains(row + ":" + col));
+                if (col == 1) {
+                    checkBox.setVisibility(View.INVISIBLE);
+                }
+                GridLayout.LayoutParams params = new GridLayout.LayoutParams();
+                params.width = GridLayout.LayoutParams.WRAP_CONTENT;
+                params.height = GridLayout.LayoutParams.WRAP_CONTENT;
+                params.setMargins(8, 8, 8, 8);
+                params.rowSpec = GridLayout.spec(row);
+                params.columnSpec = GridLayout.spec(col);
+                checkBox.setLayoutParams(params);
+                reviewGrid.addView(checkBox);
+            }
+        }
+    }
+
+    private int screenColumn(int ballotColumn) {
+        return ballotColumn == 0 ? 0 : ballotColumn + 1;
+    }
+
+    private void savePendingResult() {
+        if (pendingResult == null) {
+            showCameraScreen();
+            return;
+        }
+        try {
+            ballotFileRepository.save(pendingResult);
+            Toast.makeText(this, R.string.saved_ballot, Toast.LENGTH_LONG).show();
+            showCameraScreen();
+        } catch (IllegalStateException exception) {
+            Toast.makeText(this, getString(R.string.save_failed, exception.getMessage()), Toast.LENGTH_LONG).show();
+        }
     }
 
     private void onCaptureClicked() {
         if (isProcessing) {
-            Toast.makeText(this, "Processing", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, R.string.processing, Toast.LENGTH_SHORT).show();
             return;
         }
+        isProcessing = true;
         cameraManager.capturePhoto(file -> {
             Bitmap bitmap = BitmapFactory.decodeFile(file.getAbsolutePath());
             if (bitmap != null) {
                 processBallot(bitmap);
             } else {
-                Toast.makeText(this, "Failed to load image", Toast.LENGTH_SHORT).show();
+                runOnUiThread(() -> {
+                    isProcessing = false;
+                    Toast.makeText(this, R.string.failed_to_load_image, Toast.LENGTH_SHORT).show();
+                });
             }
         });
     }
@@ -88,7 +200,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void processBallot(Bitmap bitmap) {
-        isProcessing = true;
         Bitmap safeBitmap = forceArgb8888(bitmap);
         bitmap.recycle();
         Planar<GrayU8> planar = new Planar<>(GrayU8.class, safeBitmap.getWidth(), safeBitmap.getHeight(), 3);
@@ -97,11 +208,19 @@ public class MainActivity extends AppCompatActivity {
         safeBitmap.recycle();
         var result = outcome.result();
         var error = outcome.error();
-        if (result != null) {
-            toastOnUi("Results: " + result);
-            return;
-        }
-        toastOnUi("Error: " + (error == null ? "Unknown error" : error.message()));
+        runOnUiThread(() -> {
+            if (result != null) {
+                showReviewScreen(result);
+                return;
+            }
+            isProcessing = false;
+            Toast.makeText(this, getString(R.string.error_message, error == null ? getString(R.string.unknown_error) : error.message()), Toast.LENGTH_LONG).show();
+        });
+    }
+
+    private String voteName(String raw) {
+        int separator = raw.indexOf('-');
+        return separator < 0 ? raw : raw.substring(0, separator);
     }
 
     private Bitmap forceArgb8888(Bitmap bitmap) {

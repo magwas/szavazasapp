@@ -49,4 +49,9 @@ public class FullPipelineTest {
     public void testImage11() {
         executor.executeTest("image11");
     }
+    /* normalization is not good enough for this
+    @Test
+    public void testImage12() {
+        executor.executeTest("image12");
+    }*/
 }

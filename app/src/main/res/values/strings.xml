@@ -1,3 +1,16 @@
 <resources>
     <string name="app_name">Szavazas</string>
+    <string name="read_ballots">Read ballots</string>
+    <string name="capture">Capture</string>
+    <string name="finish">Finish</string>
+    <string name="correct">Correct</string>
+    <string name="failed">Failed</string>
+    <string name="camera_required">Camera required</string>
+    <string name="processing">Processing</string>
+    <string name="failed_to_load_image">Failed to load image</string>
+    <string name="unknown_error">Unknown error</string>
+    <string name="review_title">Vote: %1$s</string>
+    <string name="saved_ballot">Ballot saved</string>
+    <string name="save_failed">Failed to save ballot: %1$s</string>
+    <string name="error_message">Error: %1$s</string>
 </resources>

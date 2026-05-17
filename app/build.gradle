@@ -80,6 +80,7 @@ dependencies {
     implementation "com.google.android.material:material:1.11.0"
     implementation "androidx.activity:activity:1.8.0"
     implementation "androidx.constraintlayout:constraintlayout:2.1.4"
+    implementation "org.json:json:20240303"
 
     // Unit testing – include boofcv classes and JVM dependencies
     testImplementation "junit:junit:4.13.2"
