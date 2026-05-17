@@ -2,7 +2,7 @@ package hu.kdea.szavazas.ballotprocessor.qr.preprocess;
 
 import boofcv.struct.image.GrayU8;
 
-public class ContrastEnhancementStep implements PreprocessingStep {
+public class EnhanceContrastService implements PreprocessingStep {
     @Override
     public GrayU8 apply(GrayU8 input) {
         int min = 255;

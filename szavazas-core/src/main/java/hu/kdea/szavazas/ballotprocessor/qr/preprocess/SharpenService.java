@@ -3,7 +3,7 @@ package hu.kdea.szavazas.ballotprocessor.qr.preprocess;
 import boofcv.alg.filter.blur.BlurImageOps;
 import boofcv.struct.image.GrayU8;
 
-public class SharpeningStep implements PreprocessingStep {
+public class SharpenService implements PreprocessingStep {
     @Override
     public GrayU8 apply(GrayU8 input) {
         GrayU8 blur = new GrayU8(input.width, input.height);

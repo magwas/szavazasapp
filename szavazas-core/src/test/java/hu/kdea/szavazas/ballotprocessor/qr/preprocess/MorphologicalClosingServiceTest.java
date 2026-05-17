@@ -11,19 +11,17 @@ import static org.junit.Assert.assertNotSame;
 
 public class MorphologicalClosingServiceTest extends TestBase implements MorphologicalClosingTestData {
 
-    private MorphologicalClosingWrapper morphologicalClosingWrapper;
-    private MorphologicalClosingService morphologicalClosingService;
+    private MorphologicalCloseService morphologicalCloseService;
 
     @Override
     public void setUp() {
-        morphologicalClosingWrapper = MorphologicalClosingWrapperStub.stub();
-        morphologicalClosingService = new MorphologicalClosingService(morphologicalClosingWrapper);
+        morphologicalCloseService = new MorphologicalCloseService();
     }
 
     @Test
     @DisplayName("apply fills single pixel gap inside solid block")
     public void apply() {
-        GrayU8 output = morphologicalClosingService.apply(CENTERED_BLOCK_WITH_SINGLE_PIXEL_GAP);
+        GrayU8 output = morphologicalCloseService.apply(CENTERED_BLOCK_WITH_SINGLE_PIXEL_GAP);
         assertNotSame(CENTERED_BLOCK_WITH_SINGLE_PIXEL_GAP, output);
         assertGrayU8Equals(CENTERED_BLOCK_WITHOUT_GAP, output);
     }

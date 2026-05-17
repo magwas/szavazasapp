@@ -6,8 +6,8 @@ import hu.kdea.szavazas.ballotprocessor.debug.DebugImageSaver;
 import hu.kdea.szavazas.ballotprocessor.debug.ImageSaver;
 import hu.kdea.szavazas.ballotprocessor.grid.DetectGridRegionAndCheckboxService;
 import hu.kdea.szavazas.ballotprocessor.grid.GridDetectionResultData;
+import hu.kdea.szavazas.ballotprocessor.qr.PreprocessQRCropService;
 import hu.kdea.szavazas.ballotprocessor.qr.QRDetectorStep;
-import hu.kdea.szavazas.ballotprocessor.qr.QrCropPreprocessingService;
 import hu.kdea.szavazas.ballotprocessor.qr.QrCropResultData;
 import hu.kdea.szavazas.ballotprocessor.qr.QrData;
 import hu.kdea.szavazas.ballotprocessor.x.XMarkDetectionAndResultService;
@@ -16,7 +16,7 @@ import javax.inject.Inject;
 public class BallotProcessingService {
     private final BallotPreprocessService ballotPreprocess;
     private final QRDetectorStep qrDetectorStep;
-    private final QrCropPreprocessingService qrCropPreprocessingService;
+    private final PreprocessQRCropService qrCropPreprocessingService;
     private final DetectGridRegionAndCheckboxService gridRegionAndCheckboxDetectionService;
     private final XMarkDetectionAndResultService xMarkDetectionAndResultService;
     private final MessageService messageService;
@@ -26,7 +26,7 @@ public class BallotProcessingService {
     public BallotProcessingService(
         BallotPreprocessService ballotPreprocess,
         QRDetectorStep qrDetectorStep,
-        QrCropPreprocessingService qrCropPreprocessingService,
+        PreprocessQRCropService qrCropPreprocessingService,
         DetectGridRegionAndCheckboxService gridRegionAndCheckboxDetectionService,
         XMarkDetectionAndResultService xMarkDetectionAndResultService,
         MessageService messageService,

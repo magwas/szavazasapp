@@ -6,17 +6,17 @@ import java.util.concurrent.TimeUnit;
 import javax.inject.Inject;
 
 public class QRDetectorStep {
-    private final IQRProcessor qrProcessor;
+    private final ZXingQRProcessor qrProcessor;
 
     @Inject
-    public QRDetectorStep(IQRProcessor qrProcessor) {
+    public QRDetectorStep(ZXingQRProcessor qrProcessor) {
         this.qrProcessor = qrProcessor;
     }
 
     public QrData detect(GrayU8 scaledGray) throws InterruptedException {
         final QrResult[] detected = new QrResult[1];
         CountDownLatch latch = new CountDownLatch(1);
-        qrProcessor.detect(scaledGray, result -> {
+        qrProcessor.apply(scaledGray, result -> {
             detected[0] = result;
             latch.countDown();
         });

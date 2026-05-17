@@ -13,10 +13,13 @@ import hu.kdea.szavazas.ballotprocessor.Logger;
 import hu.kdea.szavazas.ballotprocessor.common.RectangleData;
 
 import java.util.function.Consumer;
+import javax.inject.Inject;
+public class ZXingQRProcessor  {
+    @Inject
+    public ZXingQRProcessor() {
+    }
 
-public class ZXingQRProcessor implements IQRProcessor {
-    @Override
-    public void detect(GrayU8 image, Consumer<QrResult> onResult) {
+    public void apply(GrayU8 image, Consumer<QrResult> onResult) {
         int width = image.width;
         int height = image.height;
         int[] pixels = new int[width * height];

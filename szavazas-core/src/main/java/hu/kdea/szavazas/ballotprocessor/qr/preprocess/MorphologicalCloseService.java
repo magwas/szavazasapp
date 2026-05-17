@@ -4,13 +4,14 @@ import boofcv.alg.filter.binary.BinaryImageOps;
 import boofcv.struct.image.GrayU8;
 import javax.inject.Inject;
 
-public class MorphologicalClosingWrapper {
+public class MorphologicalCloseService implements PreprocessingStep {
 
     @Inject
-    public MorphologicalClosingWrapper() {
+    public MorphologicalCloseService() {
     }
 
-    public GrayU8 close(GrayU8 input) {
+    @Override
+    public GrayU8 apply(GrayU8 input) {
         GrayU8 out = BinaryImageOps.dilate8(input, 1, null);
         return BinaryImageOps.erode8(out, 1, null);
     }

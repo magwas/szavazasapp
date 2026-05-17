@@ -16,7 +16,7 @@
 
 ## Dependency Injection with Dagger
 
-- Use **constructor injection** exclusively for all injectable types. If there is nothing to inject, no explicit constructor.
+- Use **constructor injection** exclusively for all injectable types. 
 - Annotate constructors with `@Inject`.
 - Dependencies are stored as `private final` fields.
 - Dagger modules (`@Module`) and components (`@Component`) are allowed as infrastructure (treated as Glue).

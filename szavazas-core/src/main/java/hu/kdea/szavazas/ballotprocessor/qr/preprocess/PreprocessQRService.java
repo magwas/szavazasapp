@@ -4,11 +4,11 @@ import boofcv.struct.image.GrayU8;
 import hu.kdea.szavazas.ballotprocessor.debug.ImageSaver;
 import java.util.List;
 
-public class QRPreprocessingPipeline {
+public class PreprocessQRService {
     private final ImageSaver debugSaver;
     private final List<PreprocessingStep> steps;
 
-    public QRPreprocessingPipeline(ImageSaver debugSaver, List<PreprocessingStep> steps) {
+    public PreprocessQRService(ImageSaver debugSaver, List<PreprocessingStep> steps) {
         this.debugSaver = debugSaver;
         this.steps = steps;
     }
