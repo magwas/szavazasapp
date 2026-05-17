@@ -9,7 +9,7 @@ import com.google.zxing.Result;
 import com.google.zxing.ResultPoint;
 import com.google.zxing.common.GlobalHistogramBinarizer;
 import com.google.zxing.common.HybridBinarizer;
-import hu.kdea.szavazas.ballotprocessor.common.Rect;
+import hu.kdea.szavazas.ballotprocessor.common.RectangleData;
 import javax.inject.Inject;
 
 public class QrDecoderWrapper {
@@ -53,7 +53,7 @@ public class QrDecoderWrapper {
         }
     }
 
-    private Rect box(Result result) {
+    private RectangleData box(Result result) {
         int minX = Integer.MAX_VALUE;
         int minY = Integer.MAX_VALUE;
         int maxX = Integer.MIN_VALUE;
@@ -64,7 +64,7 @@ public class QrDecoderWrapper {
             maxX = Math.max(maxX, (int) point.getX());
             maxY = Math.max(maxY, (int) point.getY());
         }
-        return new Rect(
+        return new RectangleData(
             minX == Integer.MAX_VALUE ? 0 : minX,
             minY == Integer.MAX_VALUE ? 0 : minY,
             maxX == Integer.MIN_VALUE ? 1 : maxX - minX + 1,

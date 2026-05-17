@@ -1,14 +1,14 @@
 package hu.kdea.szavazas.ballotprocessor.projection;
 
+import hu.kdea.szavazas.ballotprocessor.common.EdgeSegmentData;
 import java.util.List;
-import kotlin.Pair;
 
 public final class AxisPeaks {
     private final List<Integer> raw;
     private final List<Integer> merged;
-    private final List<Pair<Integer, Integer>> pairs;
+    private final List<EdgeSegmentData> pairs;
 
-    public AxisPeaks(List<Integer> raw, List<Integer> merged, List<Pair<Integer, Integer>> pairs) {
+    public AxisPeaks(List<Integer> raw, List<Integer> merged, List<EdgeSegmentData> pairs) {
         this.raw = raw;
         this.merged = merged;
         this.pairs = pairs;
@@ -22,7 +22,7 @@ public final class AxisPeaks {
         return merged;
     }
 
-    public List<Pair<Integer, Integer>> getPairs() {
+    public List<EdgeSegmentData> getPairs() {
         return pairs;
     }
 }

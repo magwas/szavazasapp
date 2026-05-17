@@ -1,7 +1,8 @@
 package hu.kdea.szavazas.ballotprocessor.qr;
 
 import boofcv.struct.image.GrayU8;
-import hu.kdea.szavazas.ballotprocessor.common.Crop;
+import hu.kdea.szavazas.ballotprocessor.common.CropService;
+import hu.kdea.szavazas.ballotprocessor.debug.DebugImageSaver;
 import hu.kdea.szavazas.ballotprocessor.debug.ImageSaver;
 import hu.kdea.szavazas.ballotprocessor.qr.preprocess.AdaptiveBinarizeStep;
 import hu.kdea.szavazas.ballotprocessor.qr.preprocess.ContrastEnhancementStep;
@@ -12,10 +13,12 @@ import java.util.List;
 import javax.inject.Inject;
 
 public class QrCropPreprocessingService {
+    private final CropService crop;
     private final ImageSaver imageSaver;
 
     @Inject
-    public QrCropPreprocessingService(ImageSaver imageSaver) {
+    public QrCropPreprocessingService(CropService crop, @DebugImageSaver ImageSaver imageSaver) {
+        this.crop = crop;
         this.imageSaver = imageSaver;
     }
 
@@ -24,7 +27,7 @@ public class QrCropPreprocessingService {
         int cropY = 0;
         int cropWidth = warpedGray.width / 5;
         int cropHeight = warpedGray.height / 4;
-        GrayU8 qrCrop = Crop.crop(warpedGray, cropX, cropY, cropWidth, cropHeight);
+        GrayU8 qrCrop = crop.apply(warpedGray, cropX, cropY, cropWidth, cropHeight);
         List<PreprocessingStep> steps = List.of(new ContrastEnhancementStep(), new SharpeningStep(), new AdaptiveBinarizeStep());
         GrayU8 preprocessedQrCrop = new QRPreprocessingPipeline(imageSaver, steps).apply(qrCrop, "qr_preprocess");
         QrData qr = qrDetector.detect(preprocessedQrCrop);

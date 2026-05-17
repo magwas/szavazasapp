@@ -65,8 +65,13 @@ tasks.withType<JavaCompile>().configureEach {
 }
 
 dependencies {
-    // BoofCV for all image processing
+    implementation(project(":konveyor"))
     implementation(project(":szavazas-core"))
+    implementation(libs.dagger)
+    implementation(libs.javax.inject)
+    annotationProcessor(libs.dagger.compiler)
+
+    // BoofCV for all image processing
     implementation("org.boofcv:boofcv-android:1.2.0")
     implementation("org.boofcv:boofcv-core:1.2.0")
     implementation("org.boofcv:boofcv-geo:1.2.0")

@@ -4,16 +4,14 @@ import boofcv.alg.filter.binary.GThresholdImageOps;
 import boofcv.struct.ConfigLength;
 import boofcv.struct.image.GrayU8;
 import hu.kdea.szavazas.ballotprocessor.GridConstants;
+import javax.inject.Inject;
 
-public final class ImageNormalizer {
-    private ImageNormalizer() {
+public class ImageNormalizerService {
+    @Inject
+    public ImageNormalizerService() {
     }
 
-    public static GrayU8 normalizeAndThreshold(GrayU8 gray) {
-        return normalizeAndThreshold(gray, 0.0);
-    }
-
-    public static GrayU8 normalizeAndThreshold(GrayU8 gray, double sigma) {
+    public GrayU8 apply(GrayU8 gray) {
         double maxDim = Math.max(gray.width, gray.height);
         double regionWidth = maxDim / GridConstants.NORMALIZE_SIZE_DIVIDER;
         GrayU8 binary = new GrayU8(gray.width, gray.height);

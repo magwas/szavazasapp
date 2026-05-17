@@ -2,11 +2,11 @@ package hu.kdea.szavazas.ballotprocessor.debug;
 
 import boofcv.struct.image.GrayU8;
 import boofcv.struct.image.Planar;
+import hu.kdea.szavazas.ballotprocessor.common.EdgeSegmentData;
 import hu.kdea.szavazas.ballotprocessor.projection.AxisPeaks;
 import hu.kdea.szavazas.ballotprocessor.projection.ProjectionData;
-import kotlin.Pair;
-
 import java.util.List;
+import javax.inject.Inject;
 
 public class ProjectionDebugRenderer {
     private static final int WIDTH = 800;
@@ -19,9 +19,16 @@ public class ProjectionDebugRenderer {
     private static final int COLOR_BLUE = 0xFF0000FF;
 
     private final ImageSaver saver;
+    private final BitmapFont5x7 bitmapFont5x7;
+
+    @Inject
+    public ProjectionDebugRenderer(ImageSaver saver, BitmapFont5x7 bitmapFont5x7) {
+        this.saver = saver;
+        this.bitmapFont5x7 = bitmapFont5x7;
+    }
 
     public ProjectionDebugRenderer(ImageSaver saver) {
-        this.saver = saver;
+        this(saver, new BitmapFont5x7(new BitmapFont5x7Service()));
     }
 
     public void renderAll(ProjectionData data, AxisPeaks colAxis, AxisPeaks rowAxis) {
@@ -35,30 +42,30 @@ public class ProjectionDebugRenderer {
         Planar<GrayU8> canvas = blankCanvas();
         float maxVal = maxOrOne(proj);
         if (maxVal <= 0f) {
-            BitmapFont5x7.drawString(canvas, "Empty projection (max=0)", 10, 20, COLOR_BLACK, 12f);
-            saver.save(canvas, "debug_" + fileName + ".jpg");
+            bitmapFont5x7.drawString(canvas, "Empty projection (max=0)", 10, 20, COLOR_BLACK, 12f);
+            saver.apply(canvas, "debug_" + fileName + ".jpg");
             return;
         }
-        BitmapFont5x7.drawString(canvas, title, 10, 15, COLOR_GREY, 12f);
-        BitmapFont5x7.drawString(canvas, "offset=" + offset + "  max=" + maxVal, 10, 30, COLOR_GREY, 12f);
+        bitmapFont5x7.drawString(canvas, title, 10, 15, COLOR_GREY, 12f);
+        bitmapFont5x7.drawString(canvas, "offset=" + offset + "  max=" + maxVal, 10, 30, COLOR_GREY, 12f);
         drawProjectionLine(canvas, proj, maxVal, COLOR_BLACK);
-        saver.save(canvas, "debug_" + fileName + ".jpg");
+        saver.apply(canvas, "debug_" + fileName + ".jpg");
     }
 
-    private void drawWithPeaksAndPairs(float[] proj, List<Integer> peaks, List<Pair<Integer, Integer>> pairs, int offset, String title, String fileName) {
+    private void drawWithPeaksAndPairs(float[] proj, List<Integer> peaks, List<EdgeSegmentData> pairs, int offset, String title, String fileName) {
         Planar<GrayU8> canvas = blankCanvas();
         float maxVal = maxOrOne(proj);
         if (maxVal <= 0f) {
-            BitmapFont5x7.drawString(canvas, "Empty projection", 10, 20, COLOR_BLACK, 12f);
-            saver.save(canvas, "debug_" + fileName + ".jpg");
+            bitmapFont5x7.drawString(canvas, "Empty projection", 10, 20, COLOR_BLACK, 12f);
+            saver.apply(canvas, "debug_" + fileName + ".jpg");
             return;
         }
-        BitmapFont5x7.drawString(canvas, title, 10, 15, COLOR_GREY, 12f);
-        BitmapFont5x7.drawString(canvas, "peaks=" + peaks + "  pairs=" + pairs, 10, 30, COLOR_GREY, 12f);
+        bitmapFont5x7.drawString(canvas, title, 10, 15, COLOR_GREY, 12f);
+        bitmapFont5x7.drawString(canvas, "peaks=" + peaks + "  pairs=" + pairs, 10, 30, COLOR_GREY, 12f);
         drawProjectionLine(canvas, proj, maxVal, COLOR_LIGHT_GREY);
         drawPeaks(canvas, proj, peaks, offset, maxVal);
         drawPairs(canvas, proj, pairs, offset, maxVal);
-        saver.save(canvas, "debug_" + fileName + ".jpg");
+        saver.apply(canvas, "debug_" + fileName + ".jpg");
     }
 
     private Planar<GrayU8> blankCanvas() {
@@ -93,12 +100,12 @@ public class ProjectionDebugRenderer {
         }
     }
 
-    private void drawPairs(Planar<GrayU8> canvas, float[] proj, List<Pair<Integer, Integer>> pairs, int offset, float maxVal) {
+    private void drawPairs(Planar<GrayU8> canvas, float[] proj, List<EdgeSegmentData> pairs, int offset, float maxVal) {
         double scaleX = (double) WIDTH / (proj.length - 1);
         double scaleY = (double) (HEIGHT - 20) / maxVal;
-        for (Pair<Integer, Integer> pair : pairs) {
-            int idx1 = pair.getFirst() - offset;
-            int idx2 = pair.getSecond() - offset;
+        for (EdgeSegmentData pair : pairs) {
+            int idx1 = pair.start() - offset;
+            int idx2 = pair.end() - offset;
             if (idx1 < 0 || idx1 >= proj.length || idx2 < 0 || idx2 >= proj.length) {
                 continue;
             }
@@ -106,17 +113,17 @@ public class ProjectionDebugRenderer {
             int x2 = (int) (idx2 * scaleX);
             int y = HEIGHT - 10 - (int) (((proj[idx1] + proj[idx2]) / 2.0) * scaleY);
             DrawingUtils.drawLine(canvas, x1, y, x2, y, COLOR_BLUE);
-            BitmapFont5x7.drawString(canvas, (pair.getSecond() - pair.getFirst()) + "px", (x1 + x2) / 2, y - 5, COLOR_BLUE, 12f);
+            bitmapFont5x7.drawString(canvas, (pair.end() - pair.start()) + "px", (x1 + x2) / 2, y - 5, COLOR_BLUE, 12f);
         }
     }
 
     private float maxOrOne(float[] proj) {
-        float max = 1f;
-        for (float value : proj) {
-            if (value > max) {
-                max = value;
+        float max = 0f;
+        for (float v : proj) {
+            if (v > max) {
+                max = v;
             }
         }
-        return max;
+        return max > 0f ? max : 1f;
     }
 }

@@ -10,8 +10,8 @@ import com.google.zxing.ResultPoint;
 import com.google.zxing.common.GlobalHistogramBinarizer;
 import com.google.zxing.common.HybridBinarizer;
 import hu.kdea.szavazas.ballotprocessor.Logger;
-import hu.kdea.szavazas.ballotprocessor.common.Rect;
-import java.util.function.Function;
+import hu.kdea.szavazas.ballotprocessor.common.RectangleData;
+
 import java.util.function.Consumer;
 
 public class ZXingQRProcessor implements IQRProcessor {
@@ -56,7 +56,7 @@ public class ZXingQRProcessor implements IQRProcessor {
                     maxX = Math.max(maxX, x);
                     maxY = Math.max(maxY, y);
                 }
-                Rect bbox = new Rect(
+                RectangleData bbox = new RectangleData(
                     minX == Integer.MAX_VALUE ? 0 : minX,
                     minY == Integer.MAX_VALUE ? 0 : minY,
                     maxX == Integer.MIN_VALUE ? 1 : maxX - minX + 1,

@@ -13,7 +13,7 @@ import javax.inject.Singleton;
 
 @Glue
 @Singleton
-@Component(modules = {SzavazasCoreModule.class})
+@Component(modules = {SzavazasCoreModule.class, NoOpDebugImageSaverModule.class})
 public interface SzavazasCoreComponent {
     BallotProcessingApi ballotProcessingApi();
     DefaultBallotProcessingApi defaultBallotProcessingApi();

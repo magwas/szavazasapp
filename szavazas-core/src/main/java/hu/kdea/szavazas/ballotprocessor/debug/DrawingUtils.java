@@ -67,12 +67,4 @@ public final class DrawingUtils {
     public static void fillOval(Planar<GrayU8> image, int x, int y, int w, int h, int color) {
         OvalDrawer.fillOval(image, x, y, w, h, color);
     }
-
-    public static void drawString(Planar<GrayU8> image, String text, int x, int y, int color) {
-        drawString(image, text, x, y, color, 12f);
-    }
-
-    public static void drawString(Planar<GrayU8> image, String text, int x, int y, int color, float fontSize) {
-        BitmapFont5x7.drawString(image, text, x, y, color, fontSize);
-    }
 }

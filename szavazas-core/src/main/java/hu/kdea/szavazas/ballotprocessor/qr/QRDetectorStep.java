@@ -22,10 +22,10 @@ public class QRDetectorStep {
         });
         if (latch.await(5, TimeUnit.SECONDS) && detected[0] != null) {
             return new QrData(
-                detected[0].getRaw(),
-                detected[0].getNumSupport(),
-                detected[0].getNumCandidates(),
-                detected[0].getBoundingBox()
+                detected[0].raw(),
+                detected[0].numSupport(),
+                detected[0].numCandidates(),
+                detected[0].boundingBox()
             );
         }
         return null;

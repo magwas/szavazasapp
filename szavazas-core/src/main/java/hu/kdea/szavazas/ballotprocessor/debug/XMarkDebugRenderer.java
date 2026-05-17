@@ -2,11 +2,11 @@ package hu.kdea.szavazas.ballotprocessor.debug;
 
 import boofcv.struct.image.GrayU8;
 import boofcv.struct.image.Planar;
-import hu.kdea.szavazas.ballotprocessor.common.Point;
-import hu.kdea.szavazas.ballotprocessor.common.Rect;
+import hu.kdea.szavazas.ballotprocessor.common.PointData;
+import hu.kdea.szavazas.ballotprocessor.common.RectangleData;
 import hu.kdea.szavazas.ballotprocessor.x.CellDebugData;
-
 import java.util.List;
+import javax.inject.Inject;
 
 public class XMarkDebugRenderer {
     private static final int COLOR_BLUE = 0xFF0000FF;
@@ -16,9 +16,16 @@ public class XMarkDebugRenderer {
     private static final int COLOR_RED = 0xFFCC0000;
 
     private final ImageSaver saver;
+    private final BitmapFont5x7 bitmapFont5x7;
+
+    @Inject
+    public XMarkDebugRenderer(ImageSaver saver, BitmapFont5x7 bitmapFont5x7) {
+        this.saver = saver;
+        this.bitmapFont5x7 = bitmapFont5x7;
+    }
 
     public XMarkDebugRenderer(ImageSaver saver) {
-        this.saver = saver;
+        this(saver, new BitmapFont5x7(new BitmapFont5x7Service()));
     }
 
     public void render(GrayU8 gridBinary, List<CellDebugData> cells) {
@@ -36,7 +43,7 @@ public class XMarkDebugRenderer {
 
     private boolean hasErodedCells(List<CellDebugData> cells) {
         for (CellDebugData cell : cells) {
-            if (cell.getErodedCell() != null) {
+            if (cell.erodedCell() != null) {
                 return true;
             }
         }
@@ -46,28 +53,28 @@ public class XMarkDebugRenderer {
     private void drawCellOutlines(GrayU8 grid, List<CellDebugData> cells) {
         Planar<GrayU8> canvas = binaryGridToCanvas(grid);
         for (CellDebugData cd : cells) {
-            Rect r = cd.getOuterRect();
-            DrawingUtils.drawRect(canvas, r.getX(), r.getY(), r.getWidth(), r.getHeight(), COLOR_BLUE);
+            RectangleData r = cd.outerRect();
+            DrawingUtils.drawRect(canvas, r.x(), r.y(), r.width(), r.height(), COLOR_BLUE);
         }
-        saver.save(canvas, "debug_x_grid_outline.jpg");
+        saver.apply(canvas, "debug_x_grid_outline.jpg");
     }
 
     private void drawExtractedCells(GrayU8 grid, List<CellDebugData> cells) {
         Planar<GrayU8> canvas = binaryGridToCanvas(grid);
         paintCellsBackground(canvas, cells);
-        saver.save(canvas, "debug_x_extracted_cells.jpg");
+        saver.apply(canvas, "debug_x_extracted_cells.jpg");
     }
 
     private void drawErosionOverlay(GrayU8 grid, List<CellDebugData> cells) {
         Planar<GrayU8> canvas = binaryGridToCanvas(grid);
         paintCellsBackground(canvas, cells);
         for (CellDebugData cd : cells) {
-            GrayU8 eroded = cd.getErodedCell();
+            GrayU8 eroded = cd.erodedCell();
             if (eroded != null) {
                 paintErodedDifference(canvas, cd, eroded);
             }
         }
-        saver.save(canvas, "debug_x_erosion.jpg");
+        saver.apply(canvas, "debug_x_erosion.jpg");
     }
 
     private void drawSkeletonOverlay(GrayU8 grid, List<CellDebugData> cells) {
@@ -76,7 +83,7 @@ public class XMarkDebugRenderer {
         for (CellDebugData cd : cells) {
             paintSkeleton(canvas, cd);
         }
-        saver.save(canvas, "debug_x_skeleton.jpg");
+        saver.apply(canvas, "debug_x_skeleton.jpg");
     }
 
     private void drawBranchPoints(GrayU8 grid, List<CellDebugData> cells) {
@@ -91,7 +98,7 @@ public class XMarkDebugRenderer {
         for (CellDebugData cd : cells) {
             paintBranchCount(canvas, cd);
         }
-        saver.save(canvas, "debug_x_branchpoints.jpg");
+        saver.apply(canvas, "debug_x_branchpoints.jpg");
     }
 
     private Planar<GrayU8> binaryGridToCanvas(GrayU8 binary) {
@@ -112,49 +119,49 @@ public class XMarkDebugRenderer {
     }
 
     private void paintCellBackground(Planar<GrayU8> canvas, CellDebugData cd) {
-        Rect ir = cd.getInnerRect();
-        for (int y = 0; y < ir.getHeight(); y++) {
-            for (int x = 0; x < ir.getWidth(); x++) {
-                int v = cd.getOriginalCell().get(x, y) != 0 ? 0 : 255;
-                DrawingUtils.setPixel(canvas, ir.getX() + x, ir.getY() + y, grayColor(v));
+        RectangleData ir = cd.innerRect();
+        for (int y = 0; y < ir.height(); y++) {
+            for (int x = 0; x < ir.width(); x++) {
+                int v = cd.originalCell().get(x, y) != 0 ? 0 : 255;
+                DrawingUtils.setPixel(canvas, ir.x() + x, ir.y() + y, grayColor(v));
             }
         }
     }
 
     private void paintErodedDifference(Planar<GrayU8> canvas, CellDebugData cd, GrayU8 eroded) {
-        Rect ir = cd.getInnerRect();
-        for (int y = 0; y < ir.getHeight(); y++) {
-            for (int x = 0; x < ir.getWidth(); x++) {
-                if (cd.getOriginalCell().get(x, y) != 0 && eroded.get(x, y) == 0) {
-                    DrawingUtils.setPixel(canvas, ir.getX() + x, ir.getY() + y, COLOR_YELLOW);
+        RectangleData ir = cd.innerRect();
+        for (int y = 0; y < ir.height(); y++) {
+            for (int x = 0; x < ir.width(); x++) {
+                if (cd.originalCell().get(x, y) != 0 && eroded.get(x, y) == 0) {
+                    DrawingUtils.setPixel(canvas, ir.x() + x, ir.y() + y, COLOR_YELLOW);
                 }
             }
         }
     }
 
     private void paintSkeleton(Planar<GrayU8> canvas, CellDebugData cd) {
-        Rect ir = cd.getInnerRect();
-        for (int y = 0; y < ir.getHeight(); y++) {
-            for (int x = 0; x < ir.getWidth(); x++) {
-                if (cd.getSkeleton().get(x, y) != 0) {
-                    DrawingUtils.setPixel(canvas, ir.getX() + x, ir.getY() + y, COLOR_MAGENTA);
+        RectangleData ir = cd.innerRect();
+        for (int y = 0; y < ir.height(); y++) {
+            for (int x = 0; x < ir.width(); x++) {
+                if (cd.skeleton().get(x, y) != 0) {
+                    DrawingUtils.setPixel(canvas, ir.x() + x, ir.y() + y, COLOR_MAGENTA);
                 }
             }
         }
     }
 
     private void paintBranchMarkers(Planar<GrayU8> canvas, CellDebugData cd) {
-        Rect ir = cd.getInnerRect();
-        for (Point pt : cd.getBranchPoints()) {
-            DrawingUtils.fillRect(canvas, ir.getX() + pt.getX() - 3, ir.getY() + pt.getY() - 3, 6, 6, COLOR_BLUE);
+        RectangleData ir = cd.innerRect();
+        for (PointData pt : cd.branchPoints()) {
+            DrawingUtils.fillRect(canvas, ir.x() + pt.x() - 3, ir.y() + pt.y() - 3, 6, 6, COLOR_BLUE);
         }
     }
 
     private void paintBranchCount(Planar<GrayU8> canvas, CellDebugData cd) {
-        Rect r = cd.getOuterRect();
-        String label = cd.getBranchPoints().size() + "/" + (cd.isXDetected() ? "X" : "-");
-        int color = cd.isXDetected() ? COLOR_GREEN : COLOR_RED;
-        BitmapFont5x7.drawString(canvas, label, r.getX() + r.getWidth() + 8, r.getY() + r.getHeight() / 2, color, 12f);
+        RectangleData r = cd.outerRect();
+        String label = cd.branchPoints().size() + "/" + (cd.xDetected() ? "X" : "-");
+        int color = cd.xDetected() ? COLOR_GREEN : COLOR_RED;
+        bitmapFont5x7.drawString(canvas, label, r.x() + r.width() + 8, r.y() + r.height() / 2, color, 12f);
     }
 
     private int grayColor(int v) {

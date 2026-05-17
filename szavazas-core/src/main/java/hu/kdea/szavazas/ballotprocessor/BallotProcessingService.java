@@ -2,6 +2,7 @@ package hu.kdea.szavazas.ballotprocessor;
 
 import boofcv.struct.image.GrayU8;
 import boofcv.struct.image.Planar;
+import hu.kdea.szavazas.ballotprocessor.debug.DebugImageSaver;
 import hu.kdea.szavazas.ballotprocessor.debug.ImageSaver;
 import hu.kdea.szavazas.ballotprocessor.grid.GridDetectionResultData;
 import hu.kdea.szavazas.ballotprocessor.grid.GridRegionAndCheckboxDetectionService;
@@ -29,7 +30,7 @@ public class BallotProcessingService {
         GridRegionAndCheckboxDetectionService gridRegionAndCheckboxDetectionService,
         XMarkDetectionAndResultService xMarkDetectionAndResultService,
         MessageService messageService,
-        ImageSaver imageSaver
+        @DebugImageSaver ImageSaver imageSaver
     ) {
         this.ballotPreprocess = ballotPreprocess;
         this.qrDetectorStep = qrDetectorStep;
@@ -56,23 +57,23 @@ public class BallotProcessingService {
         if (pre == null) {
             return new BallotProcessingOutcomeData(null, new BallotErrorData(messageService.apply("ballot.error.markers")));
         }
-        GrayU8 warpedGray = pre.getScaledGray();
+        GrayU8 warpedGray = pre.scaledGray();
         QrCropResultData qrCropResultData = qrCropPreprocessingService.apply(warpedGray, qrDetectorStep);
         QrData adjustedQr = qrCropResultData.adjustedQr();
         if (adjustedQr == null) {
             if (imageSaver != null) {
-                imageSaver.save(qrCropResultData.preprocessedQrCrop(), "debug_qr_failed.jpg");
+                imageSaver.apply(qrCropResultData.preprocessedQrCrop(), "debug_qr_failed.jpg");
             }
             return new BallotProcessingOutcomeData(null, new BallotErrorData(messageService.apply("ballot.error.qr")));
         }
-        GridDetectionResultData gridDetectionResultData = gridRegionAndCheckboxDetectionService.apply(warpedGray, adjustedQr, pre.getMarkerTopY());
+        GridDetectionResultData gridDetectionResultData = gridRegionAndCheckboxDetectionService.apply(warpedGray, adjustedQr, pre.markerTopY());
         if (gridDetectionResultData == null) {
             return new BallotProcessingOutcomeData(null, new BallotErrorData(messageService.apply("ballot.error.gridRegion")));
         }
         BallotResult result = xMarkDetectionAndResultService.apply(gridDetectionResultData, adjustedQr).ballotResult();
-        Logger.INSTANCE.d("BallotProcessing", "Ballot detected: raw=" + result.getRaw() + ", numSupport=" + result.getNumSupport() + ", numRows=" + result.getNumRows() + ", xCells=" + result.getXCells());
+        Logger.INSTANCE.d("BallotProcessing", "Ballot detected: raw=" + result.raw() + ", numSupport=" + result.numSupport() + ", numRows=" + result.numRows() + ", xCells=" + result.xCells());
         return new BallotProcessingOutcomeData(
-            new BallotResultData(result.getRaw(), result.getNumSupport(), result.getNumRows(), result.getXCells()),
+            new BallotResultData(result.raw(), result.numSupport(), result.numRows(), result.xCells()),
             null
         );
     }

@@ -1,7 +1,7 @@
 package hu.kdea.szavazas.ballotprocessor;
 
+import hu.kdea.szavazas.ballotprocessor.common.CellPositionData;
 import java.util.List;
-import kotlin.Pair;
 
-public record BallotResultData(String raw, int numSupport, int numRows, List<Pair<Integer, Integer>> xCells) {
+public record BallotResultData(String raw, int numSupport, int numRows, List<CellPositionData> xCells) {
 }

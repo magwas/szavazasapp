@@ -1,23 +1,22 @@
 package hu.kdea.szavazas.ballotprocessor.grid;
 
-import kotlin.Pair;
-
+import hu.kdea.szavazas.ballotprocessor.common.EdgeSegmentData;
 import java.util.List;
 
 public final class GridDetectionResult {
-    private final List<Pair<Integer, Integer>> colEdges;
-    private final List<Pair<Integer, Integer>> rowEdges;
+    private final List<EdgeSegmentData> colEdges;
+    private final List<EdgeSegmentData> rowEdges;
 
-    public GridDetectionResult(List<Pair<Integer, Integer>> colEdges, List<Pair<Integer, Integer>> rowEdges) {
+    public GridDetectionResult(List<EdgeSegmentData> colEdges, List<EdgeSegmentData> rowEdges) {
         this.colEdges = colEdges;
         this.rowEdges = rowEdges;
     }
 
-    public List<Pair<Integer, Integer>> getColEdges() {
+    public List<EdgeSegmentData> getColEdges() {
         return colEdges;
     }
 
-    public List<Pair<Integer, Integer>> getRowEdges() {
+    public List<EdgeSegmentData> getRowEdges() {
         return rowEdges;
     }
 }

@@ -1,26 +1,28 @@
 package hu.kdea.szavazas.ballotprocessor.grid;
 
 import boofcv.struct.image.GrayU8;
-import hu.kdea.szavazas.ballotprocessor.common.ImageNormalizer;
-import hu.kdea.szavazas.ballotprocessor.common.Inverter;
-import hu.kdea.szavazas.ballotprocessor.common.Rect;
+import hu.kdea.szavazas.ballotprocessor.common.ImageNormalizerService;
+import hu.kdea.szavazas.ballotprocessor.common.InverterService;
+import hu.kdea.szavazas.ballotprocessor.common.RowBoundaryData;
 import hu.kdea.szavazas.ballotprocessor.projection.RowProjectionComputer;
 import javax.inject.Inject;
-import kotlin.Pair;
 
 public class GridRegionExtractService {
+    private final ImageNormalizerService imageNormalizer;
+
     @Inject
-    public GridRegionExtractService() {
+    public GridRegionExtractService(ImageNormalizerService imageNormalizer) {
+        this.imageNormalizer = imageNormalizer;
     }
 
     public GridRegion apply(GrayU8 scaledGray, int qrCentreX, int qrBottomY, Double markerTopY) {
-        GrayU8 inverted = Inverter.invert(scaledGray);
-        Pair<Integer, Integer> boundary = GridBoundaryFinder.find(RowProjectionComputer.compute(inverted), qrBottomY, markerTopY);
+        GrayU8 inverted = InverterService.apply(scaledGray);
+        RowBoundaryData boundary = GridBoundaryFinder.find(RowProjectionComputer.compute(inverted), qrBottomY, markerTopY);
         if (boundary == null) {
             return null;
         }
-        int cropTop = boundary.getFirst();
-        int cropBottom = boundary.getSecond();
+        int cropTop = boundary.cropTop();
+        int cropBottom = boundary.cropBottom();
         int cropWidth = scaledGray.width - qrCentreX;
         int cropHeight = cropBottom - cropTop + 1;
         if (cropWidth <= 0 || cropHeight <= 0) {
@@ -32,6 +34,6 @@ public class GridRegionExtractService {
                 cropped.set(x, y, scaledGray.get(qrCentreX + x, cropTop + y));
             }
         }
-        return new GridRegion(ImageNormalizer.normalizeAndThreshold(cropped), cropTop, qrCentreX);
+        return new GridRegion(imageNormalizer.apply(cropped), cropTop, qrCentreX);
     }
 }

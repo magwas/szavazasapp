@@ -19,7 +19,7 @@ public class QRPreprocessingPipeline {
             PreprocessingStep step = steps.get(i);
             current = step.apply(current);
             if (debugSaver != null) {
-                debugSaver.save(current, baseName + "_" + i + "_" + step.getClass().getSimpleName() + ".jpg");
+                debugSaver.apply(current, baseName + "_" + i + "_" + step.getClass().getSimpleName() + ".jpg");
             }
         }
         return current;

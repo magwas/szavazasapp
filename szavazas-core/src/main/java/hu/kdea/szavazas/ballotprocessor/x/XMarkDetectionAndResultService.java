@@ -1,11 +1,11 @@
 package hu.kdea.szavazas.ballotprocessor.x;
 
+import hu.kdea.szavazas.ballotprocessor.common.CellPositionData;
 import hu.kdea.szavazas.ballotprocessor.debug.ImageSaver;
 import hu.kdea.szavazas.ballotprocessor.grid.GridDetectionResultData;
 import hu.kdea.szavazas.ballotprocessor.qr.QrData;
-import javax.inject.Inject;
-import kotlin.Pair;
 import java.util.List;
+import javax.inject.Inject;
 
 public class XMarkDetectionAndResultService {
     private final XMarkDetectorStep xMarkDetectorStep;
@@ -16,13 +16,13 @@ public class XMarkDetectionAndResultService {
     }
 
     public XMarkDetectionResultData apply(GridDetectionResultData gridDetectionResultData, QrData adjustedQr) {
-        List<Pair<Integer, Integer>> marks = xMarkDetectorStep.detect(
-            gridDetectionResultData.region().getProjectionInput(),
+        List<CellPositionData> marks = xMarkDetectorStep.detect(
+            gridDetectionResultData.region().projectionInput(),
             gridDetectionResultData.checkboxes(),
-            gridDetectionResultData.region().getQrCentreX(),
-            gridDetectionResultData.region().getCropTop(),
-            adjustedQr.getNumRows(),
-            adjustedQr.getNumSupport() + 1
+            gridDetectionResultData.region().qrCentreX(),
+            gridDetectionResultData.region().cropTop(),
+            adjustedQr.numRows(),
+            adjustedQr.numSupport() + 1
         );
         return new XMarkDetectionResultData(marks, XMarkDetectionResultData.ballotResult(adjustedQr, marks));
     }
