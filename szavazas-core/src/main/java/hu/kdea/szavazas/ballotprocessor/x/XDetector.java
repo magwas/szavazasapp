@@ -31,7 +31,7 @@ public class XDetector {
         GrayU8 skeleton = BinaryImageOps.thin(workMat, -1, null);
         List<Point> branchPoints = findBranchPoints(skeleton);
         boolean hasX = branchPoints.size() >= GridConstants.MIN_BRANCHES;
-        CellDebugData debug = new CellDebugData(outerRect, innerRect, originalCell, erodedCell, skeleton, branchPoints);
+        CellDebugData debug = new CellDebugData(outerRect, innerRect, originalCell, erodedCell, skeleton, branchPoints, hasX);
         return new Pair<>(hasX, debug);
     }
 

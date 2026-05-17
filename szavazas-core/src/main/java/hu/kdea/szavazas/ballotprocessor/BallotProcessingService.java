@@ -70,6 +70,7 @@ public class BallotProcessingService {
             return new BallotProcessingOutcomeData(null, new BallotErrorData(messageService.apply("ballot.error.gridRegion")));
         }
         BallotResult result = xMarkDetectionAndResultService.apply(gridDetectionResultData, adjustedQr).ballotResult();
+        Logger.INSTANCE.d("BallotProcessing", "Ballot detected: raw=" + result.getRaw() + ", numSupport=" + result.getNumSupport() + ", numRows=" + result.getNumRows() + ", xCells=" + result.getXCells());
         return new BallotProcessingOutcomeData(
             new BallotResultData(result.getRaw(), result.getNumSupport(), result.getNumRows(), result.getXCells()),
             null

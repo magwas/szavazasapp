@@ -1,6 +1,7 @@
 package hu.kdea.szavazas.ballotprocessor.x;
 
 import boofcv.struct.image.GrayU8;
+import hu.kdea.szavazas.ballotprocessor.Logger;
 import hu.kdea.szavazas.ballotprocessor.common.Rect;
 import hu.kdea.szavazas.ballotprocessor.debug.ImageSaver;
 import hu.kdea.szavazas.ballotprocessor.debug.XMarkDebugRenderer;
@@ -55,6 +56,7 @@ public class XMarkDetectorStep {
         CellDebugData debugData = result.getSecond();
         if (debugData != null) {
             debugList.add(debugData);
+            Logger.INSTANCE.d("XDetector", "cell=" + index + " branches=" + debugData.getBranchPoints().size() + " xDetected=" + debugData.isXDetected());
         }
         if (Boolean.TRUE.equals(hasX)) {
             marks.add(new Pair<>(index / expectedCols, index % expectedCols));

@@ -12,6 +12,8 @@ public class XMarkDebugRenderer {
     private static final int COLOR_BLUE = 0xFF0000FF;
     private static final int COLOR_YELLOW = 0xFFFFFF00;
     private static final int COLOR_MAGENTA = 0xFFFF00FF;
+    private static final int COLOR_GREEN = 0xFF00AA00;
+    private static final int COLOR_RED = 0xFFCC0000;
 
     private final ImageSaver saver;
 
@@ -150,7 +152,9 @@ public class XMarkDebugRenderer {
 
     private void paintBranchCount(Planar<GrayU8> canvas, CellDebugData cd) {
         Rect r = cd.getOuterRect();
-        BitmapFont5x7.drawString(canvas, Integer.toString(cd.getBranchPoints().size()), r.getX() + r.getWidth() + 8, r.getY() + r.getHeight() / 2, COLOR_BLUE, 12f);
+        String label = cd.getBranchPoints().size() + "/" + (cd.isXDetected() ? "X" : "-");
+        int color = cd.isXDetected() ? COLOR_GREEN : COLOR_RED;
+        BitmapFont5x7.drawString(canvas, label, r.getX() + r.getWidth() + 8, r.getY() + r.getHeight() / 2, color, 12f);
     }
 
     private int grayColor(int v) {
