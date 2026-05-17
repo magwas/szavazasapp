@@ -1,6 +1,5 @@
 [versions]
 agp = "8.7.2"
-kotlin = "1.9.24"
 coreKtx = "1.10.1"
 junit = "4.13.2"
 junitVersion = "1.1.5"
@@ -9,7 +8,6 @@ appcompat = "1.6.1"
 material = "1.10.0"
 activity = "1.8.0"
 constraintlayout = "2.1.4"
-jetbrainsKotlinJvm = "2.1.10"
 junitJupiter = "5.8.1"
 dagger = "2.52"
 mockito = "5.12.0"
@@ -32,5 +30,3 @@ javax-inject = { group = "javax.inject", name = "javax.inject", version.ref = "j
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
-jetbrains-kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "jetbrainsKotlinJvm" }
