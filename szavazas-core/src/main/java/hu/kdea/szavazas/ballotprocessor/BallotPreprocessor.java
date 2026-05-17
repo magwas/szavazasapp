@@ -4,6 +4,7 @@ import boofcv.struct.image.GrayU8;
 import boofcv.struct.image.Planar;
 import hu.kdea.szavazas.ballotprocessor.aruco.ArucoDetectionResultData;
 import hu.kdea.szavazas.ballotprocessor.aruco.ArucoDetectionService;
+import hu.kdea.szavazas.ballotprocessor.debug.DebugImageSaver;
 import hu.kdea.szavazas.ballotprocessor.debug.ImageSaver;
 import javax.inject.Inject;
 
@@ -13,7 +14,7 @@ public class BallotPreprocessor {
     private final ImageSaver debugSaver;
 
     @Inject
-    public BallotPreprocessor(ArucoDetectionService arucoDetection, GrayPlanarToGrayService grayPlanarToGrayService, ImageSaver debugSaver) {
+    public BallotPreprocessor(ArucoDetectionService arucoDetection, GrayPlanarToGrayService grayPlanarToGrayService, @DebugImageSaver ImageSaver debugSaver) {
         this.arucoDetection = arucoDetection;
         this.grayPlanarToGrayService = grayPlanarToGrayService;
         this.debugSaver = debugSaver;

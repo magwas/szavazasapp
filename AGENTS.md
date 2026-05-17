@@ -82,6 +82,7 @@
 
 ### Wrapper Unit
 - Wraps external dependencies (I/O, network, OS, third‑party libraries) to make services testable.
+- Do not create a Wrapper for an interface whose implementation is provided by the caller (e.g., a callback or strategy injected via Dagger). Only wrap external dependencies that the module itself controls (I/O, network, OS, third-party libraries).
 - Class name ends with `Wrapper`.
 - Annotated with `@Inject` on constructor (may be default constructor if no dependencies).
 - Can have `public` non‑static fields and methods.

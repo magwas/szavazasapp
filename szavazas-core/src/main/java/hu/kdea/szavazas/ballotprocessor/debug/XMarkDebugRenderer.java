@@ -16,16 +16,16 @@ public class XMarkDebugRenderer {
     private static final int COLOR_RED = 0xFFCC0000;
 
     private final ImageSaver saver;
-    private final BitmapFont5x7 bitmapFont5x7;
+    private final BitmapFont5x7Service bitmapFont5x7Service;
 
     @Inject
-    public XMarkDebugRenderer(ImageSaver saver, BitmapFont5x7 bitmapFont5x7) {
+    public XMarkDebugRenderer(ImageSaver saver, BitmapFont5x7Service bitmapFont5x7Service) {
         this.saver = saver;
-        this.bitmapFont5x7 = bitmapFont5x7;
+        this.bitmapFont5x7Service = bitmapFont5x7Service;
     }
 
     public XMarkDebugRenderer(ImageSaver saver) {
-        this(saver, new BitmapFont5x7(new BitmapFont5x7Service()));
+        this(saver, new BitmapFont5x7Service());
     }
 
     public void render(GrayU8 gridBinary, List<CellDebugData> cells) {
@@ -161,7 +161,7 @@ public class XMarkDebugRenderer {
         RectangleData r = cd.outerRect();
         String label = cd.branchPoints().size() + "/" + (cd.xDetected() ? "X" : "-");
         int color = cd.xDetected() ? COLOR_GREEN : COLOR_RED;
-        bitmapFont5x7.drawString(canvas, label, r.x() + r.width() + 8, r.y() + r.height() / 2, color, 12f);
+        bitmapFont5x7Service.apply(canvas, label, r.x() + r.width() + 8, r.y() + r.height() / 2, color, 12f);
     }
 
     private int grayColor(int v) {

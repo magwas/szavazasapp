@@ -19,16 +19,16 @@ public class ProjectionDebugRenderer {
     private static final int COLOR_BLUE = 0xFF0000FF;
 
     private final ImageSaver saver;
-    private final BitmapFont5x7 bitmapFont5x7;
+    private final BitmapFont5x7Service bitmapFont5x7Service;
 
     @Inject
-    public ProjectionDebugRenderer(ImageSaver saver, BitmapFont5x7 bitmapFont5x7) {
+    public ProjectionDebugRenderer(ImageSaver saver, BitmapFont5x7Service bitmapFont5x7Service) {
         this.saver = saver;
-        this.bitmapFont5x7 = bitmapFont5x7;
+        this.bitmapFont5x7Service = bitmapFont5x7Service;
     }
 
     public ProjectionDebugRenderer(ImageSaver saver) {
-        this(saver, new BitmapFont5x7(new BitmapFont5x7Service()));
+        this(saver, new BitmapFont5x7Service());
     }
 
     public void renderAll(ProjectionData data, AxisPeaks colAxis, AxisPeaks rowAxis) {
@@ -42,12 +42,12 @@ public class ProjectionDebugRenderer {
         Planar<GrayU8> canvas = blankCanvas();
         float maxVal = maxOrOne(proj);
         if (maxVal <= 0f) {
-            bitmapFont5x7.drawString(canvas, "Empty projection (max=0)", 10, 20, COLOR_BLACK, 12f);
+            bitmapFont5x7Service.apply(canvas, "Empty projection (max=0)", 10, 20, COLOR_BLACK, 12f);
             saver.apply(canvas, "debug_" + fileName + ".jpg");
             return;
         }
-        bitmapFont5x7.drawString(canvas, title, 10, 15, COLOR_GREY, 12f);
-        bitmapFont5x7.drawString(canvas, "offset=" + offset + "  max=" + maxVal, 10, 30, COLOR_GREY, 12f);
+        bitmapFont5x7Service.apply(canvas, title, 10, 15, COLOR_GREY, 12f);
+        bitmapFont5x7Service.apply(canvas, "offset=" + offset + "  max=" + maxVal, 10, 30, COLOR_GREY, 12f);
         drawProjectionLine(canvas, proj, maxVal, COLOR_BLACK);
         saver.apply(canvas, "debug_" + fileName + ".jpg");
     }
@@ -56,12 +56,12 @@ public class ProjectionDebugRenderer {
         Planar<GrayU8> canvas = blankCanvas();
         float maxVal = maxOrOne(proj);
         if (maxVal <= 0f) {
-            bitmapFont5x7.drawString(canvas, "Empty projection", 10, 20, COLOR_BLACK, 12f);
+            bitmapFont5x7Service.apply(canvas, "Empty projection", 10, 20, COLOR_BLACK, 12f);
             saver.apply(canvas, "debug_" + fileName + ".jpg");
             return;
         }
-        bitmapFont5x7.drawString(canvas, title, 10, 15, COLOR_GREY, 12f);
-        bitmapFont5x7.drawString(canvas, "peaks=" + peaks + "  pairs=" + pairs, 10, 30, COLOR_GREY, 12f);
+        bitmapFont5x7Service.apply(canvas, title, 10, 15, COLOR_GREY, 12f);
+        bitmapFont5x7Service.apply(canvas, "peaks=" + peaks + "  pairs=" + pairs, 10, 30, COLOR_GREY, 12f);
         drawProjectionLine(canvas, proj, maxVal, COLOR_LIGHT_GREY);
         drawPeaks(canvas, proj, peaks, offset, maxVal);
         drawPairs(canvas, proj, pairs, offset, maxVal);
@@ -113,7 +113,7 @@ public class ProjectionDebugRenderer {
             int x2 = (int) (idx2 * scaleX);
             int y = HEIGHT - 10 - (int) (((proj[idx1] + proj[idx2]) / 2.0) * scaleY);
             DrawingUtils.drawLine(canvas, x1, y, x2, y, COLOR_BLUE);
-            bitmapFont5x7.drawString(canvas, (pair.end() - pair.start()) + "px", (x1 + x2) / 2, y - 5, COLOR_BLUE, 12f);
+            bitmapFont5x7Service.apply(canvas, (pair.end() - pair.start()) + "px", (x1 + x2) / 2, y - 5, COLOR_BLUE, 12f);
         }
     }
 
