@@ -23,5 +23,5 @@ dependencyResolutionManagement {
 
 rootProject.name = "Szavazas"
 include(":app")
-
+include(":konveyor")
 include(":szavazas-core")

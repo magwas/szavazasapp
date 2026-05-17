@@ -3,9 +3,9 @@ package hu.kdea.szavazas
 import boofcv.io.image.ConvertBufferedImage
 import boofcv.struct.image.GrayU8
 import boofcv.struct.image.Planar
-import hu.kdea.szavazas.ballotprocessor.BallotProcessor
-import hu.kdea.szavazas.ballotprocessor.BallotResult
-import hu.kdea.szavazas.ballotprocessor.debug.ImageSaver
+import hu.kdea.szavazas.ballotprocessor.BallotProcessingApi
+import hu.kdea.szavazas.ballotprocessor.DefaultBallotProcessingApi
+import hu.kdea.szavazas.ballotprocessor.glue.DaggerSzavazasCoreComponent
 import org.junit.Assert.*
 import java.awt.image.BufferedImage
 import java.io.File
@@ -17,7 +17,6 @@ class BallotTestExecutor {
     private val debugBaseDir = File("/tmp/ballot_debug")
 
     fun executeTest(imageName: String) {
-        // Per‑image debug directory
         val imageDebugDir = File(debugBaseDir, imageName)
         imageDebugDir.mkdirs()
 
@@ -35,33 +34,27 @@ class BallotTestExecutor {
         Regex("\\[(\\d+)\\s*,\\s*(\\d+)\\]")
             .findAll(jsonString)
             .forEach { match ->
-                expectedXMarks.add(
-                    match.groupValues[1].toInt() to match.groupValues[2].toInt()
-                )
+                expectedXMarks.add(match.groupValues[1].toInt() to match.groupValues[2].toInt())
             }
 
         val planar = loadPlanar(captureFile)
-        var actualResult: BallotResult? = null
-        var errorMessage: String? = null
-
-        // Use AWT debug saver for desktop tests (null to disable)
-        val debugSaver: ImageSaver? = AwtImageSaver(imageDebugDir)
-
-        val processor = BallotProcessor(
-            onResult = { actualResult = it },
-            onError = { errorMessage = it },
-            qrProcessor = SyncQRProcessor(),
-            debugSaver = debugSaver
-        )
-        processor.process(planar)
+        val api: BallotProcessingApi = ballotProcessingApi(imageDebugDir)
+        val outcome = api.apply(planar)
+        val actualResult = outcome.result()
+        val errorMessage = outcome.error()?.message()
 
         assertNull("Processing error: $errorMessage", errorMessage)
         assertNotNull("No result", actualResult)
         val result = actualResult!!
-        assertEquals("numSupport", numSupport, result.numSupport)
-        assertEquals("numRows", numRows, result.numRows)
-        assertEquals("X marks size", expectedXMarks.size, result.xCells.size)
-        assertEquals("X marks", expectedXMarks.toSet(), result.xCells.toSet())
+        assertEquals("numSupport", numSupport, result.numSupport())
+        assertEquals("numRows", numRows, result.numRows())
+        assertEquals("X marks size", expectedXMarks.size, result.xCells().size)
+        assertEquals("X marks", expectedXMarks.toSet(), result.xCells().toSet())
+    }
+
+    private fun ballotProcessingApi(imageDebugDir: File): BallotProcessingApi {
+        val component = DaggerSzavazasCoreComponent.builder().build()
+        return component.ballotProcessingApi()
     }
 
     private fun loadPlanar(imageFile: File): Planar<GrayU8> {

@@ -4,24 +4,30 @@ plugins {
 }
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_11
-    targetCompatibility = JavaVersion.VERSION_11
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
 }
 
 kotlin {
     compilerOptions {
-        jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_11
+        jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17
     }
 }
 
 dependencies {
-    // BoofCV for image processing
-    implementation("org.boofcv:boofcv-core:1.2.0")
-    implementation("org.boofcv:boofcv-io:1.2.0")    // needed by UtilImageIO
+    implementation(project(":konveyor"))
+    implementation(libs.dagger)
+    implementation(libs.javax.inject)
 
-    // ZXing for QR decoding
+    annotationProcessor(libs.dagger.compiler)
+    testAnnotationProcessor(libs.dagger.compiler)
+
+    implementation("org.boofcv:boofcv-core:1.2.0")
+    implementation("org.boofcv:boofcv-io:1.2.0")
     implementation("com.google.zxing:core:3.5.1")
 
-    // JUnit for tests
-    testImplementation("junit:junit:4.13.2")
+    testImplementation(testFixtures(project(":konveyor")))
+    testImplementation(libs.junit)
+    testImplementation(libs.junit.jupiter)
+    testImplementation(libs.mockito.core)
 }

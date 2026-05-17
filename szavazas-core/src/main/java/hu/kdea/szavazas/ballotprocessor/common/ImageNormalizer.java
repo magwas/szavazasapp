@@ -1,0 +1,37 @@
+package hu.kdea.szavazas.ballotprocessor.common;
+
+import boofcv.alg.filter.binary.GThresholdImageOps;
+import boofcv.struct.ConfigLength;
+import boofcv.struct.image.GrayU8;
+import hu.kdea.szavazas.ballotprocessor.GridConstants;
+
+public final class ImageNormalizer {
+    private ImageNormalizer() {
+    }
+
+    public static GrayU8 normalizeAndThreshold(GrayU8 gray) {
+        return normalizeAndThreshold(gray, 0.0);
+    }
+
+    public static GrayU8 normalizeAndThreshold(GrayU8 gray, double sigma) {
+        double maxDim = Math.max(gray.width, gray.height);
+        double regionWidth = maxDim / GridConstants.NORMALIZE_SIZE_DIVIDER;
+        GrayU8 binary = new GrayU8(gray.width, gray.height);
+        GThresholdImageOps.localMean(
+                gray,
+                binary,
+                ConfigLength.fixed(regionWidth),
+                GridConstants.NORMALIZE_SCALE,
+                true,
+                null,
+                null,
+                null
+        );
+        for (int y = 0; y < binary.height; y++) {
+            for (int x = 0; x < binary.width; x++) {
+                binary.set(x, y, binary.get(x, y) != 0 ? 255 : 0);
+            }
+        }
+        return binary;
+    }
+}
