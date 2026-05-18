@@ -1,7 +1,6 @@
 package hu.kdea.szavazas.review.test;
 
-import static hu.kdea.szavazas.review.test.ReviewTestUtil.assertBallot;
-import static hu.kdea.szavazas.review.test.ReviewTestUtil.normalizeJsonArray;
+import static hu.kdea.szavazas.review.test.ReviewTestUtil.normalizeJsonObject;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
@@ -28,14 +27,14 @@ public class SaveBallotResultServiceTest extends TestBase implements ReviewTestD
     }
 
     @Test
-    @DisplayName("saves serialized ballot result using extracted vote name")
-    public void applySavesSerializedBallotResultUsingExtractedVoteName() {
+    @DisplayName("saves vote object with ballots using extracted vote name")
+    public void applySavesVoteObjectWithBallotsUsingExtractedVoteName() {
         saveBallotResultService.apply(SAMPLE_BALLOT_RESULT);
         ArgumentCaptor<String> contentCaptor = ArgumentCaptor.forClass(String.class);
         verify(ballotResultFileRepository).save(eq("Vote.json"), contentCaptor.capture());
         assertEquals(
-            normalizeJsonArray(SerializeBallotResultServiceStub.stub().apply(SAMPLE_BALLOT_RESULT)),
-            normalizeJsonArray(contentCaptor.getValue())
+            normalizeJsonObject(VOTE_JSON),
+            normalizeJsonObject(contentCaptor.getValue())
         );
     }
 }

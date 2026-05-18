@@ -1,5 +1,18 @@
 {
-    "numSupport": 2,
-    "numRows": 2,
-    "xMarks": [[0,2]]
+  "vote": {
+    "voteName": "Vote",
+    "candidateCount": 3,
+    "candidates": ["Candidate 1", "Candidate 2", "Candidate 3"],
+    "supportColumnCount": 2
+  },
+  "ballots": [
+    {
+      "raw": "Vote-007",
+      "numSupport": 2,
+      "numRows": 2,
+      "xCells": [
+        {"row": 0, "col": 2}
+      ]
+    }
+  ]
 }

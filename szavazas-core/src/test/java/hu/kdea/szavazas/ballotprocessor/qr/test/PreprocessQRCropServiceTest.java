@@ -13,7 +13,6 @@ import hu.kdea.szavazas.ballotprocessor.qr.QrCropResultData;
 import hu.kdea.szavazas.ballotprocessor.qr.QrData;
 import hu.kdea.szavazas.ballotprocessor.qr.QrProcessingOutcomeData;
 import hu.kdea.szavazas.ballotprocessor.qr.QrProcessingService;
-import hu.kdea.szavazas.ballotprocessor.test.GrayU8TestUtil;
 import io.github.magwas.konveyor.testing.TestBase;
 import org.junit.Test;
 import org.junit.jupiter.api.DisplayName;
@@ -46,7 +45,7 @@ public class PreprocessQRCropServiceTest extends TestBase implements QrDecoderTe
                 qrCrop.set(x, y, 128);
             }
         }
-        QrData qrData = new QrData("ballot-5-12", 5, 12, new RectangleData(10, 10, 20, 20));
+        QrData qrData = new QrData("ballot-5-12", SAMPLE_VOTE_METADATA, new RectangleData(10, 10, 20, 20));
         QrProcessingService stubQr = QrProcessingStub.stubWithResult(new QrProcessingOutcomeData(qrData, null));
 
         QrCropResultData result = preprocessQRCropService.apply(WARPED_GRAY_500X400, stubQr);
@@ -54,6 +53,7 @@ public class PreprocessQRCropServiceTest extends TestBase implements QrDecoderTe
         assertNotNull(result);
         assertNotNull(result.adjustedQr());
         assertEquals("ballot-5-12", result.adjustedQr().raw());
+        assertEquals(SAMPLE_VOTE_METADATA, result.adjustedQr().voteMetadata());
     }
 
     @Test
@@ -72,7 +72,7 @@ public class PreprocessQRCropServiceTest extends TestBase implements QrDecoderTe
     public void applyTranslatesBboxToWarpedCoordinates() {
         int cropX = 2 * 500 / 5;
         int cropY = 0;
-        QrData qrData = new QrData("ballot-5-12", 5, 12, new RectangleData(10, 10, 20, 20));
+        QrData qrData = new QrData("ballot-5-12", SAMPLE_VOTE_METADATA, new RectangleData(10, 10, 20, 20));
         QrProcessingService stubQr = QrProcessingStub.stubWithResult(new QrProcessingOutcomeData(qrData, null));
 
         QrCropResultData result = preprocessQRCropService.apply(WARPED_GRAY_500X400, stubQr);

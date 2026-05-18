@@ -1,5 +1,16 @@
 {
-    "numSupport": 5,
-    "numRows": 9,
-    "xMarks": []
+  "vote": {
+    "voteName": "Vote",
+    "candidateCount": 6,
+    "candidates": ["Candidate 1", "Candidate 2", "Candidate 3", "Candidate 4", "Candidate 5", "Candidate 6"],
+    "supportColumnCount": 5
+  },
+  "ballots": [
+    {
+      "raw": "Vote-005",
+      "numSupport": 5,
+      "numRows": 9,
+      "xCells": []
+    }
+  ]
 }

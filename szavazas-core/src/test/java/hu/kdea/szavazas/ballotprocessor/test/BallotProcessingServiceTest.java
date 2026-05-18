@@ -3,18 +3,16 @@ package hu.kdea.szavazas.ballotprocessor.test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verify;
 
 import boofcv.struct.image.GrayU8;
-import boofcv.struct.image.Planar;
-import hu.kdea.szavazas.ballotprocessor.BallotErrorData;
 import hu.kdea.szavazas.ballotprocessor.BallotPreprocessService;
 import hu.kdea.szavazas.ballotprocessor.BallotProcessingOutcomeData;
 import hu.kdea.szavazas.ballotprocessor.BallotProcessingService;
 import hu.kdea.szavazas.ballotprocessor.BallotResultData;
 import hu.kdea.szavazas.ballotprocessor.MessageService;
 import hu.kdea.szavazas.ballotprocessor.PreprocessResultData;
+import hu.kdea.szavazas.ballotprocessor.aruco.test.ArucoTestData;
 import hu.kdea.szavazas.ballotprocessor.common.CellPositionData;
 import hu.kdea.szavazas.ballotprocessor.common.LoggerWrapper;
 import hu.kdea.szavazas.ballotprocessor.common.RectangleData;
@@ -22,25 +20,25 @@ import hu.kdea.szavazas.ballotprocessor.common.test.LoggerWrapperStub;
 import hu.kdea.szavazas.ballotprocessor.debug.ImageSaver;
 import hu.kdea.szavazas.ballotprocessor.grid.DetectGridRegionAndCheckboxService;
 import hu.kdea.szavazas.ballotprocessor.grid.GridDetectionResultData;
-import hu.kdea.szavazas.ballotprocessor.grid.GridRegionData;
 import hu.kdea.szavazas.ballotprocessor.grid.test.DetectGridRegionAndCheckboxStub;
 import hu.kdea.szavazas.ballotprocessor.qr.PreprocessQRCropService;
 import hu.kdea.szavazas.ballotprocessor.qr.QrCropResultData;
 import hu.kdea.szavazas.ballotprocessor.qr.QrData;
 import hu.kdea.szavazas.ballotprocessor.qr.QrProcessingService;
 import hu.kdea.szavazas.ballotprocessor.qr.test.PreprocessQRCropStub;
+import hu.kdea.szavazas.ballotprocessor.qr.test.QrDecoderTestData;
 import hu.kdea.szavazas.ballotprocessor.qr.test.QrProcessingStub;
+import hu.kdea.szavazas.ballotprocessor.vote.VoteMetadataData;
 import hu.kdea.szavazas.ballotprocessor.x.XMarkDetectionAndResultService;
 import hu.kdea.szavazas.ballotprocessor.x.XMarkDetectionAndResultStub;
 import hu.kdea.szavazas.ballotprocessor.x.XMarkDetectionResultData;
-import hu.kdea.szavazas.ballotprocessor.aruco.test.ArucoTestData;
 import io.github.magwas.konveyor.testing.TestBase;
 import java.util.List;
 import org.junit.Test;
 import org.junit.jupiter.api.DisplayName;
 import org.mockito.Mockito;
 
-public class BallotProcessingServiceTest extends TestBase implements ArucoTestData {
+public class BallotProcessingServiceTest extends TestBase implements ArucoTestData, QrDecoderTestData {
     private BallotProcessingService ballotProcessingService;
     private BallotPreprocessService ballotPreprocessService;
     private QrProcessingService qrProcessingService;
@@ -128,7 +126,7 @@ public class BallotProcessingServiceTest extends TestBase implements ArucoTestDa
     public void applyWithNullGridDetectionReturnsGridError() {
         PreprocessResultData preprocessResult = new PreprocessResultData(GRAY_80, 15.0);
         ballotPreprocessService = BallotPreprocessStub.stubWithResult(preprocessResult);
-        QrData qrData = new QrData("ballot-5-12", 5, 12, new RectangleData(10, 10, 20, 20));
+        QrData qrData = new QrData("ballot-5-12", SAMPLE_VOTE_METADATA, new RectangleData(10, 10, 20, 20));
         QrCropResultData qrCropResult = new QrCropResultData(new GrayU8(40, 40), qrData);
         preprocessQRCropService = PreprocessQRCropStub.stubWithResult(qrCropResult);
         detectGridRegionAndCheckboxService = DetectGridRegionAndCheckboxStub.stubWithResult(null);
@@ -156,13 +154,12 @@ public class BallotProcessingServiceTest extends TestBase implements ArucoTestDa
     public void applySuccessReturnsBallotResultAndLogs() {
         PreprocessResultData preprocessResult = new PreprocessResultData(GRAY_80, 15.0);
         ballotPreprocessService = BallotPreprocessStub.stubWithResult(preprocessResult);
-        QrData qrData = new QrData("ballot-5-12", 5, 12, new RectangleData(10, 10, 20, 20));
+        QrData qrData = new QrData("ballot-5-12", SAMPLE_VOTE_METADATA, new RectangleData(10, 10, 20, 20));
         QrCropResultData qrCropResult = new QrCropResultData(new GrayU8(40, 40), qrData);
         preprocessQRCropService = PreprocessQRCropStub.stubWithResult(qrCropResult);
-        GridRegionData region = Mockito.mock(GridRegionData.class);
         GridDetectionResultData gridResult = Mockito.mock(GridDetectionResultData.class);
         detectGridRegionAndCheckboxService = DetectGridRegionAndCheckboxStub.stubWithResult(gridResult);
-        BallotResultData ballotResult = new BallotResultData("ballot-5-12", 5, 12, List.of(new CellPositionData(0, 0)));
+        BallotResultData ballotResult = new BallotResultData("ballot-5-12", SAMPLE_VOTE_METADATA, 5, 12, List.of(new CellPositionData(0, 0)));
         XMarkDetectionResultData xMarkResult = new XMarkDetectionResultData(List.of(new CellPositionData(0, 0)), ballotResult);
         xMarkDetectionAndResultService = XMarkDetectionAndResultStub.stubWithResult(xMarkResult);
         ballotProcessingService = new BallotProcessingService(
@@ -181,6 +178,7 @@ public class BallotProcessingServiceTest extends TestBase implements ArucoTestDa
         assertNotNull(outcome.result());
         assertNull(outcome.error());
         assertEquals("ballot-5-12", outcome.result().raw());
+        assertEquals(SAMPLE_VOTE_METADATA, outcome.result().voteMetadata());
         verify(loggerWrapper).d("BallotProcessing", "Ballot detected: raw=ballot-5-12, numSupport=5, numRows=12, xCells=[CellPositionData[row=0, col=0]]");
     }
 

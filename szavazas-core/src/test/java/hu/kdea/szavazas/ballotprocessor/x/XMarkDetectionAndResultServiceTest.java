@@ -4,12 +4,10 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.when;
 
-import hu.kdea.szavazas.ballotprocessor.BallotResultData;
-import hu.kdea.szavazas.ballotprocessor.common.CellPositionData;
-import hu.kdea.szavazas.ballotprocessor.common.RectangleData;
+import hu.kdea.szavazas.ballotprocessor.qr.QrData;
 import hu.kdea.szavazas.ballotprocessor.grid.GridDetectionResultData;
 import hu.kdea.szavazas.ballotprocessor.grid.GridRegionData;
-import hu.kdea.szavazas.ballotprocessor.qr.QrData;
+import hu.kdea.szavazas.ballotprocessor.common.RectangleData;
 import io.github.magwas.konveyor.testing.TestBase;
 import java.util.List;
 import org.junit.Test;
@@ -37,7 +35,7 @@ public class XMarkDetectionAndResultServiceTest extends TestBase implements XDet
         GridDetectionResultData gridResult = Mockito.mock(GridDetectionResultData.class);
         when(gridResult.region()).thenReturn(region);
         when(gridResult.checkboxes()).thenReturn(List.of(new RectangleData(0, 0, 10, 10)));
-        QrData qrData = new QrData("raw", 2, 3, null);
+        QrData qrData = new QrData("raw", SAMPLE_VOTE_METADATA, null);
         when(xMarkDetectService.apply(null, List.of(new RectangleData(0, 0, 10, 10)), 0, 0, 3, 3))
             .thenReturn(SAMPLE_MARKS);
         XMarkDetectionResultData result = xMarkDetectionAndResultService.apply(gridResult, qrData);
@@ -45,6 +43,7 @@ public class XMarkDetectionAndResultServiceTest extends TestBase implements XDet
         assertEquals(SAMPLE_MARKS, result.marks());
         assertNotNull(result.ballotResult());
         assertEquals("raw", result.ballotResult().raw());
+        assertEquals(SAMPLE_VOTE_METADATA, result.ballotResult().voteMetadata());
     }
 
     @Test
@@ -57,7 +56,7 @@ public class XMarkDetectionAndResultServiceTest extends TestBase implements XDet
         GridDetectionResultData gridResult = Mockito.mock(GridDetectionResultData.class);
         when(gridResult.region()).thenReturn(region);
         when(gridResult.checkboxes()).thenReturn(List.of());
-        QrData qrData = new QrData("raw", 2, 3, null);
+        QrData qrData = new QrData("raw", SAMPLE_VOTE_METADATA, null);
         when(xMarkDetectService.apply(null, List.of(), 0, 0, 3, 3))
             .thenReturn(List.of());
         XMarkDetectionResultData result = xMarkDetectionAndResultService.apply(gridResult, qrData);

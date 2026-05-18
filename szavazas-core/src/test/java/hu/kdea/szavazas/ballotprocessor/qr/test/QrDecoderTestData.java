@@ -3,6 +3,8 @@ package hu.kdea.szavazas.ballotprocessor.qr.test;
 import com.google.zxing.ResultPoint;
 import hu.kdea.szavazas.ballotprocessor.common.RectangleData;
 import hu.kdea.szavazas.ballotprocessor.test.GrayU8TestUtil;
+import hu.kdea.szavazas.ballotprocessor.vote.VoteMetadataData;
+import java.util.List;
 
 public interface QrDecoderTestData {
     int[] TWO_BY_TWO_PIXELS = {
@@ -14,6 +16,7 @@ public interface QrDecoderTestData {
     String SAMPLE_QR_TEXT = "ballot-5-12";
     int SAMPLE_NUM_SUPPORT = 5;
     int SAMPLE_NUM_ROWS = 12;
+    VoteMetadataData SAMPLE_VOTE_METADATA = new VoteMetadataData("ballot", "ballot", 12, List.of(), 5, List.of("ballot-5-12"));
     String QR_TEXT_MISSING_SUPPORT = "ballot";
     String QR_TEXT_MISSING_ROWS = "ballot-5";
     String QR_TEXT_INVALID_SUPPORT = "ballot-abc-12";

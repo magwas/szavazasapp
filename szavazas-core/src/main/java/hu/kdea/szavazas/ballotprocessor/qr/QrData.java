@@ -1,6 +1,7 @@
 package hu.kdea.szavazas.ballotprocessor.qr;
 
 import hu.kdea.szavazas.ballotprocessor.common.RectangleData;
+import hu.kdea.szavazas.ballotprocessor.vote.VoteMetadataData;
 
-public record QrData(String raw, int numSupport, int numRows, RectangleData bbox) {
+public record QrData(String raw, VoteMetadataData voteMetadata, RectangleData bbox) {
 }

@@ -35,8 +35,7 @@ public class PreprocessQRCropService {
         QrData qr = outcome.result();
         QrData adjustedQr = qr == null ? null : new QrData(
             qr.raw(),
-            qr.numSupport(),
-            qr.numRows(),
+            qr.voteMetadata(),
             new RectangleData(
                 qr.bbox().x() + cropX,
                 qr.bbox().y() + cropY,

@@ -21,10 +21,16 @@ public class XMarkDetectionAndResultService {
             gridDetectionResultData.checkboxes(),
             gridDetectionResultData.region().qrCentreX(),
             gridDetectionResultData.region().cropTop(),
-            adjustedQr.numRows(),
-            adjustedQr.numSupport() + 1
+            adjustedQr.voteMetadata().candidateCount(),
+            adjustedQr.voteMetadata().supportColumnCount() + 1
         );
-        BallotResultData ballotResultData = new BallotResultData(adjustedQr.raw(), adjustedQr.numSupport(), adjustedQr.numRows(), marks);
+        BallotResultData ballotResultData = new BallotResultData(
+            adjustedQr.raw(),
+            adjustedQr.voteMetadata(),
+            adjustedQr.voteMetadata().supportColumnCount(),
+            adjustedQr.voteMetadata().candidateCount(),
+            marks
+        );
         return new XMarkDetectionResultData(marks, ballotResultData);
     }
 }

@@ -4,9 +4,11 @@ import boofcv.struct.image.GrayU8;
 import hu.kdea.szavazas.ballotprocessor.BallotResultData;
 import hu.kdea.szavazas.ballotprocessor.common.CellPositionData;
 import hu.kdea.szavazas.ballotprocessor.common.RectangleData;
+import hu.kdea.szavazas.ballotprocessor.vote.VoteMetadataData;
 import java.util.List;
 
 public interface XDetectTestData {
+    VoteMetadataData SAMPLE_VOTE_METADATA = new VoteMetadataData("raw", "raw", 3, List.of(), 2, List.of("raw"));
     RectangleData SAMPLE_OUTER_RECT = new RectangleData(10, 10, 30, 30);
     RectangleData SMALL_OUTER_RECT = new RectangleData(10, 10, 5, 5);
     RectangleData MIN_SIZE_OUTER_RECT = new RectangleData(0, 0, XDetectConstants.X_MARGIN * 2, XDetectConstants.X_MARGIN * 2);
@@ -15,7 +17,7 @@ public interface XDetectTestData {
     RectangleData LARGE_INNER_RECT = new RectangleData(XDetectConstants.X_MARGIN, XDetectConstants.X_MARGIN, 40 - 2 * XDetectConstants.X_MARGIN, 40 - 2 * XDetectConstants.X_MARGIN);
     CellPositionData SAMPLE_CELL_POSITION = new CellPositionData(0, 0);
     List<CellPositionData> SAMPLE_MARKS = List.of(new CellPositionData(0, 0), new CellPositionData(0, 1));
-    BallotResultData SAMPLE_BALLOT_RESULT = new BallotResultData("raw", 2, 3, SAMPLE_MARKS);
+    BallotResultData SAMPLE_BALLOT_RESULT = new BallotResultData("raw", SAMPLE_VOTE_METADATA, 2, 3, SAMPLE_MARKS);
     XMarkDetectionResultData SAMPLE_DETECTION_RESULT = new XMarkDetectionResultData(SAMPLE_MARKS, SAMPLE_BALLOT_RESULT);
     GrayU8 EMPTY_BINARY = new GrayU8(40, 40);
     GrayU8 FILLED_BINARY = XDetectTestImageFactory.filledImage(40, 40, 1);

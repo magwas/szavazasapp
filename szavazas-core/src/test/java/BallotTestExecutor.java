@@ -11,15 +11,12 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import javax.imageio.ImageIO;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.junit.Assert;
 
 public class BallotTestExecutor {
-    private static final Pattern NUM_SUPPORT_PATTERN = Pattern.compile("\\\"numSupport\\\"\\s*:\\s*(\\d+)");
-    private static final Pattern NUM_ROWS_PATTERN = Pattern.compile("\\\"numRows\\\"\\s*:\\s*(\\d+)");
-    private static final Pattern X_MARK_PATTERN = Pattern.compile("\\[(\\d+)\\s*,\\s*(\\d+)\\]");
     private final File testResources = new File("src/test/resources/test_images");
     private final File debugBaseDir = new File("/tmp/ballot_debug");
 
@@ -30,10 +27,14 @@ public class BallotTestExecutor {
         File jsonFile = new File(testResources, imageName + ".json");
         Assert.assertTrue("Missing test image: " + captureFile, captureFile.exists());
         Assert.assertTrue("Missing JSON: " + jsonFile, jsonFile.exists());
-        String jsonString = readJson(jsonFile);
-        int numSupport = extractInt(NUM_SUPPORT_PATTERN, jsonString);
-        int numRows = extractInt(NUM_ROWS_PATTERN, jsonString);
-        Set<CellPositionData> expectedXMarks = extractXMarks(jsonString);
+        JSONObject jsonObject = new JSONObject(readJson(jsonFile));
+        JSONObject vote = jsonObject.getJSONObject("vote");
+        JSONArray ballots = jsonObject.getJSONArray("ballots");
+        Assert.assertEquals("single expected ballot", 1, ballots.length());
+        JSONObject ballot = ballots.getJSONObject(0);
+        int numSupport = vote.getInt("supportColumnCount");
+        int numRows = ballot.getInt("numRows");
+        Set<CellPositionData> expectedXMarks = extractXMarks(ballot.getJSONArray("xCells"));
         Planar<GrayU8> planar = loadPlanar(captureFile);
         BallotProcessingApi api = ballotProcessingApi(imageDebugDir);
         var outcome = api.apply(planar);
@@ -48,19 +49,11 @@ public class BallotTestExecutor {
         Assert.assertEquals("X marks", expectedXMarks, new HashSet<>(actualResult.xCells()));
     }
 
-    private int extractInt(Pattern pattern, String jsonString) {
-        Matcher matcher = pattern.matcher(jsonString);
-        if (!matcher.find()) {
-            throw new IllegalStateException("Missing numeric value in json");
-        }
-        return Integer.parseInt(matcher.group(1));
-    }
-
-    private Set<CellPositionData> extractXMarks(String jsonString) {
-        Matcher matcher = X_MARK_PATTERN.matcher(jsonString);
+    private Set<CellPositionData> extractXMarks(JSONArray xCells) {
         Set<CellPositionData> result = new HashSet<>();
-        while (matcher.find()) {
-            result.add(new CellPositionData(Integer.parseInt(matcher.group(1)), Integer.parseInt(matcher.group(2))));
+        for (int index = 0; index < xCells.length(); index++) {
+            JSONObject xCell = xCells.getJSONObject(index);
+            result.add(new CellPositionData(xCell.getInt("row"), xCell.getInt("col")));
         }
         return result;
     }

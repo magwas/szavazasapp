@@ -24,8 +24,7 @@ public class ParseQrResultServiceTest extends TestBase implements QrDecoderTestD
         Result result = new Result(SAMPLE_QR_TEXT, null, SAMPLE_RESULT_POINTS, null);
         QrData qrResult = parseQrResultService.apply(result);
         assertEquals(SAMPLE_QR_TEXT, qrResult.raw());
-        assertEquals(SAMPLE_NUM_SUPPORT, qrResult.numSupport());
-        assertEquals(SAMPLE_NUM_ROWS, qrResult.numRows());
+        assertEquals(SAMPLE_VOTE_METADATA, qrResult.voteMetadata());
         assertEquals(SAMPLE_BBOX, qrResult.bbox());
     }
 

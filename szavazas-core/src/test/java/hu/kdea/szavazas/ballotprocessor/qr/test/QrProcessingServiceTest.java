@@ -6,9 +6,7 @@ import static org.junit.Assert.assertNull;
 
 import boofcv.struct.image.GrayU8;
 import com.google.zxing.Result;
-import com.google.zxing.ResultPoint;
 import hu.kdea.szavazas.ballotprocessor.MessageService;
-import hu.kdea.szavazas.ballotprocessor.common.RectangleData;
 import hu.kdea.szavazas.ballotprocessor.qr.ConvertGrayU8ToRgbPixelsService;
 import hu.kdea.szavazas.ballotprocessor.qr.DecodeQRService;
 import hu.kdea.szavazas.ballotprocessor.qr.ParseQrResultService;
@@ -48,7 +46,7 @@ public class QrProcessingServiceTest extends TestBase implements QrDecoderTestDa
         convertGrayU8ToRgbPixelsService = ConvertGrayU8ToRgbPixelsStub.stubWithResult(TWO_BY_TWO_PIXELS);
         Result zxingResult = new Result(SAMPLE_QR_TEXT, null, SAMPLE_RESULT_POINTS, null);
         decodeQRService = DecodeQRStub.stubWithResult(zxingResult);
-        parseQrResultService = ParseQrResultStub.stubWithResult(new QrData(SAMPLE_QR_TEXT, SAMPLE_NUM_SUPPORT, SAMPLE_NUM_ROWS, SAMPLE_BBOX));
+        parseQrResultService = ParseQrResultStub.stubWithResult(new QrData(SAMPLE_QR_TEXT, SAMPLE_VOTE_METADATA, SAMPLE_BBOX));
         qrProcessingService = new QrProcessingService(
             convertGrayU8ToRgbPixelsService,
             decodeQRService,
@@ -62,6 +60,7 @@ public class QrProcessingServiceTest extends TestBase implements QrDecoderTestDa
         assertNull(outcome.error());
         assertNotNull(outcome.result());
         assertEquals(SAMPLE_QR_TEXT, outcome.result().raw());
+        assertEquals(SAMPLE_VOTE_METADATA, outcome.result().voteMetadata());
     }
 
     @Test

@@ -4,6 +4,7 @@ import boofcv.struct.image.GrayU8;
 import hu.kdea.szavazas.ballotprocessor.common.RectangleData;
 import hu.kdea.szavazas.ballotprocessor.grid.GridRegionData;
 import hu.kdea.szavazas.ballotprocessor.qr.QrData;
+import hu.kdea.szavazas.ballotprocessor.vote.VoteMetadataData;
 import java.util.Arrays;
 import java.util.List;
 
@@ -53,11 +54,11 @@ public interface GridTestData {
     }
 
     private static QrData qrWithBbox() {
-        return new QrData("raw", 3, 5, new RectangleData(10, 20, 30, 40));
+        return new QrData("raw", new VoteMetadataData("raw", "raw", 5, List.of(), 3, List.of("raw")), new RectangleData(10, 20, 30, 40));
     }
 
     private static QrData qrWithBboxSmall() {
-        return new QrData("raw", 3, 5, new RectangleData(5, 10, 15, 20));
+        return new QrData("raw", new VoteMetadataData("raw", "raw", 5, List.of(), 3, List.of("raw")), new RectangleData(5, 10, 15, 20));
     }
 
     private static GridRegionData gridRegion50x50() {

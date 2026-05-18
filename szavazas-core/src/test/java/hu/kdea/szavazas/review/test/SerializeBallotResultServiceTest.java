@@ -1,12 +1,13 @@
 package hu.kdea.szavazas.review.test;
 
 import static hu.kdea.szavazas.review.test.ReviewTestUtil.assertBallot;
+import static hu.kdea.szavazas.review.test.ReviewTestUtil.assertVote;
 import static org.junit.Assert.assertEquals;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
 import hu.kdea.szavazas.review.SerializeBallotResultService;
 import io.github.magwas.konveyor.testing.TestBase;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.junit.Test;
 import org.junit.jupiter.api.DisplayName;
 
@@ -19,20 +20,24 @@ public class SerializeBallotResultServiceTest extends TestBase implements Review
     }
 
     @Test
-    @DisplayName("serializes ballot result into array")
-    public void applySerializesBallotResultIntoArray() {
-        JSONArray ballots = new JSONArray(serializeBallotResultService.apply(SAMPLE_BALLOT_RESULT));
+    @DisplayName("serializes ballot result into vote object and ballots array")
+    public void applySerializesBallotResultIntoVoteObjectAndBallotsArray() {
+        JSONObject content = new JSONObject(serializeBallotResultService.apply(SAMPLE_BALLOT_RESULT));
+        assertVote(content.getJSONObject("vote"));
+        JSONArray ballots = content.getJSONArray("ballots");
         assertEquals(1, ballots.length());
-        assertBallot((JSONObject) ballots.get(0), SAMPLE_BALLOT_RESULT);
+        assertBallot(ballots.getJSONObject(0), SAMPLE_BALLOT_RESULT);
     }
 
     @Test
-    @DisplayName("appends ballot result to existing json array")
-    public void applyAppendsBallotResultToExistingJsonArray() {
-        JSONArray ballots = new JSONArray(serializeBallotResultService.apply(serializeBallotResultService.apply(EXISTING_BALLOT_RESULT), SAMPLE_BALLOT_RESULT));
+    @DisplayName("appends ballot result to existing ballots array while preserving vote metadata")
+    public void applyAppendsBallotResultToExistingBallotsArrayWhilePreservingVoteMetadata() {
+        JSONObject content = new JSONObject(serializeBallotResultService.apply(EXISTING_VOTE_JSON, SAMPLE_BALLOT_RESULT));
+        assertVote(content.getJSONObject("vote"));
+        JSONArray ballots = content.getJSONArray("ballots");
         assertEquals(2, ballots.length());
-        assertBallot((JSONObject) ballots.get(0), EXISTING_BALLOT_RESULT);
-        assertBallot((JSONObject) ballots.get(1), SAMPLE_BALLOT_RESULT);
+        assertBallot(ballots.getJSONObject(0), EXISTING_BALLOT_RESULT);
+        assertBallot(ballots.getJSONObject(1), SAMPLE_BALLOT_RESULT);
     }
 
     @Test(expected = IllegalStateException.class)

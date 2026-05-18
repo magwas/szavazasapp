@@ -1,5 +1,22 @@
 {
-    "numSupport": 5,
-    "numRows": 9,
-    "xMarks": [[0,5], [1,5], [2,2], [4,0], [7,3]]
+  "vote": {
+    "voteName": "Vote",
+    "candidateCount": 6,
+    "candidates": ["Candidate 1", "Candidate 2", "Candidate 3", "Candidate 4", "Candidate 5", "Candidate 6"],
+    "supportColumnCount": 5
+  },
+  "ballots": [
+    {
+      "raw": "Vote-002",
+      "numSupport": 5,
+      "numRows": 9,
+      "xCells": [
+        {"row": 0, "col": 5},
+        {"row": 1, "col": 5},
+        {"row": 2, "col": 2},
+        {"row": 4, "col": 0},
+        {"row": 7, "col": 3}
+      ]
+    }
+  ]
 }

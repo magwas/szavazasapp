@@ -33,8 +33,8 @@ public class DetectGridRegionAndCheckboxService {
             region.projectionInput(),
             region.cropTop(),
             region.qrCentreX(),
-            adjustedQr.numSupport() + 1,
-            adjustedQr.numRows()
+            adjustedQr.voteMetadata().supportColumnCount() + 1,
+            adjustedQr.voteMetadata().candidateCount()
         );
         return checkboxes == null ? null : new GridDetectionResultData(region, checkboxes);
     }

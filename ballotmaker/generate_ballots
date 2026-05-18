@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import argparse
+import json
 import random
 import string
 import subprocess
@@ -8,9 +9,11 @@ import os
 import tempfile
 import shutil
 
+
 def generate_random_string(length=8):
     chars = string.ascii_uppercase + string.digits
     return ''.join(random.choice(chars) for _ in range(length))
+
 
 def insert_overrides(template_content, titletext, numsupport, candidates):
     r"""Insert \renewcommand lines after the last \providecommand."""
@@ -30,8 +33,9 @@ def insert_overrides(template_content, titletext, numsupport, candidates):
         f"\\renewcommand{{\\candidates}}{{{candidates}}}",
         ""
     ]
-    new_lines = lines[:last_provide_idx+1] + overrides + lines[last_provide_idx+1:]
+    new_lines = lines[:last_provide_idx + 1] + overrides + lines[last_provide_idx + 1:]
     return '\n'.join(new_lines)
+
 
 def get_preamble(modified_content):
     doc_begin = r'\begin{document}'
@@ -40,33 +44,54 @@ def get_preamble(modified_content):
         raise ValueError("No \\begin{document} in template")
     return modified_content[:pos]
 
-def build_tex_content(preamble, ballots, voteid, numsupport, num_candidates):
-    ids = [f"{voteid}-{numsupport}-{num_candidates}-{generate_random_string()}" for _ in range(ballots)]
+
+def ballot_id(voteid, numsupport, num_candidates):
+    return f"{voteid}-{numsupport}-{num_candidates}-{generate_random_string()}"
+
+
+def build_tex_content(preamble, ballot_ids):
     tex = preamble + "\n"
     tex += "\\begin{document}\n"
-    for i, bid in enumerate(ids):
-        tex += f"\\renewcommand{{\\id}}{{{bid}}}\n"
+    for i, current_ballot_id in enumerate(ballot_ids):
+        tex += f"\\renewcommand{{\\id}}{{{current_ballot_id}}}\n"
         tex += "\\ballotcontent\n"
-        if i < len(ids) - 1:
+        if i < len(ballot_ids) - 1:
             tex += "\\newpage\n"
     tex += "\\end{document}\n"
     return tex
 
+
+def vote_metadata(voteid, titletext, numsupport, candidates_list, ballot_ids):
+    return {
+        "vote": {
+            "voteId": voteid,
+            "voteName": titletext,
+            "candidateCount": len(candidates_list),
+            "candidates": candidates_list,
+            "supportColumnCount": numsupport,
+            "issuedBallotIds": ballot_ids,
+        },
+        "ballots": [],
+    }
+
+
 def run_pdflatex(tex_path, output_dir):
     for _ in range(2):
         subprocess.run(
-            ['pdflatex', '-interaction=nonstopmode',
-             '-output-directory', output_dir, tex_path],
-            capture_output=True, text=True
+            ['pdflatex', '-interaction=nonstopmode', '-output-directory', output_dir, tex_path],
+            capture_output=True,
+            text=True,
+            check=False,
         )
+
 
 def compile_pdf(tex_content, output_filename, keep_tempdir):
     tmpdir = tempfile.mkdtemp(prefix="ballot_compile_")
     print(f"Temporary directory: {tmpdir}", file=sys.stderr)
     try:
         tex_path = os.path.join(tmpdir, 'main.tex')
-        with open(tex_path, 'w') as f:
-            f.write(tex_content)
+        with open(tex_path, 'w') as file_handle:
+            file_handle.write(tex_content)
         run_pdflatex(tex_path, tmpdir)
         src_pdf = os.path.join(tmpdir, 'main.pdf')
         if not os.path.exists(src_pdf) or os.path.getsize(src_pdf) == 0:
@@ -75,8 +100,8 @@ def compile_pdf(tex_content, output_filename, keep_tempdir):
         output_abs = os.path.abspath(output_filename)
         shutil.move(src_pdf, output_abs)
         print(f"Successfully created {output_abs}")
-    except Exception as e:
-        print(f"Error: {e}", file=sys.stderr)
+    except Exception as exception:
+        print(f"Error: {exception}", file=sys.stderr)
         print(f"Temporary directory kept at: {tmpdir}", file=sys.stderr)
         sys.exit(1)
     else:
@@ -84,6 +109,15 @@ def compile_pdf(tex_content, output_filename, keep_tempdir):
             shutil.rmtree(tmpdir, ignore_errors=True)
         else:
             print(f"Temporary directory kept at: {tmpdir}", file=sys.stderr)
+
+
+def save_metadata(metadata, output_filename):
+    json_filename = os.path.splitext(output_filename)[0] + '.json'
+    with open(json_filename, 'w', encoding='utf-8') as file_handle:
+        json.dump(metadata, file_handle, indent=2)
+        file_handle.write('\n')
+    print(f"Successfully created {os.path.abspath(json_filename)}")
+
 
 def main():
     parser = argparse.ArgumentParser()
@@ -104,19 +138,19 @@ def main():
         print(f"Template '{args.template}' not found", file=sys.stderr)
         sys.exit(1)
 
-    # Count the number of candidates (rows)
-    candidates_list = [c.strip() for c in args.candidates.split(',')]
+    candidates_list = [candidate.strip() for candidate in args.candidates.split(',') if candidate.strip()]
     num_candidates = len(candidates_list)
 
-    with open(args.template, 'r') as f:
-        template_content = f.read()
+    with open(args.template, 'r', encoding='utf-8') as file_handle:
+        template_content = file_handle.read()
 
-    modified = insert_overrides(template_content, args.titletext,
-                                str(args.numsupport), args.candidates)
+    ballot_ids = [ballot_id(args.voteid, args.numsupport, num_candidates) for _ in range(args.ballots)]
+    modified = insert_overrides(template_content, args.titletext, str(args.numsupport), args.candidates)
     preamble = get_preamble(modified)
-    tex_content = build_tex_content(preamble, args.ballots, args.voteid,
-                                    args.numsupport, num_candidates)
+    tex_content = build_tex_content(preamble, ballot_ids)
     compile_pdf(tex_content, args.output, args.keep_tempdir)
+    save_metadata(vote_metadata(args.voteid, args.titletext, args.numsupport, candidates_list, ballot_ids), args.output)
+
 
 if __name__ == '__main__':
     main()

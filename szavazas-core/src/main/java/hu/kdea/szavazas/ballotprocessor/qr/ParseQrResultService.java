@@ -3,6 +3,8 @@ package hu.kdea.szavazas.ballotprocessor.qr;
 import com.google.zxing.Result;
 import com.google.zxing.ResultPoint;
 import hu.kdea.szavazas.ballotprocessor.common.RectangleData;
+import hu.kdea.szavazas.ballotprocessor.vote.VoteMetadataData;
+import java.util.List;
 import javax.inject.Inject;
 
 public class ParseQrResultService {
@@ -16,7 +18,8 @@ public class ParseQrResultService {
         String[] parts = raw.split("-");
         int numSupport = parsePositive(parts, 1, "support count");
         int numRows = parsePositive(parts, 2, "row count");
-        return new QrData(raw, numSupport, numRows, box(validatedResult.getResultPoints()));
+        VoteMetadataData voteMetadataData = new VoteMetadataData(voteId(raw), voteName(raw), numRows, List.of(), numSupport, List.of(raw));
+        return new QrData(raw, voteMetadataData, box(validatedResult.getResultPoints()));
     }
 
     private Result validateResult(Result result) {
@@ -65,5 +68,14 @@ public class ParseQrResultService {
             maxY = Math.max(maxY, (int) point.getY());
         }
         return new RectangleData(minX, minY, maxX - minX + 1, maxY - minY + 1);
+    }
+
+    private String voteId(String raw) {
+        return voteName(raw);
+    }
+
+    private String voteName(String raw) {
+        int separator = raw.indexOf('-');
+        return separator < 0 ? raw : raw.substring(0, separator);
     }
 }
