@@ -28,7 +28,7 @@ public class XMarkDetectionAndResultServiceTest extends TestBase implements XDet
     }
 
     @Test
-    @DisplayName("apply returns detection result with marks and ballot result")
+    @DisplayName("returns detection result with marks and ballot result")
     public void applyReturnsResult() {
         GridRegionData region = Mockito.mock(GridRegionData.class);
         when(region.projectionInput()).thenReturn(null);
@@ -48,7 +48,7 @@ public class XMarkDetectionAndResultServiceTest extends TestBase implements XDet
     }
 
     @Test
-    @DisplayName("apply returns empty marks when no X detected")
+    @DisplayName("returns empty marks when no X detected")
     public void applyWithNoMarks() {
         GridRegionData region = Mockito.mock(GridRegionData.class);
         when(region.projectionInput()).thenReturn(null);

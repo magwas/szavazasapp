@@ -8,15 +8,13 @@ import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 import hu.kdea.szavazas.ballotprocessor.common.LoggerWrapper;
 import hu.kdea.szavazas.ballotprocessor.common.PointData;
+import hu.kdea.szavazas.ballotprocessor.common.test.LoggerWrapperStub;
 import io.github.magwas.konveyor.testing.TestBase;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.jupiter.api.DisplayName;
 
@@ -26,12 +24,10 @@ public class XDetectServiceTest extends TestBase implements XDetectConstants, XD
     private BinaryImageOpsWrapper binaryImageOpsWrapper;
     private LoggerWrapper loggerWrapper;
 
-    @Before
     @Override
     public void setUp() {
-        binaryImageOpsWrapper = mock(BinaryImageOpsWrapper.class);
-        loggerWrapper = mock(LoggerWrapper.class);
-        when(binaryImageOpsWrapper.thin(any(), eq(-1), any())).thenAnswer(invocation -> invocation.getArgument(0));
+        binaryImageOpsWrapper = BinaryImageOpsWrapperStub.stubWithThinIdentity();
+        loggerWrapper = LoggerWrapperStub.stub();
         xDetectService = new XDetectService(binaryImageOpsWrapper, loggerWrapper);
     }
 
@@ -65,7 +61,8 @@ public class XDetectServiceTest extends TestBase implements XDetectConstants, XD
     @DisplayName("returns detected when skeleton has enough branch points")
     public void applyDetectsXWhenSkeletonHasEnoughBranches() {
         int expectedBranchPoints = XDetectTestUtil.countBranchPoints(DENSE_SKELETON);
-        when(binaryImageOpsWrapper.thin(any(), eq(-1), any())).thenReturn(DENSE_SKELETON);
+        binaryImageOpsWrapper = BinaryImageOpsWrapperStub.stubWithThinResult(DENSE_SKELETON);
+        xDetectService = new XDetectService(binaryImageOpsWrapper, loggerWrapper);
         XDetectionResultData result = xDetectService.apply(FILLED_BINARY, LARGE_OUTER_RECT);
         assertNotNull(result);
         assertTrue(result.detected());
