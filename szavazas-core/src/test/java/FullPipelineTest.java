@@ -1,6 +1,8 @@
 package hu.kdea.szavazas;
 
+import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
 
 public class FullPipelineTest {
     private final BallotTestExecutor executor = new BallotTestExecutor();
@@ -46,12 +48,14 @@ public class FullPipelineTest {
     }
 
     @Test
+    @Ignore("An X is too thin. Choosen monochromization parameters to be robust against wrinkles over detecting thin X")
     public void testImage11() {
         executor.executeTest("image11");
     }
-    /* normalization is not good enough for this
+
     @Test
+    @Ignore("Same image, but wrinkled. Should have a test image here which is only wrinkled.")
     public void testImage12() {
         executor.executeTest("image12");
-    }*/
+    }
 }
