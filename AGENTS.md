@@ -22,6 +22,8 @@
 - Dependencies are stored as `private final` fields.
 - Dagger modules (`@Module`) and components (`@Component`) are allowed as infrastructure (treated as Glue).
 - No field injection (`@Inject` on fields) is allowed – constructor injection only.
+- Core Dagger bindings for interfaces used by szavazas-core must be declared in shared core Glue modules under szavazas-core. Do not place such bindings only in environment-specific modules such as AndroidDebugModule or JvmTestDebugModule unless the bound implementation is platform-specific.
+- After any change to constructor-injected dependencies, Dagger modules, Dagger components, or interface-to-implementation bindings, compile all affected Dagger graphs, including the Android production graph and the JVM test graph, before considering the task complete.
 
 ## Unit Definitions (Production Code)
 
@@ -136,8 +138,9 @@ Test code resides in packages corresponding to the tested code, with `.test` app
   - `public static String environmentState` (reset to `null` before each test)
   - `void given(String newState)` – sets `environmentState`
   - `void setUp()` (throws `Throwable`) – may be overridden for custom test setup
-- Tests use `@DisplayName` to document the tested behaviour. The description of tested behaviour is about the logic, not the implementation.
+- Tests use `@DisplayName` to document the tested behaviour. The description of tested behaviour is about the logic, not the implementation. This is the ground truth of the functional specification.
 - All constants from implemented `TestData` interfaces.
+- Tests only behaviour of production code by exercising it. Does not examine code.
 - No `when()` or `given()` calls in tests – stubbing belongs in `Stub` units.
 - No test data creation – use `TestData` units.
 - No helper methods – use `TestUtil` units.

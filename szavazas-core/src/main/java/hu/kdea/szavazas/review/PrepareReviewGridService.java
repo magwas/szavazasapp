@@ -21,7 +21,8 @@ public class PrepareReviewGridService {
             ballotResultData.numSupport() + 2,
             ballotResultData.numRows(),
             extractVoteNameService.apply(ballotResultData.raw()),
-            cells(ballotResultData, checkedCells)
+            cells(ballotResultData, checkedCells),
+            ballotResultData.nonconformities().stream().map(nonconformity -> new ReviewNonconformityData(nonconformity.message())).toList()
         );
     }
 

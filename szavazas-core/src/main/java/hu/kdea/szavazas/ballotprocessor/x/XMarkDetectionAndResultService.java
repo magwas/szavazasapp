@@ -8,15 +8,15 @@ import java.util.List;
 import javax.inject.Inject;
 
 public class XMarkDetectionAndResultService {
-    private final XMarkDetectService xMarkDetectService;
+    private final XMarkDetectService xMarkDetectionService;
 
     @Inject
-    public XMarkDetectionAndResultService(XMarkDetectService xMarkDetectService) {
-        this.xMarkDetectService = xMarkDetectService;
+    public XMarkDetectionAndResultService(XMarkDetectService xMarkDetectionService) {
+        this.xMarkDetectionService = xMarkDetectionService;
     }
 
     public XMarkDetectionResultData apply(GridDetectionResultData gridDetectionResultData, QrData adjustedQr) {
-        List<CellPositionData> marks = xMarkDetectService.apply(
+        List<CellPositionData> marks = xMarkDetectionService.apply(
             gridDetectionResultData.region().projectionInput(),
             gridDetectionResultData.checkboxes(),
             gridDetectionResultData.region().qrCentreX(),
@@ -28,8 +28,9 @@ public class XMarkDetectionAndResultService {
             adjustedQr.raw(),
             adjustedQr.voteMetadata(),
             adjustedQr.voteMetadata().supportColumnCount(),
-            adjustedQr.voteMetadata().candidateCount(),
-            marks
+            gridDetectionResultData.checkboxes().size() / (adjustedQr.voteMetadata().supportColumnCount() + 1),
+            marks,
+            List.of()
         );
         return new XMarkDetectionResultData(marks, ballotResultData);
     }

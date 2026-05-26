@@ -11,4 +11,8 @@ public class LoggerWrapper {
     public void d(String tag, String msg) {
         Logger.INSTANCE.d(tag, msg);
     }
+
+    public void w(String tag, String msg) {
+        Logger.INSTANCE.e(tag, msg);
+    }
 }

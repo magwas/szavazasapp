@@ -62,6 +62,12 @@ public class CameraManager {
         }, ContextCompat.getMainExecutor(context));
     }
 
+    public void setTorch(boolean enabled) {
+        if (camera != null) {
+            camera.getCameraControl().enableTorch(enabled);
+        }
+    }
+
     public void capturePhoto(Consumer<File> onPhotoTaken) {
         File file = new File(context.getCacheDir(), "ballot_" + System.currentTimeMillis() + ".jpg");
         ImageCapture.OutputFileOptions outputOptions = new ImageCapture.OutputFileOptions.Builder(file).build();

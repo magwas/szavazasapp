@@ -24,6 +24,7 @@ import boofcv.android.ConvertBitmap;
 import boofcv.struct.image.GrayU8;
 import boofcv.struct.image.Planar;
 import hu.kdea.szavazas.ballotprocessor.BallotProcessingApi;
+import hu.kdea.szavazas.ballotprocessor.BallotProcessingOutcomeData;
 import hu.kdea.szavazas.ballotprocessor.BallotResultData;
 import hu.kdea.szavazas.ballotprocessor.Logger;
 import hu.kdea.szavazas.review.ReviewCellData;
@@ -39,12 +40,15 @@ public class MainActivity extends AppCompatActivity {
     private Button finishButton;
     private Button correctButton;
     private Button failedButton;
+    private Button torchButton;
     private TextView reviewTitle;
+    private LinearLayout reviewNonconformities;
     private GridLayout reviewGrid;
     private CameraManager cameraManager;
     private BallotProcessingApi ballotProcessingApi;
     private BallotResultData pendingResult;
     private boolean isProcessing;
+    private boolean isTorchOn;
     private final ActivityResultLauncher<String> permissionLauncher = registerForActivityResult(
             new ActivityResultContracts.RequestPermission(),
             granted -> {
@@ -69,6 +73,7 @@ public class MainActivity extends AppCompatActivity {
         finishButton.setOnClickListener(view -> showStartScreen());
         failedButton.setOnClickListener(view -> showCameraScreen());
         correctButton.setOnClickListener(view -> savePendingResult());
+        torchButton.setOnClickListener(view -> onTorchClicked());
         showStartScreen();
     }
 
@@ -88,7 +93,9 @@ public class MainActivity extends AppCompatActivity {
         finishButton = findViewById(R.id.finishButton);
         correctButton = findViewById(R.id.correctButton);
         failedButton = findViewById(R.id.failedButton);
+        torchButton = findViewById(R.id.torchButton);
         reviewTitle = findViewById(R.id.reviewTitle);
+        reviewNonconformities = findViewById(R.id.reviewNonconformities);
         reviewGrid = findViewById(R.id.reviewGrid);
     }
 
@@ -117,7 +124,25 @@ public class MainActivity extends AppCompatActivity {
         cameraScreen.setVisibility(View.GONE);
         reviewScreen.setVisibility(View.VISIBLE);
         reviewTitle.setText(getString(R.string.review_title, reviewGridData.voteName()));
+        renderReviewNonconformities(reviewGridData);
         renderReviewGrid(reviewGridData);
+    }
+
+    private void renderReviewNonconformities(ReviewGridData reviewGridData) {
+        reviewNonconformities.removeAllViews();
+        if (reviewGridData.nonconformities().isEmpty()) {
+            reviewNonconformities.setVisibility(View.GONE);
+            return;
+        }
+        reviewNonconformities.setVisibility(View.VISIBLE);
+        TextView heading = new TextView(this);
+        heading.setText(R.string.review_nonconformities_title);
+        reviewNonconformities.addView(heading);
+        for (var nonconformity : reviewGridData.nonconformities()) {
+            TextView textView = new TextView(this);
+            textView.setText(getString(R.string.review_nonconformity_item, nonconformity.message()));
+            reviewNonconformities.addView(textView);
+        }
     }
 
     private void renderReviewGrid(ReviewGridData reviewGridData) {
@@ -151,7 +176,7 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
         try {
-            ballotProcessingApi.save(pendingResult);
+            ballotProcessingApi.confirm(pendingResult);
             Toast.makeText(this, R.string.saved_ballot, Toast.LENGTH_LONG).show();
             showCameraScreen();
         } catch (IllegalStateException exception) {
@@ -178,6 +203,12 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    private void onTorchClicked() {
+        isTorchOn = !isTorchOn;
+        cameraManager.setTorch(isTorchOn);
+        torchButton.setText(isTorchOn ? R.string.torch_on : R.string.torch_off);
+    }
+
     private void requestCameraIfNeeded() {
         if (checkSelfPermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
             cameraManager.start();
@@ -191,7 +222,7 @@ public class MainActivity extends AppCompatActivity {
         bitmap.recycle();
         Planar<GrayU8> planar = new Planar<>(GrayU8.class, safeBitmap.getWidth(), safeBitmap.getHeight(), 3);
         ConvertBitmap.bitmapToPlanar(safeBitmap, planar, GrayU8.class, null);
-        var outcome = ballotProcessingApi.apply(planar);
+        BallotProcessingOutcomeData outcome = ballotProcessingApi.apply(planar);
         safeBitmap.recycle();
         var result = outcome.result();
         var error = outcome.error();
@@ -201,7 +232,14 @@ public class MainActivity extends AppCompatActivity {
                 return;
             }
             isProcessing = false;
-            Toast.makeText(this, getString(R.string.error_message, error == null ? getString(R.string.unknown_error) : error.message()), Toast.LENGTH_LONG).show();
+            Toast.makeText(
+                this,
+                getString(
+                    R.string.error_message,
+                    error != null ? error.message() : getString(R.string.unknown_error)
+                ),
+                Toast.LENGTH_LONG
+            ).show();
         });
     }
 

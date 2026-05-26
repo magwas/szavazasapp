@@ -17,7 +17,7 @@ public interface XDetectTestData {
     RectangleData LARGE_INNER_RECT = new RectangleData(XDetectConstants.X_MARGIN, XDetectConstants.X_MARGIN, 40 - 2 * XDetectConstants.X_MARGIN, 40 - 2 * XDetectConstants.X_MARGIN);
     CellPositionData SAMPLE_CELL_POSITION = new CellPositionData(0, 0);
     List<CellPositionData> SAMPLE_MARKS = List.of(new CellPositionData(0, 0), new CellPositionData(0, 1));
-    BallotResultData SAMPLE_BALLOT_RESULT = new BallotResultData("raw", SAMPLE_VOTE_METADATA, 2, 3, SAMPLE_MARKS);
+    BallotResultData SAMPLE_BALLOT_RESULT = new BallotResultData("raw", SAMPLE_VOTE_METADATA, 2, 3, SAMPLE_MARKS, List.of());
     XMarkDetectionResultData SAMPLE_DETECTION_RESULT = new XMarkDetectionResultData(SAMPLE_MARKS, SAMPLE_BALLOT_RESULT);
     GrayU8 EMPTY_BINARY = new GrayU8(40, 40);
     GrayU8 FILLED_BINARY = XDetectTestImageFactory.filledImage(40, 40, 1);

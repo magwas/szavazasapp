@@ -10,6 +10,7 @@ import io.github.magwas.konveyor.testing.TestBase;
 public final class BallotResultFileRepositoryStub {
     public static BallotResultFileRepository stub() {
         BallotResultFileRepository ballotResultFileRepository = mock(BallotResultFileRepository.class);
+        when(ballotResultFileRepository.apply(anyString())).thenReturn(null);
         if ("hasExistingContent".equals(TestBase.environmentState)) {
             when(ballotResultFileRepository.apply("Vote.json")).thenReturn("""
                 {
@@ -32,7 +33,6 @@ public final class BallotResultFileRepositoryStub {
                 }
                 """);
         }
-        when(ballotResultFileRepository.apply(anyString())).thenReturn(null);
         return ballotResultFileRepository;
     }
 }

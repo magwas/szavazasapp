@@ -12,5 +12,5 @@ public interface GridConstants {
     int ERODE_ITERATIONS = 0;
     int MIN_BRANCHES = 50;
     double NORMALIZE_SIZE_DIVIDER = 2.0;
-    double NORMALIZE_SCALE = 1.0;
+    double NORMALIZE_SCALE = 0.9;
 }

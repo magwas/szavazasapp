@@ -2,7 +2,11 @@ package hu.kdea.szavazas.review.test;
 
 import static hu.kdea.szavazas.review.test.ReviewTestUtil.assertBallot;
 import static hu.kdea.szavazas.review.test.ReviewTestUtil.assertVote;
+import static hu.kdea.szavazas.review.test.ReviewTestUtil.normalizeJsonObject;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import hu.kdea.szavazas.review.SerializeBallotResultService;
 import io.github.magwas.konveyor.testing.TestBase;
@@ -30,6 +34,16 @@ public class SerializeBallotResultServiceTest extends TestBase implements Review
     }
 
     @Test
+    @DisplayName("creates initial top level vote metadata when writing a new file")
+    public void applyCreatesInitialTopLevelVoteMetadataWhenWritingANewFile() {
+        JSONObject content = new JSONObject(serializeBallotResultService.apply("", SAMPLE_BALLOT_RESULT));
+        assertEquals(
+            normalizeJsonObject(VOTE_JSON),
+            normalizeJsonObject(content.toString())
+        );
+    }
+
+    @Test
     @DisplayName("appends ballot result to existing ballots array while preserving vote metadata")
     public void applyAppendsBallotResultToExistingBallotsArrayWhilePreservingVoteMetadata() {
         JSONObject content = new JSONObject(serializeBallotResultService.apply(EXISTING_VOTE_JSON, SAMPLE_BALLOT_RESULT));
@@ -39,6 +53,30 @@ public class SerializeBallotResultServiceTest extends TestBase implements Review
         assertBallot(ballots.getJSONObject(0), EXISTING_BALLOT_RESULT);
         assertBallot(ballots.getJSONObject(1), SAMPLE_BALLOT_RESULT);
     }
+
+    @Test
+    @DisplayName("preserves stored vote metadata and appends ballot when appended ballot has conflicting metadata")
+    public void applyPreservesStoredVoteMetadataAndAppendsBallotWhenAppendedBallotHasConflictingMetadata() {
+        JSONObject content = new JSONObject(serializeBallotResultService.apply(EXISTING_VOTE_JSON, CONFLICTING_BALLOT_RESULT));
+        assertVote(content.getJSONObject("vote"));
+        JSONArray ballots = content.getJSONArray("ballots");
+        assertEquals(2, ballots.length());
+        assertBallot(ballots.getJSONObject(0), EXISTING_BALLOT_RESULT);
+        assertBallot(ballots.getJSONObject(1), CONFLICTING_BALLOT_RESULT);
+    }
+
+    @Test
+    @DisplayName("preserves matching vote metadata when stored vote fields are reordered")
+    public void applyPreservesMatchingVoteMetadataWhenStoredVoteFieldsAreReordered() {
+        JSONObject content = new JSONObject(serializeBallotResultService.apply(REORDERED_EXISTING_VOTE_JSON, SAMPLE_BALLOT_RESULT));
+        assertVote(content.getJSONObject("vote"));
+        JSONArray ballots = content.getJSONArray("ballots");
+        assertEquals(2, ballots.length());
+        assertBallot(ballots.getJSONObject(0), EXISTING_BALLOT_RESULT);
+        assertBallot(ballots.getJSONObject(1), SAMPLE_BALLOT_RESULT);
+    }
+
+
 
     @Test(expected = IllegalStateException.class)
     @DisplayName("throws when existing content is invalid json")

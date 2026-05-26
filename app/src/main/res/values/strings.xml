@@ -13,4 +13,8 @@
     <string name="saved_ballot">Ballot saved</string>
     <string name="save_failed">Failed to save ballot: %1$s</string>
     <string name="error_message">Error: %1$s</string>
+    <string name="review_nonconformities_title">Nonconformities</string>
+    <string name="review_nonconformity_item">• %1$s</string>
+    <string name="torch_on">Torch On</string>
+    <string name="torch_off">Torch Off</string>
 </resources>

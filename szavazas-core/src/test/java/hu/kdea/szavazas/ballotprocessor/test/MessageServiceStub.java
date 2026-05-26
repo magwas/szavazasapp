@@ -16,4 +16,12 @@ public final class MessageServiceStub {
         when(mock.apply(any(String.class))).thenReturn(result);
         return mock;
     }
+
+    public static MessageService stubWithKeyedResults(java.util.Map<String, String> results) {
+        MessageService mock = mock(MessageService.class);
+        for (var entry : results.entrySet()) {
+            when(mock.apply(entry.getKey())).thenReturn(entry.getValue());
+        }
+        return mock;
+    }
 }

@@ -26,17 +26,17 @@ public class XMarkDetectionAndResultServiceTest extends TestBase implements XDet
     }
 
     @Test
-    @DisplayName("returns detection result with marks and ballot result")
-    public void applyReturnsResult() {
+    @DisplayName("The review screen uses the detected ballot row count instead of the QR row count")
+    public void applyReturnsDetectedBallotRowCount() {
         GridRegionData region = Mockito.mock(GridRegionData.class);
         when(region.projectionInput()).thenReturn(null);
         when(region.qrCentreX()).thenReturn(0);
         when(region.cropTop()).thenReturn(0);
         GridDetectionResultData gridResult = Mockito.mock(GridDetectionResultData.class);
         when(gridResult.region()).thenReturn(region);
-        when(gridResult.checkboxes()).thenReturn(List.of(new RectangleData(0, 0, 10, 10)));
+        when(gridResult.checkboxes()).thenReturn(List.of(new RectangleData(0, 0, 10, 10), new RectangleData(0, 10, 10, 10)));
         QrData qrData = new QrData("raw", SAMPLE_VOTE_METADATA, null);
-        when(xMarkDetectService.apply(null, List.of(new RectangleData(0, 0, 10, 10)), 0, 0, 3, 3))
+        when(xMarkDetectService.apply(null, List.of(new RectangleData(0, 0, 10, 10), new RectangleData(0, 10, 10, 10)), 0, 0, 3, 3))
             .thenReturn(SAMPLE_MARKS);
         XMarkDetectionResultData result = xMarkDetectionAndResultService.apply(gridResult, qrData);
         assertNotNull(result);
@@ -44,6 +44,7 @@ public class XMarkDetectionAndResultServiceTest extends TestBase implements XDet
         assertNotNull(result.ballotResult());
         assertEquals("raw", result.ballotResult().raw());
         assertEquals(SAMPLE_VOTE_METADATA, result.ballotResult().voteMetadata());
+        assertEquals(0, result.ballotResult().numRows());
     }
 
     @Test

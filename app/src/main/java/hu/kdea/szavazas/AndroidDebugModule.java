@@ -1,5 +1,7 @@
 package hu.kdea.szavazas;
 
+import android.content.Context;
+import dagger.Binds;
 import dagger.Module;
 import dagger.Provides;
 import hu.kdea.szavazas.ballotprocessor.debug.DebugImageSaver;
@@ -18,9 +20,7 @@ public interface AndroidDebugModule {
         return new AndroidImageSaverService(context);
     }
 
-    @Provides
-    @Singleton
-    static BallotResultFileRepository ballotResultFileRepository(Context context) {
-        return new BallotFileRepository(context);
-    }
+    @Binds
+    BallotResultFileRepository ballotResultFileRepository(BallotFileRepository ballotFileRepository);
+
 }

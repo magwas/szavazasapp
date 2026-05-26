@@ -25,3 +25,11 @@ dependencies {
     testImplementation libs.junit.jupiter
     testImplementation libs.mockito.core
 }
+
+java {
+    withSourcesJar()
+    withJavadocJar()
+    registerFeature("testFixtures") {
+        usingSourceSet(sourceSets.test)
+    }
+}

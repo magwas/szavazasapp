@@ -2,10 +2,6 @@ plugins {
     id "com.android.application"
 }
 
-tasks.withType(Test).configureEach {
-    jvmArgs("--add-modules=java.desktop")
-}
-
 android {
     namespace = "hu.kdea.szavazas"
     compileSdk = 34
@@ -41,16 +37,9 @@ android {
     }
 }
 
-// Configure all test tasks (including compilation) to use the Java desktop module
+// Configure JVM unit test runtime to use the Java desktop module when available.
 tasks.withType(Test).configureEach {
-    jvmArgs("--add-modules=java.desktop")
-}
-
-// Ensure unit tests compile with java.desktop
-tasks.withType(JavaCompile).configureEach {
-    if (name.toLowerCase().contains("test")) {
-        options.compilerArgs.add("--add-modules=java.desktop")
-    }
+    jvmArgs("--add-modules", "java.desktop")
 }
 
 dependencies {
@@ -84,11 +73,13 @@ dependencies {
 
     // Unit testing – include boofcv classes and JVM dependencies
     testImplementation "junit:junit:4.13.2"
+    testImplementation libs.junit.jupiter
     testImplementation "androidx.test:core:1.5.0"
     testImplementation "com.google.code.gson:gson:2.10.1"
     testImplementation "org.boofcv:boofcv-core:1.2.0"   // essential for ConvertBufferedImage
     testImplementation "org.boofcv:boofcv-geo:1.2.0"
     testImplementation "org.boofcv:boofcv-io:1.2.0"
+    testImplementation testFixtures(project(":szavazas-core"))
     // Android instrumentation tests
     androidTestImplementation "androidx.test.ext:junit:1.1.5"
     androidTestImplementation "androidx.test.espresso:espresso-core:3.5.1"

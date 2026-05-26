@@ -20,13 +20,14 @@ public class PrepareReviewGridServiceTest extends TestBase implements ReviewTest
     }
 
     @Test
-    @DisplayName("prepares review grid with spacer column and checked cells")
+    @DisplayName("The review screen still shows the ballot grid when vote-format warnings are absent")
     public void applyPreparesReviewGrid() {
         ReviewGridData reviewGridData = prepareReviewGridService.apply(SAMPLE_BALLOT_RESULT);
         List<ReviewCellData> cells = reviewGridData.cells();
         assertEquals(4, reviewGridData.columnCount());
         assertEquals(3, reviewGridData.rowCount());
         assertEquals("Vote", reviewGridData.voteName());
+        assertEquals(0, reviewGridData.nonconformities().size());
         assertEquals(true, cell(cells, 0, 0).checked());
         assertEquals(false, cell(cells, 0, 1).checked());
         assertEquals(true, cell(cells, 0, 1).hidden());
@@ -35,10 +36,18 @@ public class PrepareReviewGridServiceTest extends TestBase implements ReviewTest
     }
 
     @Test
-    @DisplayName("keeps raw vote name without separator")
+    @DisplayName("The review screen uses the ballot title when no separator is present")
     public void applyKeepsRawVoteNameWithoutSeparator() {
         ReviewGridData reviewGridData = prepareReviewGridService.apply(BALLOT_RESULT_WITHOUT_SEPARATOR);
         assertEquals("VoteOnly", reviewGridData.voteName());
         assertEquals(true, cell(reviewGridData.cells(), 1, 0).checked());
+    }
+
+    @Test
+    @DisplayName("The review screen shows every detected vote-format warning above the ballot grid")
+    public void applyIncludesReviewNonconformitiesFromBallotResult() {
+        ReviewGridData reviewGridData = prepareReviewGridService.apply(CONFLICTING_BALLOT_RESULT);
+        assertEquals(1, reviewGridData.nonconformities().size());
+        assertEquals(NONCONFORMITY_MESSAGE, reviewGridData.nonconformities().get(0).message());
     }
 }
