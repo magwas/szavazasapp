@@ -6,7 +6,7 @@ import boofcv.struct.image.GrayU8;
 import hu.kdea.szavazas.ballotprocessor.GridConstants;
 import javax.inject.Inject;
 
-public class ImageNormalizerService {
+public class ImageNormalizerService implements GridConstants {
     @Inject
     public ImageNormalizerService() {
     }

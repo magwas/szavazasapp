@@ -21,6 +21,20 @@ The following trivially fixable violations have been resolved:
 
 ---
 
+## Phase 3 Fixes (2026-05-29)
+
+The following unit-only violations have been resolved:
+
+| Category | Before | After | Status |
+|---|---|---|---|
+| Section 4.4: Overloaded `apply` in `SerializeBallotResultService` | 1 | 0 | ✅ RESOLVED — 1-arg `apply(BallotResultData)` removed; test updated to use 2-arg with `null` |
+| Section 11: `FindGridBoundaryService` missing `implements GridConstants` | 1 | 0 | ✅ RESOLVED — Added `implements GridConstants` |
+| Section 11: `ImageNormalizerService` missing `implements GridConstants` | 1 | 0 | ✅ RESOLVED — Added `implements GridConstants` |
+
+**Total:** 3 unit-only violations resolved.
+
+---
+
 ## Summary
 
 | Category | Count |
@@ -28,8 +42,10 @@ The following trivially fixable violations have been resolved:
 | Files audited | 93 |
 | Files with violations (original) | 55 |
 | Files with violations (after Phase 2 fixes) | 43 |
+| Files with violations (after Phase 3 fixes) | 41 |
 | Total violation instances (original) | ~130 |
 | Total violation instances (after Phase 2 fixes) | ~70 |
+| Total violation instances (after Phase 3 fixes) | ~67 |
 
 ---
 
@@ -42,51 +58,51 @@ The following trivially fixable violations have been resolved:
 - **Recommendation:** Remove this class. `LoggerWrapper` already wraps logging; inject `LoggerWrapper` everywhere instead.
 - **Fixed:** `Logger.java` deleted. Static `delegate` and `setDelegate()` moved into `LoggerWrapper`. `MainActivity` updated to call `LoggerWrapper.setDelegate()`. Both `szavazas-core:compileJava` and `app:compileDebugJavaWithJavac` pass.
 
-### 1.2 `InverterService.java`
+### 1.2 `InverterService.java` [NOT UNIT-ONLY: requires caller + Dagger module changes]
 - **Path:** `ballotprocessor/common/InverterService.java`
 - **Violation:** `final class` with `private` constructor and `static` method. Service units must have `@Inject` on constructor and be injectable via Dagger.
 - **Severity:** CRITICAL
-- **Recommendation:** Remove `final`, make constructor `@Inject`, make `apply` an instance method.
+- **Recommendation:** Remove `final`, make constructor `@Inject`, make `apply` an instance method. Affected callers: `ExtractGridRegionService.java`.
 
-### 1.3 `FindGridBoundaryService.java`
+### 1.3 `FindGridBoundaryService.java` [NOT UNIT-ONLY: requires caller + Dagger module changes]
 - **Path:** `ballotprocessor/grid/FindGridBoundaryService.java`
 - **Violation:** `final class` with `private` constructor and `static` method. Same pattern as `InverterService`.
 - **Severity:** CRITICAL
-- **Recommendation:** Remove `final`, make constructor `@Inject`, make `apply` an instance method.
+- **Recommendation:** Remove `final`, make constructor `@Inject`, make `apply` an instance method. Affected callers: `ExtractGridRegionService.java`.
 
-### 1.4 `ImageSaver.java`
+### 1.4 `ImageSaver.java` [NOT UNIT-ONLY: rename affects all importers and implementors]
 - **Path:** `ballotprocessor/debug/ImageSaver.java`
 - **Violation:** Plain interface without any unit type suffix. Does not match Wrapper, Repository, or any defined unit type.
 - **Severity:** MAJOR
-- **Recommendation:** If this wraps an external I/O concern, rename to `ImageSaverWrapper`. If a callback/strategy, consider whether it should be injected as a functional interface.
+- **Recommendation:** If this wraps an external I/O concern, rename to `ImageSaverWrapper`. If a callback/strategy, consider whether it should be injected as a functional interface. Affected importers: `PreprocessQRCropService`, `OrchestrateGridDetectionService`, `XMarkDebugRenderer`, and others.
 
-### 1.5 `GridOverlayDebugRenderer.java`
+### 1.5 `GridOverlayDebugRenderer.java` [NOT UNIT-ONLY: refactoring affects caller `OrchestrateGridDetectionService`]
 - **Path:** `ballotprocessor/debug/GridOverlayDebugRenderer.java`
 - **Violation:** Class does not match any unit type. No `@Inject` constructor, contains constants (`COLOR_WHITE`, etc.) as static fields, constructor is not DI-compatible.
 - **Severity:** CRITICAL
 - **Recommendation:** Refactor to a Service (with `@Inject` constructor) or properly classify as Glue if framework-required.
 
-### 1.6 `ProjectionDebugRenderer.java`
+### 1.6 `ProjectionDebugRenderer.java` [NOT UNIT-ONLY: refactoring affects caller `OrchestrateGridDetectionService`]
 - **Path:** `ballotprocessor/debug/ProjectionDebugRenderer.java`
 - **Violation:** Does not match any unit type. Has both `@Inject` and non-`@Inject` constructors, static constants, and creates its own dependencies (`new SetPixelService()`, `new DrawLineService()`, etc.) in the secondary constructor instead of injecting them.
 - **Severity:** CRITICAL
 - **Recommendation:** Refactor to Service with single `@Inject` constructor; inject all dependencies.
 
-### 1.7 `XMarkDebugRenderer.java`
+### 1.7 `XMarkDebugRenderer.java` [NOT UNIT-ONLY: refactoring affects callers]
 - **Path:** `ballotprocessor/debug/XMarkDebugRenderer.java`
 - **Violation:** Does not match any unit type. Same pattern as `ProjectionDebugRenderer`: dual constructors, static constants, creates dependencies manually.
 - **Severity:** CRITICAL
 - **Recommendation:** Refactor to Service with single `@Inject` constructor.
 
-### 1.8 `PreprocessingStep.java`
+### 1.8 `PreprocessingStep.java` [NOT UNIT-ONLY: affects all implementors + `PreprocessQRCropService`]
 - **Path:** `ballotprocessor/qr/preprocess/PreprocessingStep.java`
 - **Violation:** Plain interface without unit type suffix. Not a Wrapper (no external dependency), not a Repository.
 - **Severity:** MAJOR
-- **Recommendation:** Either rename with a proper suffix (e.g., Strategy pattern as a Delegate) or make each implementing class a proper Service.
+- **Recommendation:** Either rename with a proper suffix (e.g., Strategy pattern as a Delegate) or make each implementing class a proper Service. Affected implementors: `AdaptiveBinarizeService`, `EnhanceContrastService`, `SharpenService`.
 
 ---
 
-## 2. Services Exceeding 25 Lines of Code
+## 2. Services Exceeding 25 Lines of Code [ALL NOT UNIT-ONLY: extraction creates new Service files + needs Dagger bindings]
 
 ### 2.1 `BallotProcessingService.java` (~132 lines)
 - **Path:** `ballotprocessor/BallotProcessingService.java`
@@ -163,46 +179,47 @@ Rule: "Field names follow the pattern: dependency class name lowercased, removin
 
 Rule: "Has exactly one public method: `apply`."
 
-### 4.1 `ComputeRowProjectionService.java`
+### 4.1 `ComputeRowProjectionService.java` [NOT UNIT-ONLY: both overloads called externally by `ExtractGridRegionService` (4-arg) and `OrchestrateGridDetectionService`/`FindRowBoundaryService` (1-arg)]
 - Two overloaded `apply(GrayU8, RectangleData, int, int)` and `apply(GrayU8)`
 
-### 4.2 `MergeClosePeakService.java`
+### 4.2 `MergeClosePeakService.java` [NOT UNIT-ONLY: 1-arg version called by `OrchestrateGridDetectionService` and `ReconstructEdgeService`]
 - Two overloaded `apply(List<Integer>)` and `apply(List<Integer>, int)`
 
-### 4.3 `PairEdgeService.java`
+### 4.3 `PairEdgeService.java` [NOT UNIT-ONLY: 3-arg version called by `OrchestrateGridDetectionService`, 4-arg version called by `ReconstructEdgeService`]
 - Two overloaded `apply(List<Integer>, int, int)` and `apply(List<Integer>, int, int, int)`
 
-### 4.4 `SerializeBallotResultService.java`
-- Two overloaded `apply(BallotResultData)` and `apply(String, BallotResultData)`
+### 4.4 `SerializeBallotResultService.java` — ✅ RESOLVED (Phase 3)
+- ~~Two overloaded `apply(BallotResultData)` and `apply(String, BallotResultData)`~~
+- **Fixed:** 1-arg `apply(BallotResultData)` removed; test updated to use 2-arg with `null`.
 
 ---
 
-## 5. Services Not Using Constructor Injection / Missing `@Inject`
+## 5. Services Not Using Constructor Injection / Missing `@Inject` [ALL NOT UNIT-ONLY: adding @Inject requires Dagger module bindings + caller changes where `new` is used]
 
-### 5.1 `AdaptiveBinarizeService.java`
+### 5.1 `AdaptiveBinarizeService.java` [NOT UNIT-ONLY: `PreprocessQRCropService` uses `new` — caller must change]
 - **Path:** `ballotprocessor/qr/preprocess/AdaptiveBinarizeService.java`
 - **Violation:** No `@Inject` constructor. Instantiated via `new` in `PreprocessQRCropService`.
 
-### 5.2 `EnhanceContrastService.java`
+### 5.2 `EnhanceContrastService.java` [NOT UNIT-ONLY: `PreprocessQRCropService` uses `new` — caller must change]
 - **Path:** `ballotprocessor/qr/preprocess/EnhanceContrastService.java`
 - **Violation:** No `@Inject` constructor. Instantiated via `new`.
 
-### 5.3 `SharpenService.java`
+### 5.3 `SharpenService.java` [NOT UNIT-ONLY: `PreprocessQRCropService` uses `new` — caller must change]
 - **Path:** `ballotprocessor/qr/preprocess/SharpenService.java`
 - **Violation:** No `@Inject` constructor. Instantiated via `new`.
 
-### 5.4 `PreprocessQRService.java`
+### 5.4 `PreprocessQRService.java` [NOT UNIT-ONLY: `PreprocessQRCropService` uses `new` — caller must change]
 - **Path:** `ballotprocessor/qr/preprocess/PreprocessQRService.java`
 - **Violation:** No `@Inject` constructor. Constructor takes `ImageSaver` and `List<PreprocessingStep>` directly, not via Dagger.
 
 ---
 
-## 6. Services Manually Creating Dependencies Instead of Injecting Them
+## 6. Services Manually Creating Dependencies Instead of Injecting Them [ALL NOT UNIT-ONLY: require Dagger bindings + caller/constructor changes]
 
-### 6.1 `OrchestrateGridDetectionService.java`
+### 6.1 `OrchestrateGridDetectionService.java` [NOT UNIT-ONLY: constructor must change + Dagger bindings for new deps]
 - Creates `new SetPixelService()` and `new DrawLineService(pixelSetService)` manually. These should be constructor-injected.
 
-### 6.2 `PreprocessQRCropService.java`
+### 6.2 `PreprocessQRCropService.java` [NOT UNIT-ONLY: constructor must change + Dagger bindings for all preprocessing deps]
 - Creates `new EnhanceContrastService()`, `new SharpenService()`, `new AdaptiveBinarizeService()`, `new PreprocessQRService(...)` manually instead of injecting them.
 
 ---
@@ -215,7 +232,7 @@ Rule: "No other fields."
 - ~~Has `private static final String TAG = "SerializeBallotResult";` — a non-dependency field.~~
 - **Fixed:** Field removed; the string literal `"SerializeBallotResult"` is now inlined at its single usage site in `loggerWrapper.w(...)`.
 
-### 7.2 `OrchestrateGridDetectionService.java`
+### 7.2 `OrchestrateGridDetectionService.java` [NOT UNIT-ONLY: requires refactoring to inject `ProjectionDebugRenderer`/`GridOverlayDebugRenderer` + Dagger bindings]
 - `projectionRenderer` and `overlayRenderer` are not direct dependencies (not Service/State/Repository/Wrapper). They are constructed inside the constructor from other deps.
 
 ---
@@ -224,7 +241,7 @@ Rule: "No other fields."
 
 Rule: "Only field declarations – no methods."
 
-### 8.1 `AxisPeaksData.java`
+### 8.1 `AxisPeaksData.java` [NOT UNIT-ONLY: moving compact constructor logic requires a new Service or affects callers]
 - **Path:** `ballotprocessor/projection/AxisPeaksData.java`
 - **Violation:** Has a compact constructor with logic (`raw = Collections.unmodifiableList(raw)` etc.). Data records must have only field declarations; no methods or logic.
 
@@ -234,7 +251,7 @@ Rule: "Only field declarations – no methods."
 
 Rule: "Contains only `static final` fields (primitive, `String`, or immutable collections)."
 
-### 9.1 `DrawConstants.java`
+### 9.1 `DrawConstants.java` [NOT UNIT-ONLY: changing `int[]`→`List` requires `DrawTextService` to change from `GLYPHS[...]` to `GLYPHS.get(...)`]
 - **Path:** `ballotprocessor/draw/DrawConstants.java`
 - **Violation:** Contains `int[] GLYPHS` — a mutable array. Should be wrapped in an immutable collection or `List.of(...)`.
 
@@ -269,8 +286,8 @@ The following services reference constants (from `GridConstants`, `ProjectionCon
 - `ReconstructEdgeService` → implements `ProjectionConstants` ✅
 - `ArucoMarkerDetectionService` → implements `ArucoMarkerDetectionConstants` ✅
 - `DrawTextService` → implements `DrawConstants` ✅
-- `FindGridBoundaryService` — uses `GridConstants` but does not implement it (also violates unit type)
-- `ImageNormalizerService` — uses `GridConstants.NORMALIZE_SIZE_DIVIDER` and `GridConstants.NORMALIZE_SCALE` but does not implement `GridConstants`
+- `FindGridBoundaryService` — ✅ RESOLVED (Phase 3) ~~[UNIT-ONLY: just add `implements GridConstants`] uses `GridConstants` but does not implement it (also violates unit type)~~
+- `ImageNormalizerService` — ✅ RESOLVED (Phase 3) ~~[UNIT-ONLY: just add `implements GridConstants`] uses `GridConstants.NORMALIZE_SIZE_DIVIDER` and `GridConstants.NORMALIZE_SCALE` but does not implement `GridConstants`~~
 
 ---
 
@@ -279,33 +296,33 @@ The following services reference constants (from `GridConstants`, `ProjectionCon
 | File | Severity | Violations |
 |---|---|---|
 
-| `InverterService.java` | CRITICAL | Static method, no DI |
-| `FindGridBoundaryService.java` | CRITICAL | Static method, no DI |
-| `GridOverlayDebugRenderer.java` | CRITICAL | Not a valid unit type, no DI |
-| `ProjectionDebugRenderer.java` | CRITICAL | Not a valid unit type, dual constructors |
-| `XMarkDebugRenderer.java` | CRITICAL | Not a valid unit type, dual constructors |
-| `ImageSaver.java` | MAJOR | Interface without unit type suffix |
-| `PreprocessingStep.java` | MAJOR | Interface without unit type suffix |
-| `AdaptiveBinarizeService.java` | CRITICAL | No @Inject constructor |
-| `EnhanceContrastService.java` | CRITICAL | No @Inject constructor |
-| `SharpenService.java` | CRITICAL | No @Inject constructor |
-| `PreprocessQRService.java` | CRITICAL | No @Inject constructor |
-| `OrchestrateGridDetectionService.java` | CRITICAL | Manual dependency creation, >25 LoC, extra fields |
-| `PreprocessQRCropService.java` | CRITICAL | Manual dependency creation, >25 LoC |
-| `BallotProcessingService.java` | MAJOR | >25 LoC |
-| `SerializeBallotResultService.java` | MAJOR | >25 LoC, overloaded apply |
-| `ArucoWarpService.java` | MAJOR | >25 LoC |
-| `ArucoMarkerDetectionService.java` | MAJOR | >25 LoC |
-| `XDetectService.java` | MAJOR | >25 LoC |
-| `XMarkDetectService.java` | MAJOR | >25 LoC |
-| `ParseQrResultService.java` | MAJOR | >25 LoC |
-| `ReconstructEdgeService.java` | MAJOR | >25 LoC |
-| `DrawOvalService.java` | MAJOR | >25 LoC |
-| `AxisPeaksData.java` | MAJOR | Compact constructor with logic |
-| `DrawConstants.java` | MAJOR | Mutable array field |
-| `ComputeRowProjectionService.java` | MAJOR | Overloaded apply, >25 LoC |
-| `MergeClosePeakService.java` | MAJOR | Overloaded apply |
-| `PairEdgeService.java` | MAJOR | Overloaded apply |
+| `InverterService.java` | CRITICAL | Static method, no DI ⟦NOT UNIT-ONLY⟧ |
+| `FindGridBoundaryService.java` | CRITICAL | Static method, no DI ⟦NOT UNIT-ONLY⟧ |
+| `GridOverlayDebugRenderer.java` | CRITICAL | Not a valid unit type, no DI ⟦NOT UNIT-ONLY⟧ |
+| `ProjectionDebugRenderer.java` | CRITICAL | Not a valid unit type, dual constructors ⟦NOT UNIT-ONLY⟧ |
+| `XMarkDebugRenderer.java` | CRITICAL | Not a valid unit type, dual constructors ⟦NOT UNIT-ONLY⟧ |
+| `ImageSaver.java` | MAJOR | Interface without unit type suffix ⟦NOT UNIT-ONLY⟧ |
+| `PreprocessingStep.java` | MAJOR | Interface without unit type suffix ⟦NOT UNIT-ONLY⟧ |
+| `AdaptiveBinarizeService.java` | CRITICAL | No @Inject constructor ⟦NOT UNIT-ONLY⟧ |
+| `EnhanceContrastService.java` | CRITICAL | No @Inject constructor ⟦NOT UNIT-ONLY⟧ |
+| `SharpenService.java` | CRITICAL | No @Inject constructor ⟦NOT UNIT-ONLY⟧ |
+| `PreprocessQRService.java` | CRITICAL | No @Inject constructor ⟦NOT UNIT-ONLY⟧ |
+| `OrchestrateGridDetectionService.java` | CRITICAL | Manual dependency creation, >25 LoC, extra fields ⟦NOT UNIT-ONLY⟧ |
+| `PreprocessQRCropService.java` | CRITICAL | Manual dependency creation, >25 LoC ⟦NOT UNIT-ONLY⟧ |
+| `BallotProcessingService.java` | MAJOR | >25 LoC ⟦NOT UNIT-ONLY⟧ |
+| `SerializeBallotResultService.java` | MAJOR | >25 LoC ⟦NOT UNIT-ONLY⟧, overloaded apply ⟦✅ Phase 3⟧ |
+| `ArucoWarpService.java` | MAJOR | >25 LoC ⟦NOT UNIT-ONLY⟧ |
+| `ArucoMarkerDetectionService.java` | MAJOR | >25 LoC ⟦NOT UNIT-ONLY⟧ |
+| `XDetectService.java` | MAJOR | >25 LoC ⟦NOT UNIT-ONLY⟧ |
+| `XMarkDetectService.java` | MAJOR | >25 LoC ⟦NOT UNIT-ONLY⟧ |
+| `ParseQrResultService.java` | MAJOR | >25 LoC ⟦NOT UNIT-ONLY⟧ |
+| `ReconstructEdgeService.java` | MAJOR | >25 LoC ⟦NOT UNIT-ONLY⟧ |
+| `DrawOvalService.java` | MAJOR | >25 LoC ⟦NOT UNIT-ONLY⟧ |
+| `AxisPeaksData.java` | MAJOR | Compact constructor with logic ⟦NOT UNIT-ONLY⟧ |
+| `DrawConstants.java` | MAJOR | Mutable array field ⟦NOT UNIT-ONLY⟧ |
+| `ComputeRowProjectionService.java` | MAJOR | Overloaded apply ⟦NOT UNIT-ONLY⟧, >25 LoC ⟦NOT UNIT-ONLY⟧ |
+| `MergeClosePeakService.java` | MAJOR | Overloaded apply ⟦NOT UNIT-ONLY⟧ |
+| `PairEdgeService.java` | MAJOR | Overloaded apply ⟦NOT UNIT-ONLY⟧ |
 
 ---
 

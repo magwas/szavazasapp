@@ -26,7 +26,7 @@ public class SerializeBallotResultServiceTest extends TestBase implements Review
     @Test
     @DisplayName("serializes ballot result into vote object and ballots array")
     public void applySerializesBallotResultIntoVoteObjectAndBallotsArray() {
-        JSONObject content = new JSONObject(serializeBallotResultService.apply(SAMPLE_BALLOT_RESULT));
+        JSONObject content = new JSONObject(serializeBallotResultService.apply(null, SAMPLE_BALLOT_RESULT));
         assertVote(content.getJSONObject("vote"));
         JSONArray ballots = content.getJSONArray("ballots");
         assertEquals(1, ballots.length());

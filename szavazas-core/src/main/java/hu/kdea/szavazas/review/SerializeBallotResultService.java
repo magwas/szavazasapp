@@ -18,10 +18,6 @@ public class SerializeBallotResultService {
         this.loggerWrapper = loggerWrapper;
     }
 
-    public String apply(BallotResultData ballotResultData) {
-        return apply(null, ballotResultData);
-    }
-
     public String apply(String existingContent, BallotResultData ballotResultData) {
         try {
             JSONObject content = content(existingContent);
