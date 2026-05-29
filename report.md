@@ -58,7 +58,7 @@ The following unit-only violations have been resolved:
 - **Recommendation:** Remove this class. `LoggerWrapper` already wraps logging; inject `LoggerWrapper` everywhere instead.
 - **Fixed:** `Logger.java` deleted. Static `delegate` and `setDelegate()` moved into `LoggerWrapper`. `MainActivity` updated to call `LoggerWrapper.setDelegate()`. Both `szavazas-core:compileJava` and `app:compileDebugJavaWithJavac` pass.
 
-### 1.2 `InverterService.java` [NOT UNIT-ONLY: requires caller + Dagger module changes]
+### 1.2 `InverterService.java` [NOT UNIT-ONLY: requires caller + Dagger module changes] — ✅ RESOLVED 
 - **Path:** `ballotprocessor/common/InverterService.java`
 - **Violation:** `final class` with `private` constructor and `static` method. Service units must have `@Inject` on constructor and be injectable via Dagger.
 - **Severity:** CRITICAL

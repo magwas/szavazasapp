@@ -12,18 +12,21 @@ public class ExtractGridRegionService {
     private final ImageNormalizerService imageNormalizer;
     private final ComputeRowProjectionService computeRowProjection;
     private final FindRawPeakService findRawPeak;
+    private final InverterService inverter;
 
     @Inject
     public ExtractGridRegionService(ImageNormalizerService imageNormalizer,
                                     ComputeRowProjectionService computeRowProjection,
-                                    FindRawPeakService findRawPeak) {
+                                    FindRawPeakService findRawPeak,
+                                    InverterService inverter) {
         this.imageNormalizer = imageNormalizer;
         this.computeRowProjection = computeRowProjection;
         this.findRawPeak = findRawPeak;
+        this.inverter = inverter;
     }
 
     public GridRegionData apply(GrayU8 scaledGray, int qrCentreX, int qrBottomY, Double markerTopY) {
-        GrayU8 inverted = InverterService.apply(scaledGray);
+        GrayU8 inverted = inverter.apply(scaledGray);
         RowBoundaryData boundary = FindGridBoundaryService.apply(computeRowProjection.apply(inverted), qrBottomY, markerTopY, findRawPeak);
         if (boundary == null) {
             return null;

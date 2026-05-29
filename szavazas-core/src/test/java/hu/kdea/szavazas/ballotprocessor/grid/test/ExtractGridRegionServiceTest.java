@@ -6,7 +6,9 @@ import static org.junit.Assert.assertNull;
 
 import boofcv.struct.image.GrayU8;
 import hu.kdea.szavazas.ballotprocessor.common.ImageNormalizerService;
+import hu.kdea.szavazas.ballotprocessor.common.InverterService;
 import hu.kdea.szavazas.ballotprocessor.common.test.ImageNormalizerStub;
+import hu.kdea.szavazas.ballotprocessor.common.test.InverterStub;
 import hu.kdea.szavazas.ballotprocessor.grid.ExtractGridRegionService;
 import hu.kdea.szavazas.ballotprocessor.grid.GridRegionData;
 import hu.kdea.szavazas.ballotprocessor.projection.ComputeRowProjectionService;
@@ -22,15 +24,16 @@ public class ExtractGridRegionServiceTest extends TestBase implements GridTestDa
     private final ImageNormalizerService imageNormalizer = ImageNormalizerStub.stub();
     private final ComputeRowProjectionService computeRowProjectionService = ComputeRowProjectionStub.stub();
     private final FindRawPeakService findRawPeakService = FindRawPeakStub.stub();
+    private final InverterService inverter = InverterStub.stub();
     private final ExtractGridRegionService extractGridRegionService =
-            new ExtractGridRegionService(imageNormalizer, computeRowProjectionService, findRawPeakService);
+            new ExtractGridRegionService(imageNormalizer, computeRowProjectionService, findRawPeakService, inverter);
 
     @Test
     @DisplayName("null is returned when boundary detection fails")
     public void applyReturnsNullWhenBoundaryFails() {
         ComputeRowProjectionService stubProjection = ComputeRowProjectionStub.stubWithResult(new float[30]);
         FindRawPeakService stubPeak = FindRawPeakStub.stubWithResult(java.util.Collections.singletonList(10));
-        ExtractGridRegionService service = new ExtractGridRegionService(imageNormalizer, stubProjection, stubPeak);
+        ExtractGridRegionService service = new ExtractGridRegionService(imageNormalizer, stubProjection, stubPeak, inverter);
         assertNull(service.apply(PROJECTION_INPUT_20X30, 5, 0, null));
     }
 
@@ -39,7 +42,7 @@ public class ExtractGridRegionServiceTest extends TestBase implements GridTestDa
     public void applyReturnsNullWhenCropNonPositive() {
         ComputeRowProjectionService stubProjection = ComputeRowProjectionStub.stubWithResult(new float[30]);
         FindRawPeakService stubPeak = FindRawPeakStub.stubWithResult(java.util.Arrays.asList(10, 20));
-        ExtractGridRegionService service = new ExtractGridRegionService(imageNormalizer, stubProjection, stubPeak);
+        ExtractGridRegionService service = new ExtractGridRegionService(imageNormalizer, stubProjection, stubPeak, inverter);
         // qrCentreX = 20, scaledGray.width = 20 -> cropWidth = 0
         assertNull(service.apply(PROJECTION_INPUT_20X30, 20, 0, null));
     }
@@ -51,7 +54,7 @@ public class ExtractGridRegionServiceTest extends TestBase implements GridTestDa
         FindRawPeakService stubPeak = FindRawPeakStub.stubWithResult(java.util.Arrays.asList(15, 35));
         GrayU8 normalised = new GrayU8(10, 15);
         ImageNormalizerService stubNormalizer = ImageNormalizerStub.stubWithResult(normalised);
-        ExtractGridRegionService service = new ExtractGridRegionService(stubNormalizer, stubProjection, stubPeak);
+        ExtractGridRegionService service = new ExtractGridRegionService(stubNormalizer, stubProjection, stubPeak, inverter);
         GridRegionData result = service.apply(PROJECTION_INPUT_30X40, 10, 0, null);
         assertNotNull(result);
         assertEquals(10, result.qrCentreX());
@@ -65,7 +68,7 @@ public class ExtractGridRegionServiceTest extends TestBase implements GridTestDa
         FindRawPeakService stubPeak = FindRawPeakStub.stubWithResult(java.util.Arrays.asList(15, 35));
         GrayU8 normalised = new GrayU8(20, 15);
         ImageNormalizerService stubNormalizer = ImageNormalizerStub.stubWithResult(normalised);
-        ExtractGridRegionService service = new ExtractGridRegionService(stubNormalizer, stubProjection, stubPeak);
+        ExtractGridRegionService service = new ExtractGridRegionService(stubNormalizer, stubProjection, stubPeak, inverter);
         GridRegionData result = service.apply(PROJECTION_INPUT_30X40, 10, 0, null);
         assertNotNull(result);
         // cropWidth = scaledGray.width - qrCentreX = 30 - 10 = 20
