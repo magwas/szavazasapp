@@ -1,13 +1,13 @@
 package hu.kdea.szavazas.ballotprocessor.projection.test;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import hu.kdea.szavazas.ballotprocessor.projection.MergeClosePeakService;
 import io.github.magwas.konveyor.testing.TestBase;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
 
 public class MergeClosePeakServiceTest extends TestBase {

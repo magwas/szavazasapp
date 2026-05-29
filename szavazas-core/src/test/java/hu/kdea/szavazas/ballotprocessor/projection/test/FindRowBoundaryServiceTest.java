@@ -1,6 +1,6 @@
 package hu.kdea.szavazas.ballotprocessor.projection.test;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import boofcv.struct.image.GrayU8;
 import hu.kdea.szavazas.ballotprocessor.common.RectangleData;
@@ -8,7 +8,7 @@ import hu.kdea.szavazas.ballotprocessor.common.RowBoundaryData;
 import hu.kdea.szavazas.ballotprocessor.projection.FindMaxPeakService;
 import hu.kdea.szavazas.ballotprocessor.projection.FindRowBoundaryService;
 import io.github.magwas.konveyor.testing.TestBase;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
 
 public class FindRowBoundaryServiceTest extends TestBase implements ProjectionTestData {

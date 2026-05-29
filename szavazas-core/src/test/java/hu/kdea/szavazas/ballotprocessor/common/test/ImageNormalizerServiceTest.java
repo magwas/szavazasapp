@@ -1,12 +1,12 @@
 package hu.kdea.szavazas.ballotprocessor.common.test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import boofcv.struct.image.GrayU8;
 import hu.kdea.szavazas.ballotprocessor.common.ImageNormalizerService;
 import io.github.magwas.konveyor.testing.TestBase;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
 
 public class ImageNormalizerServiceTest extends TestBase implements CommonTestData {
@@ -29,8 +29,7 @@ public class ImageNormalizerServiceTest extends TestBase implements CommonTestDa
         for (int y = 0; y < result.height; y++) {
             for (int x = 0; x < result.width; x++) {
                 int v = result.get(x, y);
-                assertTrue("value " + v + " at (" + x + "," + y + ") is not binary",
-                        v == 0 || v == 255);
+                assertTrue(v == 0 || v == 255, "value " + v + " at (" + x + "," + y + ") is not binary");
             }
         }
     }
@@ -47,7 +46,6 @@ public class ImageNormalizerServiceTest extends TestBase implements CommonTestDa
                 if (result.get(x, y) == 255) maxCount++;
             }
         }
-        assertTrue("expected both 0 and 255 values, got zeroCount=" + zeroCount + " maxCount=" + maxCount,
-                zeroCount > 0 && maxCount > 0);
+        assertTrue(zeroCount > 0 && maxCount > 0, "expected both 0 and 255 values, got zeroCount=" + zeroCount + " maxCount=" + maxCount);
     }
 }

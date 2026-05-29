@@ -1,7 +1,7 @@
 package hu.kdea.szavazas.ballotprocessor.x;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyList;
@@ -15,7 +15,7 @@ import hu.kdea.szavazas.ballotprocessor.common.RectangleData;
 import hu.kdea.szavazas.ballotprocessor.common.test.LoggerWrapperStub;
 import io.github.magwas.konveyor.testing.TestBase;
 import java.util.List;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
 
 public class XMarkDetectServiceTest extends TestBase implements XDetectTestData {

@@ -1,12 +1,12 @@
 package hu.kdea.szavazas.ballotprocessor.test;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import boofcv.struct.image.GrayU8;
 import boofcv.struct.image.Planar;
 import hu.kdea.szavazas.ballotprocessor.GrayPlanarToGrayService;
 import io.github.magwas.konveyor.testing.TestBase;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
 
 public class GrayPlanarToGrayServiceTest extends TestBase implements BallotProcessorStage1TestData {

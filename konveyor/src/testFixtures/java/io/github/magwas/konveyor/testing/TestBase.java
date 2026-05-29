@@ -1,12 +1,12 @@
 package io.github.magwas.konveyor.testing;
 
-import org.junit.Before;
+import org.junit.jupiter.api.BeforeEach;
 
 public class TestBase {
 
     public static String environmentState;
 
-    @Before
+    @BeforeEach
     public void resetEnvironmentState() throws Throwable {
         environmentState = null;
         setUp();

@@ -1,12 +1,12 @@
 package hu.kdea.szavazas.ballotprocessor.test;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import hu.kdea.szavazas.ballotprocessor.LocaleState;
 import hu.kdea.szavazas.ballotprocessor.MessageService;
 import io.github.magwas.konveyor.testing.TestBase;
 import java.util.Locale;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
 
 public class MessageServiceTest extends TestBase {

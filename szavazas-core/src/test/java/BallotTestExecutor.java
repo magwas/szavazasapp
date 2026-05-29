@@ -14,7 +14,10 @@ import java.util.Set;
 import javax.imageio.ImageIO;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.junit.Assert;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class BallotTestExecutor {
     private final File testResources = new File("src/test/resources/test_images");
@@ -25,12 +28,12 @@ public class BallotTestExecutor {
         imageDebugDir.mkdirs();
         File captureFile = new File(testResources, imageName + "_capture.jpg");
         File jsonFile = new File(testResources, imageName + ".json");
-        Assert.assertTrue("Missing test image: " + captureFile, captureFile.exists());
-        Assert.assertTrue("Missing JSON: " + jsonFile, jsonFile.exists());
+        assertTrue(captureFile.exists(), "Missing test image: " + captureFile);
+        assertTrue(jsonFile.exists(), "Missing JSON: " + jsonFile);
         JSONObject jsonObject = new JSONObject(readJson(jsonFile));
         JSONObject vote = jsonObject.getJSONObject("vote");
         JSONArray ballots = jsonObject.getJSONArray("ballots");
-        Assert.assertEquals("single expected ballot", 1, ballots.length());
+        assertEquals(1, ballots.length(), "single expected ballot");
         JSONObject ballot = ballots.getJSONObject(0);
         int numSupport = vote.getInt("supportColumnCount");
         int numRows = ballot.getInt("numRows");
@@ -41,12 +44,12 @@ public class BallotTestExecutor {
         var actualResult = outcome.result();
         var error = outcome.error();
         String errorMessage = error == null ? null : error.message();
-        Assert.assertNull("Processing error: " + errorMessage, errorMessage);
-        Assert.assertNotNull("No result", actualResult);
-        Assert.assertEquals("numSupport", numSupport, actualResult.numSupport());
-        Assert.assertEquals("numRows", numRows, actualResult.numRows());
-        Assert.assertEquals("X marks size", expectedXMarks.size(), actualResult.xCells().size());
-        Assert.assertEquals("X marks", expectedXMarks, new HashSet<>(actualResult.xCells()));
+        assertNull(errorMessage, "Processing error: " + errorMessage);
+        assertNotNull(actualResult, "No result");
+        assertEquals(numSupport, actualResult.numSupport(), "numSupport");
+        assertEquals(numRows, actualResult.numRows(), "numRows");
+        assertEquals(expectedXMarks.size(), actualResult.xCells().size(), "X marks size");
+        assertEquals(expectedXMarks, new HashSet<>(actualResult.xCells()), "X marks");
     }
 
     private Set<CellPositionData> extractXMarks(JSONArray xCells) {

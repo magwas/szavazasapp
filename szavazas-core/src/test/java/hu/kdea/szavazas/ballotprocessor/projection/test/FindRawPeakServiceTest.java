@@ -1,13 +1,13 @@
 package hu.kdea.szavazas.ballotprocessor.projection.test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 import hu.kdea.szavazas.ballotprocessor.projection.FindRawPeakService;
 import hu.kdea.szavazas.ballotprocessor.test.BallotProcessorStage1TestData;
 import io.github.magwas.konveyor.testing.TestBase;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
 
 public class FindRawPeakServiceTest extends TestBase implements BallotProcessorStage1TestData {

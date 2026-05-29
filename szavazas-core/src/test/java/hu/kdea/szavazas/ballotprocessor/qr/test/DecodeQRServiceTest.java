@@ -1,12 +1,12 @@
 package hu.kdea.szavazas.ballotprocessor.qr.test;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import com.google.zxing.Result;
 import hu.kdea.szavazas.ballotprocessor.qr.DecodeQRService;
 import io.github.magwas.konveyor.testing.TestBase;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
 
 public class DecodeQRServiceTest extends TestBase {

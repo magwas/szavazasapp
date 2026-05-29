@@ -1,13 +1,13 @@
 package hu.kdea.szavazas.ballotprocessor.qr.preprocess.test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import boofcv.struct.image.GrayU8;
 import hu.kdea.szavazas.ballotprocessor.qr.preprocess.AdaptiveBinarizeService;
 import hu.kdea.szavazas.ballotprocessor.test.BallotProcessorStage1TestData;
 import io.github.magwas.konveyor.testing.TestBase;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
 
 public class AdaptiveBinarizeServiceTest extends TestBase implements BallotProcessorStage1TestData {
@@ -21,7 +21,7 @@ public class AdaptiveBinarizeServiceTest extends TestBase implements BallotProce
         for (int y = 0; y < result.height; y++) {
             for (int x = 0; x < result.width; x++) {
                 int v = result.get(x, y);
-                assertTrue("value " + v + " is not binary", v == 0 || v == 255);
+                assertTrue(v == 0 || v == 255, "value " + v + " is not binary");
             }
         }
     }
@@ -43,7 +43,7 @@ public class AdaptiveBinarizeServiceTest extends TestBase implements BallotProce
         for (int y = 0; y < result.height; y++) {
             for (int x = 0; x < result.width; x++) {
                 int v = result.get(x, y);
-                assertTrue("value " + v + " is not binary", v == 0 || v == 255);
+                assertTrue(v == 0 || v == 255, "value " + v + " is not binary");
             }
         }
     }

@@ -1,7 +1,7 @@
 package hu.kdea.szavazas.ballotprocessor.vote;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import boofcv.struct.image.Planar;
 import boofcv.struct.image.GrayU8;
@@ -27,7 +27,7 @@ import hu.kdea.szavazas.ballotprocessor.x.XMarkDetectionResultData;
 import io.github.magwas.konveyor.testing.TestBase;
 import java.util.List;
 import org.json.JSONObject;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
 import org.mockito.Mockito;
 

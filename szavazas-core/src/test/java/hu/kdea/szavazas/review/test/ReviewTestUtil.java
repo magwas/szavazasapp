@@ -20,31 +20,31 @@ public final class ReviewTestUtil {
     }
 
     public static void assertVote(JSONObject vote) {
-        org.junit.Assert.assertEquals("vote-1", vote.getString("voteId"));
-        org.junit.Assert.assertEquals("Vote", vote.getString("voteName"));
-        org.junit.Assert.assertEquals(3, vote.getInt("candidateCount"));
+        org.junit.jupiter.api.Assertions.assertEquals("vote-1", vote.getString("voteId"));
+        org.junit.jupiter.api.Assertions.assertEquals("Vote", vote.getString("voteName"));
+        org.junit.jupiter.api.Assertions.assertEquals(3, vote.getInt("candidateCount"));
         JSONArray candidates = vote.getJSONArray("candidates");
-        org.junit.Assert.assertEquals(3, candidates.length());
-        org.junit.Assert.assertEquals("Alice", candidates.getString(0));
-        org.junit.Assert.assertEquals("Bob", candidates.getString(1));
-        org.junit.Assert.assertEquals("Carol", candidates.getString(2));
-        org.junit.Assert.assertEquals(2, vote.getInt("supportColumnCount"));
+        org.junit.jupiter.api.Assertions.assertEquals(3, candidates.length());
+        org.junit.jupiter.api.Assertions.assertEquals("Alice", candidates.getString(0));
+        org.junit.jupiter.api.Assertions.assertEquals("Bob", candidates.getString(1));
+        org.junit.jupiter.api.Assertions.assertEquals("Carol", candidates.getString(2));
+        org.junit.jupiter.api.Assertions.assertEquals(2, vote.getInt("supportColumnCount"));
         JSONArray issuedBallotIds = vote.getJSONArray("issuedBallotIds");
-        org.junit.Assert.assertEquals(2, issuedBallotIds.length());
-        org.junit.Assert.assertEquals("Vote-001", issuedBallotIds.getString(0));
-        org.junit.Assert.assertEquals("Vote-002", issuedBallotIds.getString(1));
+        org.junit.jupiter.api.Assertions.assertEquals(2, issuedBallotIds.length());
+        org.junit.jupiter.api.Assertions.assertEquals("Vote-001", issuedBallotIds.getString(0));
+        org.junit.jupiter.api.Assertions.assertEquals("Vote-002", issuedBallotIds.getString(1));
     }
 
     public static void assertBallot(JSONObject ballot, BallotResultData ballotResultData) {
-        org.junit.Assert.assertEquals(ballotResultData.raw(), ballot.getString("raw"));
-        org.junit.Assert.assertEquals(ballotResultData.numSupport(), ballot.getInt("numSupport"));
-        org.junit.Assert.assertEquals(ballotResultData.numRows(), ballot.getInt("numRows"));
+        org.junit.jupiter.api.Assertions.assertEquals(ballotResultData.raw(), ballot.getString("raw"));
+        org.junit.jupiter.api.Assertions.assertEquals(ballotResultData.numSupport(), ballot.getInt("numSupport"));
+        org.junit.jupiter.api.Assertions.assertEquals(ballotResultData.numRows(), ballot.getInt("numRows"));
         JSONArray xCells = ballot.getJSONArray("xCells");
-        org.junit.Assert.assertEquals(ballotResultData.xCells().size(), xCells.length());
+        org.junit.jupiter.api.Assertions.assertEquals(ballotResultData.xCells().size(), xCells.length());
         for (int index = 0; index < xCells.length(); index++) {
             JSONObject cell = xCells.getJSONObject(index);
-            org.junit.Assert.assertEquals(ballotResultData.xCells().get(index).row(), cell.getInt("row"));
-            org.junit.Assert.assertEquals(ballotResultData.xCells().get(index).col(), cell.getInt("col"));
+            org.junit.jupiter.api.Assertions.assertEquals(ballotResultData.xCells().get(index).row(), cell.getInt("row"));
+            org.junit.jupiter.api.Assertions.assertEquals(ballotResultData.xCells().get(index).col(), cell.getInt("col"));
         }
     }
 }

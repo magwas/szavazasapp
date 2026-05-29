@@ -1,6 +1,6 @@
 package hu.kdea.szavazas.review.test;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static hu.kdea.szavazas.review.test.ReviewTestUtil.cell;
 
 import hu.kdea.szavazas.review.PrepareReviewGridService;
@@ -8,7 +8,7 @@ import hu.kdea.szavazas.review.ReviewCellData;
 import hu.kdea.szavazas.review.ReviewGridData;
 import io.github.magwas.konveyor.testing.TestBase;
 import java.util.List;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
 
 public class PrepareReviewGridServiceTest extends TestBase implements ReviewTestData {

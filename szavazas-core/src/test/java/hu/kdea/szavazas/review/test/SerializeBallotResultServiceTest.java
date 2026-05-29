@@ -3,16 +3,16 @@ package hu.kdea.szavazas.review.test;
 import static hu.kdea.szavazas.review.test.ReviewTestUtil.assertBallot;
 import static hu.kdea.szavazas.review.test.ReviewTestUtil.assertVote;
 import static hu.kdea.szavazas.review.test.ReviewTestUtil.normalizeJsonObject;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import hu.kdea.szavazas.review.SerializeBallotResultService;
 import io.github.magwas.konveyor.testing.TestBase;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
 
 public class SerializeBallotResultServiceTest extends TestBase implements ReviewTestData {
@@ -78,9 +78,10 @@ public class SerializeBallotResultServiceTest extends TestBase implements Review
 
 
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     @DisplayName("throws when existing content is invalid json")
     public void applyThrowsWhenExistingContentIsInvalidJson() {
-        serializeBallotResultService.apply("not json", SAMPLE_BALLOT_RESULT);
+        assertThrows(IllegalStateException.class, () ->
+            serializeBallotResultService.apply("not json", SAMPLE_BALLOT_RESULT));
     }
 }

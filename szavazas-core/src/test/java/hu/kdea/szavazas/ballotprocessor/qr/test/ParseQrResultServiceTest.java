@@ -1,13 +1,14 @@
 package hu.kdea.szavazas.ballotprocessor.qr.test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.zxing.Result;
 import hu.kdea.szavazas.ballotprocessor.qr.ParseQrResultService;
 import hu.kdea.szavazas.ballotprocessor.qr.QrData;
 import io.github.magwas.konveyor.testing.TestBase;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
 
 public class ParseQrResultServiceTest extends TestBase implements QrDecoderTestData {
@@ -33,52 +34,60 @@ public class ParseQrResultServiceTest extends TestBase implements QrDecoderTestD
         assertEquals(SAMPLE_BBOX, qrResult.bbox());
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     @DisplayName("fails when QR text is missing support count")
     public void applyFailsWhenQrTextIsMissingSupportCount() {
-        parseQrResultService.apply(new Result(QR_TEXT_MISSING_SUPPORT, null, SAMPLE_RESULT_POINTS, null));
+        assertThrows(IllegalArgumentException.class, () ->
+            parseQrResultService.apply(new Result(QR_TEXT_MISSING_SUPPORT, null, SAMPLE_RESULT_POINTS, null)));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     @DisplayName("fails when QR text is missing row count")
     public void applyFailsWhenQrTextIsMissingRowCount() {
-        parseQrResultService.apply(new Result(QR_TEXT_MISSING_ROWS, null, SAMPLE_RESULT_POINTS, null));
+        assertThrows(IllegalArgumentException.class, () ->
+            parseQrResultService.apply(new Result(QR_TEXT_MISSING_ROWS, null, SAMPLE_RESULT_POINTS, null)));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     @DisplayName("fails when support count is not numeric")
     public void applyFailsWhenSupportCountIsNotNumeric() {
-        parseQrResultService.apply(new Result(QR_TEXT_INVALID_SUPPORT, null, SAMPLE_RESULT_POINTS, null));
+        assertThrows(IllegalArgumentException.class, () ->
+            parseQrResultService.apply(new Result(QR_TEXT_INVALID_SUPPORT, null, SAMPLE_RESULT_POINTS, null)));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     @DisplayName("fails when row count is not numeric")
     public void applyFailsWhenRowCountIsNotNumeric() {
-        parseQrResultService.apply(new Result(QR_TEXT_INVALID_ROWS, null, SAMPLE_RESULT_POINTS, null));
+        assertThrows(IllegalArgumentException.class, () ->
+            parseQrResultService.apply(new Result(QR_TEXT_INVALID_ROWS, null, SAMPLE_RESULT_POINTS, null)));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     @DisplayName("fails when support count is zero")
     public void applyFailsWhenSupportCountIsZero() {
-        parseQrResultService.apply(new Result(QR_TEXT_ZERO_SUPPORT, null, SAMPLE_RESULT_POINTS, null));
+        assertThrows(IllegalArgumentException.class, () ->
+            parseQrResultService.apply(new Result(QR_TEXT_ZERO_SUPPORT, null, SAMPLE_RESULT_POINTS, null)));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     @DisplayName("fails when row count is zero")
     public void applyFailsWhenRowCountIsZero() {
-        parseQrResultService.apply(new Result(QR_TEXT_ZERO_ROWS, null, SAMPLE_RESULT_POINTS, null));
+        assertThrows(IllegalArgumentException.class, () ->
+            parseQrResultService.apply(new Result(QR_TEXT_ZERO_ROWS, null, SAMPLE_RESULT_POINTS, null)));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     @DisplayName("fails when support count is negative")
     public void applyFailsWhenSupportCountIsNegative() {
-        parseQrResultService.apply(new Result(QR_TEXT_NEGATIVE_SUPPORT, null, SAMPLE_RESULT_POINTS, null));
+        assertThrows(IllegalArgumentException.class, () ->
+            parseQrResultService.apply(new Result(QR_TEXT_NEGATIVE_SUPPORT, null, SAMPLE_RESULT_POINTS, null)));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     @DisplayName("fails when row count is negative")
     public void applyFailsWhenRowCountIsNegative() {
-        parseQrResultService.apply(new Result(QR_TEXT_NEGATIVE_ROWS, null, SAMPLE_RESULT_POINTS, null));
+        assertThrows(IllegalArgumentException.class, () ->
+            parseQrResultService.apply(new Result(QR_TEXT_NEGATIVE_ROWS, null, SAMPLE_RESULT_POINTS, null)));
     }
 
     @Test
@@ -97,33 +106,37 @@ public class ParseQrResultServiceTest extends TestBase implements QrDecoderTestD
         assertNotNull(qrResult);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     @DisplayName("fails when result is null")
     public void applyFailsWhenResultIsNull() {
-        parseQrResultService.apply(null);
+        assertThrows(IllegalArgumentException.class, () -> parseQrResultService.apply(null));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     @DisplayName("fails when QR text is null")
     public void applyFailsWhenQrTextIsNull() {
-        parseQrResultService.apply(new Result(null, null, SAMPLE_RESULT_POINTS, null));
+        assertThrows(IllegalArgumentException.class, () ->
+            parseQrResultService.apply(new Result(null, null, SAMPLE_RESULT_POINTS, null)));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     @DisplayName("fails when result points are null")
     public void applyFailsWhenResultPointsAreNull() {
-        parseQrResultService.apply(new Result(SAMPLE_QR_TEXT, null, null, null));
+        assertThrows(IllegalArgumentException.class, () ->
+            parseQrResultService.apply(new Result(SAMPLE_QR_TEXT, null, null, null)));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     @DisplayName("fails when result points are empty")
     public void applyFailsWhenResultPointsAreEmpty() {
-        parseQrResultService.apply(new Result(SAMPLE_QR_TEXT, null, new com.google.zxing.ResultPoint[0], null));
+        assertThrows(IllegalArgumentException.class, () ->
+            parseQrResultService.apply(new Result(SAMPLE_QR_TEXT, null, new com.google.zxing.ResultPoint[0], null)));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     @DisplayName("fails when a result point is null")
     public void applyFailsWhenAResultPointIsNull() {
-        parseQrResultService.apply(new Result(SAMPLE_QR_TEXT, null, NULL_POINT_RESULT_POINTS, null));
+        assertThrows(IllegalArgumentException.class, () ->
+            parseQrResultService.apply(new Result(SAMPLE_QR_TEXT, null, NULL_POINT_RESULT_POINTS, null)));
     }
 }

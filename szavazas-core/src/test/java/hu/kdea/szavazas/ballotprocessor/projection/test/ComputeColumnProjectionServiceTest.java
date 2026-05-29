@@ -1,12 +1,12 @@
 package hu.kdea.szavazas.ballotprocessor.projection.test;
 
-import static org.junit.Assert.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 
 import boofcv.struct.image.GrayU8;
 import hu.kdea.szavazas.ballotprocessor.common.RectangleData;
 import hu.kdea.szavazas.ballotprocessor.projection.ComputeColumnProjectionService;
 import io.github.magwas.konveyor.testing.TestBase;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
 
 public class ComputeColumnProjectionServiceTest extends TestBase implements ProjectionTestData {

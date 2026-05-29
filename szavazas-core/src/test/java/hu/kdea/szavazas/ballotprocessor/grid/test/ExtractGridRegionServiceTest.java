@@ -1,8 +1,8 @@
 package hu.kdea.szavazas.ballotprocessor.grid.test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import boofcv.struct.image.GrayU8;
 import hu.kdea.szavazas.ballotprocessor.common.ImageNormalizerService;
@@ -16,7 +16,7 @@ import hu.kdea.szavazas.ballotprocessor.grid.GridRegionData;
 import hu.kdea.szavazas.ballotprocessor.projection.ComputeRowProjectionService;
 import hu.kdea.szavazas.ballotprocessor.projection.test.ComputeRowProjectionStub;
 import io.github.magwas.konveyor.testing.TestBase;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
 
 public class ExtractGridRegionServiceTest extends TestBase implements GridTestData {

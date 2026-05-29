@@ -1,12 +1,12 @@
 package hu.kdea.szavazas.ballotprocessor.qr.preprocess.test;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import boofcv.struct.image.GrayU8;
 import hu.kdea.szavazas.ballotprocessor.qr.preprocess.EnhanceContrastService;
 import hu.kdea.szavazas.ballotprocessor.test.BallotProcessorStage1TestData;
 import io.github.magwas.konveyor.testing.TestBase;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
 
 public class EnhanceContrastServiceTest extends TestBase implements BallotProcessorStage1TestData {

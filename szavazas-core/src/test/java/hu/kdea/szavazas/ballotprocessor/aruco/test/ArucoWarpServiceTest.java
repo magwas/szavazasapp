@@ -1,7 +1,7 @@
 package hu.kdea.szavazas.ballotprocessor.aruco.test;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import boofcv.struct.image.GrayU8;
 import boofcv.struct.image.Planar;
@@ -11,7 +11,7 @@ import hu.kdea.szavazas.ballotprocessor.aruco.ArucoMarkersData;
 import hu.kdea.szavazas.ballotprocessor.aruco.ArucoWarpService;
 import io.github.magwas.konveyor.testing.TestBase;
 import java.util.List;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
 
 public class ArucoWarpServiceTest extends TestBase implements ArucoTestData {

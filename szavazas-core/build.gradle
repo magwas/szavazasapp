@@ -1,5 +1,6 @@
 plugins {
     id "java-library"
+    id "info.solidsoft.pitest"
 }
 
 java {
@@ -21,7 +22,6 @@ dependencies {
     implementation "org.json:json:20240303"
 
     testImplementation testFixtures(project(":konveyor"))
-    testImplementation libs.junit
     testImplementation libs.junit.jupiter
     testImplementation libs.mockito.core
 }
@@ -32,4 +32,24 @@ java {
     registerFeature("testFixtures") {
         usingSourceSet(sourceSets.test)
     }
+}
+
+test {
+    useJUnitPlatform {
+        if (!project.hasProperty("runIntegration")) {
+            excludeTags "integration"
+        }
+    }
+}
+
+pitest {
+    junit5PluginVersion = "1.2.1"
+    mutators = ["ALL"]
+    targetClasses = ["hu.kdea.szavazas.**.*Service"]
+    targetTests = ["hu.kdea.szavazas.**.*Test"]
+    excludedTestClasses = ["hu.kdea.szavazas.FullPipelineTest"]
+    excludedGroups = ["integration"]
+    outputFormats = ["HTML", "XML"]
+    threads = 4
+    timestampedReports = false
 }

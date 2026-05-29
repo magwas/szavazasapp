@@ -1,8 +1,8 @@
 package hu.kdea.szavazas.ballotprocessor.grid.test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -12,7 +12,7 @@ import hu.kdea.szavazas.ballotprocessor.projection.FindRawPeakService;
 import hu.kdea.szavazas.ballotprocessor.projection.test.FindRawPeakStub;
 import hu.kdea.szavazas.ballotprocessor.test.BallotProcessorStage1TestData;
 import io.github.magwas.konveyor.testing.TestBase;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
 
 public class FindGridBoundaryServiceTest extends TestBase implements BallotProcessorStage1TestData {

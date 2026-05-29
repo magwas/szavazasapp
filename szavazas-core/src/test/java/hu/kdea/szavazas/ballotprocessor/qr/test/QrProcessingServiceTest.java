@@ -1,8 +1,8 @@
 package hu.kdea.szavazas.ballotprocessor.qr.test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import boofcv.struct.image.GrayU8;
 import com.google.zxing.Result;
@@ -15,7 +15,7 @@ import hu.kdea.szavazas.ballotprocessor.qr.QrProcessingOutcomeData;
 import hu.kdea.szavazas.ballotprocessor.qr.QrProcessingService;
 import hu.kdea.szavazas.ballotprocessor.test.MessageServiceStub;
 import io.github.magwas.konveyor.testing.TestBase;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
 
 public class QrProcessingServiceTest extends TestBase implements QrDecoderTestData {

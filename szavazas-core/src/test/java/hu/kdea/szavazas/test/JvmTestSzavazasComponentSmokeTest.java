@@ -1,15 +1,17 @@
 package hu.kdea.szavazas.test;
 
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import hu.kdea.szavazas.DaggerJvmTestSzavazasComponent;
 import hu.kdea.szavazas.JvmTestSzavazasComponent;
 import hu.kdea.szavazas.ballotprocessor.BallotProcessingApi;
 import io.github.magwas.konveyor.testing.TestBase;
 import java.io.File;
-import org.junit.Test;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
 
+@Tag("integration")
 public class JvmTestSzavazasComponentSmokeTest extends TestBase {
     private JvmTestSzavazasComponent jvmTestSzavazasComponent;
     private BallotProcessingApi ballotProcessingApi;

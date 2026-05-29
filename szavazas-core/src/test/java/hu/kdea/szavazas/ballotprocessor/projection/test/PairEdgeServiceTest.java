@@ -1,7 +1,7 @@
 package hu.kdea.szavazas.ballotprocessor.projection.test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -9,7 +9,7 @@ import java.util.List;
 import hu.kdea.szavazas.ballotprocessor.common.EdgeSegmentData;
 import hu.kdea.szavazas.ballotprocessor.projection.PairEdgeService;
 import io.github.magwas.konveyor.testing.TestBase;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
 
 public class PairEdgeServiceTest extends TestBase {

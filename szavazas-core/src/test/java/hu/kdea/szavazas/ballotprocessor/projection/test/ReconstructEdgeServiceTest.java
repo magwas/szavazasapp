@@ -1,8 +1,8 @@
 package hu.kdea.szavazas.ballotprocessor.projection.test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -13,7 +13,7 @@ import hu.kdea.szavazas.ballotprocessor.projection.MergeClosePeakService;
 import hu.kdea.szavazas.ballotprocessor.projection.PairEdgeService;
 import hu.kdea.szavazas.ballotprocessor.projection.ReconstructEdgeService;
 import io.github.magwas.konveyor.testing.TestBase;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
 
 public class ReconstructEdgeServiceTest extends TestBase {

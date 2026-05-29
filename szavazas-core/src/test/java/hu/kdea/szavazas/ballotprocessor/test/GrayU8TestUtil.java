@@ -2,7 +2,7 @@ package hu.kdea.szavazas.ballotprocessor.test;
 
 import boofcv.struct.image.GrayU8;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public final class GrayU8TestUtil {
 
@@ -22,7 +22,7 @@ public final class GrayU8TestUtil {
         assertEquals(expected.height, actual.height);
         for (int y = 0; y < expected.height; y++) {
             for (int x = 0; x < expected.width; x++) {
-                assertEquals("pixel mismatch at (" + x + ", " + y + ")", expected.get(x, y), actual.get(x, y));
+                assertEquals(expected.get(x, y), actual.get(x, y), "pixel mismatch at (" + x + ", " + y + ")");
             }
         }
     }

@@ -1,11 +1,11 @@
 package hu.kdea.szavazas.ballotprocessor.qr.test;
 
-import static org.junit.Assert.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 
 import boofcv.struct.image.GrayU8;
 import hu.kdea.szavazas.ballotprocessor.qr.ConvertGrayU8ToRgbPixelsService;
 import io.github.magwas.konveyor.testing.TestBase;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
 
 public class ConvertGrayU8ToRgbPixelsServiceTest extends TestBase implements QrDecoderTestData {

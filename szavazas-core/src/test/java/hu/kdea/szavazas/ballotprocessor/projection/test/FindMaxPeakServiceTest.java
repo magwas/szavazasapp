@@ -1,11 +1,11 @@
 package hu.kdea.szavazas.ballotprocessor.projection.test;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import hu.kdea.szavazas.ballotprocessor.projection.FindMaxPeakService;
 import hu.kdea.szavazas.ballotprocessor.test.BallotProcessorStage1TestData;
 import io.github.magwas.konveyor.testing.TestBase;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
 
 public class FindMaxPeakServiceTest extends TestBase implements BallotProcessorStage1TestData {

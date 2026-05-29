@@ -1,7 +1,7 @@
 package hu.kdea.szavazas.ballotprocessor.qr.preprocess.test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -15,7 +15,7 @@ import hu.kdea.szavazas.ballotprocessor.qr.preprocess.EnhanceContrastService;
 import hu.kdea.szavazas.ballotprocessor.qr.preprocess.PreprocessQRService;
 import hu.kdea.szavazas.ballotprocessor.qr.preprocess.SharpenService;
 import io.github.magwas.konveyor.testing.TestBase;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
 
 public class PreprocessQRServiceTest extends TestBase implements PreprocessTestData {

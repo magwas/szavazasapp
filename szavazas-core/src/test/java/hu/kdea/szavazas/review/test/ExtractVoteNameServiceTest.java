@@ -1,10 +1,10 @@
 package hu.kdea.szavazas.review.test;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import hu.kdea.szavazas.review.ExtractVoteNameService;
 import io.github.magwas.konveyor.testing.TestBase;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
 
 public class ExtractVoteNameServiceTest extends TestBase {

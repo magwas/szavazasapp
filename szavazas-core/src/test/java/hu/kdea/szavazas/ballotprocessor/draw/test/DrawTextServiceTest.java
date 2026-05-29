@@ -1,13 +1,13 @@
 package hu.kdea.szavazas.ballotprocessor.draw.test;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import boofcv.struct.image.GrayU8;
 import boofcv.struct.image.Planar;
 import hu.kdea.szavazas.ballotprocessor.draw.DrawTextService;
 import hu.kdea.szavazas.ballotprocessor.draw.SetPixelService;
 import io.github.magwas.konveyor.testing.TestBase;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
 
 public class DrawTextServiceTest extends TestBase implements DrawTestData {
@@ -42,8 +42,8 @@ public class DrawTextServiceTest extends TestBase implements DrawTestData {
         // The non-printable advances cursor by CHAR_ADVANCE (6), so 'A' starts at x=6
         for (int y = 0; y < 10; y++) {
             for (int x = 0; x < 20; x++) {
-                assertEquals("pixel mismatch at (" + x + "," + y + ")",
-                        image2.getBand(0).get(x, y), image1.getBand(0).get(x, y));
+                assertEquals(image1.getBand(0).get(x, y), image2.getBand(0).get(x, y),
+                        "pixel mismatch at (" + x + "," + y + ")");
             }
         }
     }

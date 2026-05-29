@@ -1,10 +1,10 @@
 package hu.kdea.szavazas.review.test;
 
 import static hu.kdea.szavazas.review.test.ReviewTestUtil.normalizeJsonObject;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 
@@ -13,7 +13,7 @@ import hu.kdea.szavazas.review.BallotResultFileRepository;
 import hu.kdea.szavazas.review.SaveBallotResultService;
 import io.github.magwas.konveyor.testing.TestBase;
 import org.json.JSONObject;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
 import org.mockito.ArgumentCaptor;
 
