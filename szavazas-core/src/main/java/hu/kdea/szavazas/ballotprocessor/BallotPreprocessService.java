@@ -10,18 +10,18 @@ import javax.inject.Inject;
 
 public class BallotPreprocessService {
     private final ArucoDetectionService arucoDetection;
-    private final GrayPlanarToGrayService grayPlanarToGrayService;
+    private final GrayPlanarToGrayService grayPlanarToGray;
     private final ImageSaver imageSaver;
 
     @Inject
-    public BallotPreprocessService(ArucoDetectionService arucoDetection, GrayPlanarToGrayService grayPlanarToGrayService, @DebugImageSaver ImageSaver imageSaver) {
+    public BallotPreprocessService(ArucoDetectionService arucoDetection, GrayPlanarToGrayService grayPlanarToGray, @DebugImageSaver ImageSaver imageSaver) {
         this.arucoDetection = arucoDetection;
-        this.grayPlanarToGrayService = grayPlanarToGrayService;
+        this.grayPlanarToGray = grayPlanarToGray;
         this.imageSaver = imageSaver;
     }
 
     public PreprocessResultData apply(Planar<GrayU8> planar) {
-        GrayU8 gray = grayPlanarToGrayService.apply(planar);
+        GrayU8 gray = grayPlanarToGray.apply(planar);
         if (imageSaver != null) {
             imageSaver.apply(gray, "debug_capture.jpg");
         }
@@ -29,7 +29,7 @@ public class BallotPreprocessService {
         if (arucoDetectionResultData == null) {
             return null;
         }
-        GrayU8 warpedGray = grayPlanarToGrayService.apply(arucoDetectionResultData.warpedPlanar());
+        GrayU8 warpedGray = grayPlanarToGray.apply(arucoDetectionResultData.warpedPlanar());
         if (imageSaver != null) {
             imageSaver.apply(warpedGray, "debug_warped.jpg");
         }

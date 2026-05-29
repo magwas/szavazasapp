@@ -6,26 +6,26 @@ import javax.inject.Inject;
 
 public class SaveBallotResultService {
     private final BallotResultFileRepository ballotResultFileRepository;
-    private final ExtractVoteNameService extractVoteNameService;
-    private final SerializeBallotResultService serializeBallotResultService;
-    private final MessageService messageService;
+    private final ExtractVoteNameService extractVoteName;
+    private final SerializeBallotResultService serializeBallotResult;
+    private final MessageService message;
 
     @Inject
     public SaveBallotResultService(
         BallotResultFileRepository ballotResultFileRepository,
-        ExtractVoteNameService extractVoteNameService,
-        SerializeBallotResultService serializeBallotResultService,
-        MessageService messageService
+        ExtractVoteNameService extractVoteName,
+        SerializeBallotResultService serializeBallotResult,
+        MessageService message
     ) {
         this.ballotResultFileRepository = ballotResultFileRepository;
-        this.extractVoteNameService = extractVoteNameService;
-        this.serializeBallotResultService = serializeBallotResultService;
-        this.messageService = messageService;
+        this.extractVoteName = extractVoteName;
+        this.serializeBallotResult = serializeBallotResult;
+        this.message = message;
     }
 
     public void apply(BallotResultData ballotResultData) {
-        String fileName = extractVoteNameService.apply(ballotResultData.raw()) + ".json";
-        String updatedContent = serializeBallotResultService.apply(ballotResultFileRepository.apply(fileName), ballotResultData);
+        String fileName = extractVoteName.apply(ballotResultData.raw()) + ".json";
+        String updatedContent = serializeBallotResult.apply(ballotResultFileRepository.apply(fileName), ballotResultData);
         ballotResultFileRepository.save(fileName, updatedContent);
     }
 

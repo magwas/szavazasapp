@@ -6,11 +6,11 @@ import boofcv.struct.image.Planar;
 import javax.inject.Inject;
 
 public class DrawTextService implements DrawConstants {
-    private final SetPixelService pixelSetService;
+    private final SetPixelService pixelSet;
 
     @Inject
-    public DrawTextService(SetPixelService pixelSetService) {
-        this.pixelSetService = pixelSetService;
+    public DrawTextService(SetPixelService pixelSet) {
+        this.pixelSet = pixelSet;
     }
 
     public void apply(Planar<GrayU8> image, String text, int x, int y, int color, float fontSize) {
@@ -30,7 +30,7 @@ public class DrawTextService implements DrawConstants {
             int line = GLYPHS[glyphIndex + column];
             for (int row = 0; row < GLYPH_HEIGHT; row++) {
                 if ((line & (1 << row)) != 0) {
-                    pixelSetService.apply(image, x + column, y + row, color);
+                    pixelSet.apply(image, x + column, y + row, color);
                 }
             }
         }

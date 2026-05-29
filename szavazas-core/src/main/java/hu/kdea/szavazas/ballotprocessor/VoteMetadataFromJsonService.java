@@ -11,22 +11,22 @@ import org.json.JSONObject;
 
 public class VoteMetadataFromJsonService {
     private final BallotResultFileRepository ballotResultFileRepository;
-    private final ExtractVoteNameService extractVoteNameService;
+    private final ExtractVoteNameService extractVoteName;
     private final LoggerWrapper loggerWrapper;
 
     @Inject
     public VoteMetadataFromJsonService(
         BallotResultFileRepository ballotResultFileRepository,
-        ExtractVoteNameService extractVoteNameService,
+        ExtractVoteNameService extractVoteName,
         LoggerWrapper loggerWrapper
     ) {
         this.ballotResultFileRepository = ballotResultFileRepository;
-        this.extractVoteNameService = extractVoteNameService;
+        this.extractVoteName = extractVoteName;
         this.loggerWrapper = loggerWrapper;
     }
 
     public VoteMetadataData apply(String raw, VoteMetadataData fallback) {
-        String fileName = extractVoteNameService.apply(raw) + ".json";
+        String fileName = extractVoteName.apply(raw) + ".json";
         String content = ballotResultFileRepository.apply(fileName);
         boolean isBlank = content == null || content.isBlank();
         loggerWrapper.d("VoteMetaFromJson", "raw=" + raw + " fileName=" + fileName + " contentIsBlank=" + isBlank + " content=" + (content == null ? "null" : content));

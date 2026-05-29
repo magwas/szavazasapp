@@ -6,26 +6,26 @@ import java.util.List;
 import javax.inject.Inject;
 
 public class ReconstructEdgeService implements ProjectionConstants {
-    private final FindRawPeakService findRawPeakService;
-    private final MergeClosePeakService mergeClosePeakService;
-    private final PairEdgeService pairEdgeService;
+    private final FindRawPeakService findRawPeak;
+    private final MergeClosePeakService mergeClosePeak;
+    private final PairEdgeService pairEdge;
 
     @Inject
-    public ReconstructEdgeService(FindRawPeakService findRawPeakService, MergeClosePeakService mergeClosePeakService, PairEdgeService pairEdgeService) {
-        this.findRawPeakService = findRawPeakService;
-        this.mergeClosePeakService = mergeClosePeakService;
-        this.pairEdgeService = pairEdgeService;
+    public ReconstructEdgeService(FindRawPeakService findRawPeak, MergeClosePeakService mergeClosePeak, PairEdgeService pairEdge) {
+        this.findRawPeak = findRawPeak;
+        this.mergeClosePeak = mergeClosePeak;
+        this.pairEdge = pairEdge;
     }
 
     public List<EdgeSegmentData> apply(float[] projection, int offset, int expectedPairs, boolean emptySecondColumn) {
-        List<Integer> rawPeaks = findRawPeakService.apply(projection, offset);
-        List<Integer> merged = mergeClosePeakService.apply(rawPeaks);
+        List<Integer> rawPeaks = findRawPeak.apply(projection, offset);
+        List<Integer> merged = mergeClosePeak.apply(rawPeaks);
         int totalColumns = emptySecondColumn ? expectedPairs + 1 : expectedPairs;
         int span = projection.length;
         double averageColumnWidth = (double) span / totalColumns;
         int minGap = (int) (averageColumnWidth * 0.25);
         int maxGap = (int) (averageColumnWidth * 0.75);
-        List<EdgeSegmentData> pairs = pairEdgeService.apply(merged, minGap, maxGap, 10);
+        List<EdgeSegmentData> pairs = pairEdge.apply(merged, minGap, maxGap, 10);
         if (pairs.size() != expectedPairs) {
             return null;
         }

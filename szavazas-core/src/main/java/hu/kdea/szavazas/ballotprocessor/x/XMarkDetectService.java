@@ -9,13 +9,13 @@ import java.util.List;
 import javax.inject.Inject;
 
 public class XMarkDetectService {
-    private final XDetectService xDetectService;
+    private final XDetectService xDetect;
     private final XMarkDebugRendererWrapper xMarkDebugRendererWrapper;
     private final LoggerWrapper loggerWrapper;
 
     @Inject
-    public XMarkDetectService(XDetectService xDetectService, XMarkDebugRendererWrapper xMarkDebugRendererWrapper, LoggerWrapper loggerWrapper) {
-        this.xDetectService = xDetectService;
+    public XMarkDetectService(XDetectService xDetect, XMarkDebugRendererWrapper xMarkDebugRendererWrapper, LoggerWrapper loggerWrapper) {
+        this.xDetect = xDetect;
         this.xMarkDebugRendererWrapper = xMarkDebugRendererWrapper;
         this.loggerWrapper = loggerWrapper;
     }
@@ -49,7 +49,7 @@ public class XMarkDetectService {
         List<CellDebugData> debugList
     ) {
         RectangleData cellRect = new RectangleData(box.x() - qrCentreX, box.y() - cropTop, box.width(), box.height());
-        XDetectionResultData result = xDetectService.apply(input, cellRect);
+        XDetectionResultData result = xDetect.apply(input, cellRect);
         boolean hasX = result.detected();
         CellDebugData debugData = result.debug();
         if (debugData != null) {

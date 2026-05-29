@@ -10,21 +10,21 @@ import javax.inject.Inject;
 
 public class ExtractGridRegionService {
     private final ImageNormalizerService imageNormalizer;
-    private final ComputeRowProjectionService computeRowProjectionService;
-    private final FindRawPeakService findRawPeakService;
+    private final ComputeRowProjectionService computeRowProjection;
+    private final FindRawPeakService findRawPeak;
 
     @Inject
     public ExtractGridRegionService(ImageNormalizerService imageNormalizer,
-                                    ComputeRowProjectionService computeRowProjectionService,
-                                    FindRawPeakService findRawPeakService) {
+                                    ComputeRowProjectionService computeRowProjection,
+                                    FindRawPeakService findRawPeak) {
         this.imageNormalizer = imageNormalizer;
-        this.computeRowProjectionService = computeRowProjectionService;
-        this.findRawPeakService = findRawPeakService;
+        this.computeRowProjection = computeRowProjection;
+        this.findRawPeak = findRawPeak;
     }
 
     public GridRegionData apply(GrayU8 scaledGray, int qrCentreX, int qrBottomY, Double markerTopY) {
         GrayU8 inverted = InverterService.apply(scaledGray);
-        RowBoundaryData boundary = FindGridBoundaryService.apply(computeRowProjectionService.apply(inverted), qrBottomY, markerTopY, findRawPeakService);
+        RowBoundaryData boundary = FindGridBoundaryService.apply(computeRowProjection.apply(inverted), qrBottomY, markerTopY, findRawPeak);
         if (boundary == null) {
             return null;
         }

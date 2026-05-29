@@ -6,30 +6,30 @@ import hu.kdea.szavazas.ballotprocessor.MessageService;
 import javax.inject.Inject;
 
 public class QrProcessingService {
-    private final ConvertGrayU8ToRgbPixelsService convertGrayU8ToRgbPixelsService;
-    private final DecodeQRService decodeWithZxingService;
-    private final ParseQrResultService parseQrResultService;
-    private final MessageService messageService;
+    private final ConvertGrayU8ToRgbPixelsService convertGrayU8ToRgbPixels;
+    private final DecodeQRService decodeQR;
+    private final ParseQrResultService parseQrResult;
+    private final MessageService message;
 
     @Inject
     public QrProcessingService(
-            ConvertGrayU8ToRgbPixelsService convertGrayU8ToRgbPixelsService,
-            DecodeQRService decodeWithZxingService,
-            ParseQrResultService parseQrResultService,
-            MessageService messageService) {
-        this.convertGrayU8ToRgbPixelsService = convertGrayU8ToRgbPixelsService;
-        this.decodeWithZxingService = decodeWithZxingService;
-        this.parseQrResultService = parseQrResultService;
-        this.messageService = messageService;
+            ConvertGrayU8ToRgbPixelsService convertGrayU8ToRgbPixels,
+            DecodeQRService decodeQR,
+            ParseQrResultService parseQrResult,
+            MessageService message) {
+        this.convertGrayU8ToRgbPixels = convertGrayU8ToRgbPixels;
+        this.decodeQR = decodeQR;
+        this.parseQrResult = parseQrResult;
+        this.message = message;
     }
 
     public QrProcessingOutcomeData apply(GrayU8 image) {
-        int[] pixels = convertGrayU8ToRgbPixelsService.apply(image);
-        Result result = decodeWithZxingService.apply(pixels, image.width, image.height);
+        int[] pixels = convertGrayU8ToRgbPixels.apply(image);
+        Result result = decodeQR.apply(pixels, image.width, image.height);
         if (result == null) {
-            return new QrProcessingOutcomeData(null, new QrErrorData(messageService.apply("qr.error.failed")));
+            return new QrProcessingOutcomeData(null, new QrErrorData(message.apply("qr.error.failed")));
         }
-        QrData qrResult = parseQrResultService.apply(result);
+        QrData qrResult = parseQrResult.apply(result);
         return new QrProcessingOutcomeData(qrResult, null);
     }
 }

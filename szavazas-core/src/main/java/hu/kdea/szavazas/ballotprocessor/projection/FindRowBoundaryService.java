@@ -6,17 +6,17 @@ import hu.kdea.szavazas.ballotprocessor.common.RowBoundaryData;
 import javax.inject.Inject;
 
 public class FindRowBoundaryService implements ProjectionConstants {
-    private final FindMaxPeakService findMaxPeakService;
+    private final FindMaxPeakService findMaxPeak;
 
     @Inject
-    public FindRowBoundaryService(FindMaxPeakService findMaxPeakService) {
-        this.findMaxPeakService = findMaxPeakService;
+    public FindRowBoundaryService(FindMaxPeakService findMaxPeak) {
+        this.findMaxPeak = findMaxPeak;
     }
 
     public RowBoundaryData apply(GrayU8 binary, RectangleData roi) {
         float[] projection = verticalProjection(binary, roi);
-        int top = findMaxPeakService.apply(projection, 0, projection.length / 2);
-        int bottom = findMaxPeakService.apply(projection, projection.length / 2, projection.length - 1);
+        int top = findMaxPeak.apply(projection, 0, projection.length / 2);
+        int bottom = findMaxPeak.apply(projection, projection.length / 2, projection.length - 1);
         int cropTop = Math.max(0, top + BOUNDARY_MARGIN);
         int cropBottom = Math.min(projection.length - 1, bottom - BOUNDARY_MARGIN);
         return new RowBoundaryData(cropTop, cropBottom);

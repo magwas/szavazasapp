@@ -7,16 +7,16 @@ import java.util.List;
 import javax.inject.Inject;
 
 public class DetectGridService {
-    private final OrchestrateGridDetectionService orchestrator;
+    private final OrchestrateGridDetectionService orchestrateGridDetection;
 
     @Inject
-    public DetectGridService(OrchestrateGridDetectionService orchestrator) {
-        this.orchestrator = orchestrator;
+    public DetectGridService(OrchestrateGridDetectionService orchestrateGridDetection) {
+        this.orchestrateGridDetection = orchestrateGridDetection;
     }
 
     public List<RectangleData> apply(GrayU8 projectionInput, int cropTop, int qrCentreX, int expectedCols, int expectedRows) {
         RectangleData rect = new RectangleData(0, 0, projectionInput.width, projectionInput.height);
-        List<RectangleData> boxes = orchestrator.apply(projectionInput, rect, expectedCols, expectedRows, true, true);
+        List<RectangleData> boxes = orchestrateGridDetection.apply(projectionInput, rect, expectedCols, expectedRows, true, true);
         if (boxes.isEmpty()) {
             return null;
         }

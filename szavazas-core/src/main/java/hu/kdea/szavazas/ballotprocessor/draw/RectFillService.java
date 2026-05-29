@@ -6,11 +6,11 @@ import boofcv.struct.image.Planar;
 import javax.inject.Inject;
 
 public class RectFillService {
-    private final SetPixelService pixelSetService;
+    private final SetPixelService pixelSet;
 
     @Inject
-    public RectFillService(SetPixelService pixelSetService) {
-        this.pixelSetService = pixelSetService;
+    public RectFillService(SetPixelService pixelSet) {
+        this.pixelSet = pixelSet;
     }
 
     public void apply(Planar<GrayU8> image, int x, int y, int w, int h, int color) {
@@ -20,7 +20,7 @@ public class RectFillService {
         int yEnd = Math.min(image.height, y + h);
         for (int py = yStart; py < yEnd; py++) {
             for (int px = xStart; px < xEnd; px++) {
-                pixelSetService.apply(image, px, py, color);
+                pixelSet.apply(image, px, py, color);
             }
         }
     }

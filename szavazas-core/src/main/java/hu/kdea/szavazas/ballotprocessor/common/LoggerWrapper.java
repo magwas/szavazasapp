@@ -1,18 +1,24 @@
 package hu.kdea.szavazas.ballotprocessor.common;
 
-import hu.kdea.szavazas.ballotprocessor.Logger;
+import java.util.function.BiConsumer;
 import javax.inject.Inject;
 
 public class LoggerWrapper {
+    private static BiConsumer<String, String> delegate = (tag, msg) -> System.out.println(tag + ": " + msg);
+
     @Inject
     public LoggerWrapper() {
     }
 
+    public static void setDelegate(BiConsumer<String, String> delegate) {
+        LoggerWrapper.delegate = delegate;
+    }
+
     public void d(String tag, String msg) {
-        Logger.INSTANCE.d(tag, msg);
+        delegate.accept(tag, msg);
     }
 
     public void w(String tag, String msg) {
-        Logger.INSTANCE.e(tag, msg);
+        delegate.accept(tag, msg);
     }
 }

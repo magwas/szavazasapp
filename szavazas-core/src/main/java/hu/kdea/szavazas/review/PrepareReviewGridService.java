@@ -8,11 +8,11 @@ import java.util.Set;
 import javax.inject.Inject;
 
 public class PrepareReviewGridService {
-    private final ExtractVoteNameService extractVoteNameService;
+    private final ExtractVoteNameService extractVoteName;
 
     @Inject
-    public PrepareReviewGridService(ExtractVoteNameService extractVoteNameService) {
-        this.extractVoteNameService = extractVoteNameService;
+    public PrepareReviewGridService(ExtractVoteNameService extractVoteName) {
+        this.extractVoteName = extractVoteName;
     }
 
     public ReviewGridData apply(BallotResultData ballotResultData) {
@@ -20,7 +20,7 @@ public class PrepareReviewGridService {
         return new ReviewGridData(
             ballotResultData.numSupport() + 2,
             ballotResultData.numRows(),
-            extractVoteNameService.apply(ballotResultData.raw()),
+            extractVoteName.apply(ballotResultData.raw()),
             cells(ballotResultData, checkedCells),
             ballotResultData.nonconformities().stream().map(nonconformity -> new ReviewNonconformityData(nonconformity.message())).toList()
         );

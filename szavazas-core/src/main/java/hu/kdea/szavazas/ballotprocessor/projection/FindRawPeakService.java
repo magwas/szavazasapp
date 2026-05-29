@@ -6,11 +6,8 @@ import java.util.List;
 import javax.inject.Inject;
 
 public class FindRawPeakService implements ProjectionConstants {
-    private final MergeClosePeakService mergeClosePeakService;
-
     @Inject
-    public FindRawPeakService(MergeClosePeakService mergeClosePeakService) {
-        this.mergeClosePeakService = mergeClosePeakService;
+    public FindRawPeakService() {
     }
 
     public List<Integer> apply(float[] projection, int offset) {

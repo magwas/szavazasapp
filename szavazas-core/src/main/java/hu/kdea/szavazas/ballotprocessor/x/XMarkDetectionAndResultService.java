@@ -8,15 +8,15 @@ import java.util.List;
 import javax.inject.Inject;
 
 public class XMarkDetectionAndResultService {
-    private final XMarkDetectService xMarkDetectionService;
+    private final XMarkDetectService xMarkDetect;
 
     @Inject
-    public XMarkDetectionAndResultService(XMarkDetectService xMarkDetectionService) {
-        this.xMarkDetectionService = xMarkDetectionService;
+    public XMarkDetectionAndResultService(XMarkDetectService xMarkDetect) {
+        this.xMarkDetect = xMarkDetect;
     }
 
     public XMarkDetectionResultData apply(GridDetectionResultData gridDetectionResultData, QrData adjustedQr) {
-        List<CellPositionData> marks = xMarkDetectionService.apply(
+        List<CellPositionData> marks = xMarkDetect.apply(
             gridDetectionResultData.region().projectionInput(),
             gridDetectionResultData.checkboxes(),
             gridDetectionResultData.region().qrCentreX(),

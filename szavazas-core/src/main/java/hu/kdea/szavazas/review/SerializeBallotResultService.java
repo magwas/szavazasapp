@@ -11,7 +11,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 public class SerializeBallotResultService {
-    private static final String TAG = "SerializeBallotResult";
     private final LoggerWrapper loggerWrapper;
 
     @Inject
@@ -52,7 +51,7 @@ public class SerializeBallotResultService {
         JSONObject storedVote = content.getJSONObject("vote");
         if (conflicts(storedVote, voteMetadataData)) {
             loggerWrapper.w(
-                TAG,
+                "SerializeBallotResult",
                 "Metadata conflict while preserving stored vote metadata: stored vote metadata differs from incoming ballot metadata; raw=" + raw
             );
         }

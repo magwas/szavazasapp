@@ -5,11 +5,11 @@ import boofcv.struct.image.Planar;
 import javax.inject.Inject;
 
 public class DrawOvalService {
-    private final SetPixelService pixelSetService;
+    private final SetPixelService pixelSet;
 
     @Inject
-    public DrawOvalService(SetPixelService pixelSetService) {
-        this.pixelSetService = pixelSetService;
+    public DrawOvalService(SetPixelService pixelSet) {
+        this.pixelSet = pixelSet;
     }
 
     public void apply(Planar<GrayU8> image, int x, int y, int w, int h, int color) {
@@ -25,10 +25,10 @@ public class DrawOvalService {
     }
 
     private void plot4(Planar<GrayU8> image, int xc, int yc, int dx, int dy, int color) {
-        pixelSetService.apply(image, xc + dx, yc + dy, color);
-        pixelSetService.apply(image, xc - dx, yc + dy, color);
-        pixelSetService.apply(image, xc + dx, yc - dy, color);
-        pixelSetService.apply(image, xc - dx, yc - dy, color);
+        pixelSet.apply(image, xc + dx, yc + dy, color);
+        pixelSet.apply(image, xc - dx, yc + dy, color);
+        pixelSet.apply(image, xc + dx, yc - dy, color);
+        pixelSet.apply(image, xc - dx, yc - dy, color);
     }
 
     private void drawOvalRegion1(Planar<GrayU8> image, int xc, int yc, int a, int b, int color) {

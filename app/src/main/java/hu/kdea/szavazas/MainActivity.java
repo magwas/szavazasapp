@@ -26,7 +26,7 @@ import boofcv.struct.image.Planar;
 import hu.kdea.szavazas.ballotprocessor.BallotProcessingApi;
 import hu.kdea.szavazas.ballotprocessor.BallotProcessingOutcomeData;
 import hu.kdea.szavazas.ballotprocessor.BallotResultData;
-import hu.kdea.szavazas.ballotprocessor.Logger;
+import hu.kdea.szavazas.ballotprocessor.common.LoggerWrapper;
 import hu.kdea.szavazas.review.ReviewCellData;
 import hu.kdea.szavazas.review.ReviewGridData;
 
@@ -64,7 +64,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Logger.setDelegate((tag, msg) -> Log.d(tag, msg));
+        LoggerWrapper.setDelegate((tag, msg) -> Log.d(tag, msg));
         bindViews();
         ballotProcessingApi = DaggerAndroidSzavazasComponent.builder().context(this).build().ballotProcessingApi();
         cameraManager = new CameraManager(this, this, previewView);

@@ -18,35 +18,35 @@ import java.util.List;
 import javax.inject.Inject;
 
 public class BallotProcessingService {
-    private final BallotPreprocessService ballotPreprocessService;
-    private final QrProcessingService qrProcessingService;
-    private final PreprocessQRCropService preprocessQRCropService;
-    private final DetectGridRegionAndCheckboxService detectGridRegionAndCheckboxService;
-    private final XMarkDetectionAndResultService xMarkDetectionAndResultService;
-    private final VoteMetadataFromJsonService voteMetadataFromJsonService;
-    private final MessageService messageService;
+    private final BallotPreprocessService ballotPreprocess;
+    private final QrProcessingService qrProcessing;
+    private final PreprocessQRCropService preprocessQRCrop;
+    private final DetectGridRegionAndCheckboxService detectGridRegionAndCheckbox;
+    private final XMarkDetectionAndResultService xMarkDetectionAndResult;
+    private final VoteMetadataFromJsonService voteMetadataFromJson;
+    private final MessageService message;
     private final ImageSaver imageSaver;
     private final LoggerWrapper loggerWrapper;
 
     @Inject
     public BallotProcessingService(
-        BallotPreprocessService ballotPreprocessService,
-        QrProcessingService qrProcessingService,
-        PreprocessQRCropService preprocessQRCropService,
-        DetectGridRegionAndCheckboxService detectGridRegionAndCheckboxService,
-        XMarkDetectionAndResultService xMarkDetectionAndResultService,
-        VoteMetadataFromJsonService voteMetadataFromJsonService,
-        MessageService messageService,
+        BallotPreprocessService ballotPreprocess,
+        QrProcessingService qrProcessing,
+        PreprocessQRCropService preprocessQRCrop,
+        DetectGridRegionAndCheckboxService detectGridRegionAndCheckbox,
+        XMarkDetectionAndResultService xMarkDetectionAndResult,
+        VoteMetadataFromJsonService voteMetadataFromJson,
+        MessageService message,
         @DebugImageSaver ImageSaver imageSaver,
         LoggerWrapper loggerWrapper
     ) {
-        this.ballotPreprocessService = ballotPreprocessService;
-        this.qrProcessingService = qrProcessingService;
-        this.preprocessQRCropService = preprocessQRCropService;
-        this.detectGridRegionAndCheckboxService = detectGridRegionAndCheckboxService;
-        this.xMarkDetectionAndResultService = xMarkDetectionAndResultService;
-        this.voteMetadataFromJsonService = voteMetadataFromJsonService;
-        this.messageService = messageService;
+        this.ballotPreprocess = ballotPreprocess;
+        this.qrProcessing = qrProcessing;
+        this.preprocessQRCrop = preprocessQRCrop;
+        this.detectGridRegionAndCheckbox = detectGridRegionAndCheckbox;
+        this.xMarkDetectionAndResult = xMarkDetectionAndResult;
+        this.voteMetadataFromJson = voteMetadataFromJson;
+        this.message = message;
         this.imageSaver = imageSaver;
         this.loggerWrapper = loggerWrapper;
     }
@@ -57,31 +57,31 @@ public class BallotProcessingService {
         } catch (Exception exception) {
             return new BallotProcessingOutcomeData(
                 null,
-                new BallotErrorData(exception.getMessage() == null ? messageService.apply("ballot.error.processing") : exception.getMessage())
+                new BallotErrorData(exception.getMessage() == null ? message.apply("ballot.error.processing") : exception.getMessage())
             );
         }
     }
 
     private BallotProcessingOutcomeData process(Planar<GrayU8> planar) {
-        PreprocessResultData preprocessResultData = ballotPreprocessService.apply(planar);
+        PreprocessResultData preprocessResultData = ballotPreprocess.apply(planar);
         if (preprocessResultData == null) {
-            return new BallotProcessingOutcomeData(null, new BallotErrorData(messageService.apply("ballot.error.markers")));
+            return new BallotProcessingOutcomeData(null, new BallotErrorData(message.apply("ballot.error.markers")));
         }
         GrayU8 warpedGray = preprocessResultData.scaledGray();
-        QrCropResultData qrCropResultData = preprocessQRCropService.apply(warpedGray, qrProcessingService);
+        QrCropResultData qrCropResultData = preprocessQRCrop.apply(warpedGray, qrProcessing);
         QrData adjustedQr = qrCropResultData.adjustedQr();
         if (adjustedQr == null) {
             if (imageSaver != null) {
                 imageSaver.apply(qrCropResultData.preprocessedQrCrop(), "debug_qr_failed.jpg");
             }
-            return new BallotProcessingOutcomeData(null, new BallotErrorData(messageService.apply("ballot.error.qr")));
+            return new BallotProcessingOutcomeData(null, new BallotErrorData(message.apply("ballot.error.qr")));
         }
-        GridDetectionResultData gridDetectionResultData = detectGridRegionAndCheckboxService.apply(warpedGray, adjustedQr, preprocessResultData.markerTopY());
+        GridDetectionResultData gridDetectionResultData = detectGridRegionAndCheckbox.apply(warpedGray, adjustedQr, preprocessResultData.markerTopY());
         if (gridDetectionResultData == null) {
-            return new BallotProcessingOutcomeData(null, new BallotErrorData(messageService.apply("ballot.error.gridRegion")));
+            return new BallotProcessingOutcomeData(null, new BallotErrorData(message.apply("ballot.error.gridRegion")));
         }
-        BallotResultData ballotResultData = xMarkDetectionAndResultService.apply(gridDetectionResultData, adjustedQr).ballotResult();
-        VoteMetadataData voteMetadataData = voteMetadataFromJsonService.apply(adjustedQr.raw(), adjustedQr.voteMetadata());
+        BallotResultData ballotResultData = xMarkDetectionAndResult.apply(gridDetectionResultData, adjustedQr).ballotResult();
+        VoteMetadataData voteMetadataData = voteMetadataFromJson.apply(adjustedQr.raw(), adjustedQr.voteMetadata());
         loggerWrapper.d("BallotProcessing", "Ballot detected: raw=" + ballotResultData.raw() + ", numSupport=" + ballotResultData.numSupport() + ", numRows=" + ballotResultData.numRows() + ", xCells=" + ballotResultData.xCells());
         BallotResultData ballotResultWithNonconformities = withNonconformities(voteMetadataData, ballotResultData);
         loggerWrapper.w("BallotProcessing", "Ballot nonconformities: " + ballotResultWithNonconformities.nonconformities());
@@ -118,7 +118,7 @@ public class BallotProcessingService {
 
     private void add(List<BallotNonconformityData> nonconformities, boolean condition, String key) {
         if (condition) {
-            nonconformities.add(new BallotNonconformityData(key, messageService.apply(key)));
+            nonconformities.add(new BallotNonconformityData(key, message.apply(key)));
         }
     }
 }

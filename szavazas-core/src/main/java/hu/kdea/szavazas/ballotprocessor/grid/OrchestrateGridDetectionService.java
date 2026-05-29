@@ -26,34 +26,34 @@ import javax.inject.Inject;
 public class OrchestrateGridDetectionService {
     private final ProjectionDebugRenderer projectionRenderer;
     private final GridOverlayDebugRenderer overlayRenderer;
-    private final FindRawPeakService findRawPeakService;
-    private final MergeClosePeakService mergeClosePeakService;
-    private final PairEdgeService pairEdgeService;
-    private final ReconstructEdgeService reconstructEdgeService;
-    private final ComputeColumnProjectionService computeColumnProjectionService;
-    private final ComputeRowProjectionService computeRowProjectionService;
-    private final FindRowBoundaryService findRowBoundaryService;
+    private final FindRawPeakService findRawPeak;
+    private final MergeClosePeakService mergeClosePeak;
+    private final PairEdgeService pairEdge;
+    private final ReconstructEdgeService reconstructEdge;
+    private final ComputeColumnProjectionService computeColumnProjection;
+    private final ComputeRowProjectionService computeRowProjection;
+    private final FindRowBoundaryService findRowBoundary;
 
     @Inject
     public OrchestrateGridDetectionService(@DebugImageSaver ImageSaver imageSaver,
-                                           FindRawPeakService findRawPeakService,
-                                           MergeClosePeakService mergeClosePeakService,
-                                           PairEdgeService pairEdgeService,
-                                           ReconstructEdgeService reconstructEdgeService,
-                                           ComputeColumnProjectionService computeColumnProjectionService,
-                                           ComputeRowProjectionService computeRowProjectionService,
-                                           FindRowBoundaryService findRowBoundaryService) {
+                                           FindRawPeakService findRawPeak,
+                                           MergeClosePeakService mergeClosePeak,
+                                           PairEdgeService pairEdge,
+                                           ReconstructEdgeService reconstructEdge,
+                                           ComputeColumnProjectionService computeColumnProjection,
+                                           ComputeRowProjectionService computeRowProjection,
+                                           FindRowBoundaryService findRowBoundary) {
         SetPixelService pixelSetService = new SetPixelService();
         DrawLineService lineDrawService = new DrawLineService(pixelSetService);
         this.projectionRenderer = imageSaver == null ? null : new ProjectionDebugRenderer(imageSaver);
         this.overlayRenderer = imageSaver == null ? null : new GridOverlayDebugRenderer(imageSaver, pixelSetService, lineDrawService);
-        this.findRawPeakService = findRawPeakService;
-        this.mergeClosePeakService = mergeClosePeakService;
-        this.pairEdgeService = pairEdgeService;
-        this.reconstructEdgeService = reconstructEdgeService;
-        this.computeColumnProjectionService = computeColumnProjectionService;
-        this.computeRowProjectionService = computeRowProjectionService;
-        this.findRowBoundaryService = findRowBoundaryService;
+        this.findRawPeak = findRawPeak;
+        this.mergeClosePeak = mergeClosePeak;
+        this.pairEdge = pairEdge;
+        this.reconstructEdge = reconstructEdge;
+        this.computeColumnProjection = computeColumnProjection;
+        this.computeRowProjection = computeRowProjection;
+        this.findRowBoundary = findRowBoundary;
     }
 
     public List<RectangleData> apply(GrayU8 binaryClosed, RectangleData searchRect, int expectedCols, int expectedRows, boolean skipBoundaries, boolean emptySecondColumn) {
@@ -66,11 +66,11 @@ public class OrchestrateGridDetectionService {
         if (projectionRenderer != null) {
             projectionRenderer.renderAll(data, colAxis, rowAxis);
         }
-        List<EdgeSegmentData> colEdges = reconstructEdgeService.apply(data.colProj(), data.colOffset(), expectedCols, emptySecondColumn);
+        List<EdgeSegmentData> colEdges = reconstructEdge.apply(data.colProj(), data.colOffset(), expectedCols, emptySecondColumn);
         if (colEdges == null) {
             return List.of();
         }
-        List<EdgeSegmentData> rowEdges = reconstructEdgeService.apply(data.rowProj(), data.rowOffset(), expectedRows, false);
+        List<EdgeSegmentData> rowEdges = reconstructEdge.apply(data.rowProj(), data.rowOffset(), expectedRows, false);
         if (rowEdges == null) {
             return List.of();
         }
@@ -84,21 +84,21 @@ public class OrchestrateGridDetectionService {
         RectangleData roi = ensureInside(binaryClosed, searchRect);
         RowBoundaryData boundaries = skipBoundaries
             ? new RowBoundaryData(0, roi.height() - 1)
-            : findRowBoundaryService.apply(binaryClosed, roi);
+            : findRowBoundary.apply(binaryClosed, roi);
         int cropTop = boundaries.cropTop();
         int cropBottom = boundaries.cropBottom();
         int croppedHeight = Math.max(1, cropBottom - cropTop + 1);
-        float[] colProjection = computeColumnProjectionService.apply(binaryClosed, roi, cropTop, cropBottom);
-        float[] rowProjection = computeRowProjectionService.apply(binaryClosed, roi, cropTop, croppedHeight);
+        float[] colProjection = computeColumnProjection.apply(binaryClosed, roi, cropTop, cropBottom);
+        float[] rowProjection = computeRowProjection.apply(binaryClosed, roi, cropTop, croppedHeight);
         ProjectionData data = new ProjectionData(colProjection, rowProjection, roi.x(), roi.y() + cropTop, roi.width(), croppedHeight);
         return new ProjectionBuildResultData(roi, data);
     }
 
     private AxisPeaksData findAxisPeaks(float[] projection, int offset, int count, double minRatio, double maxRatio) {
-        List<Integer> raw = findRawPeakService.apply(projection, offset);
-        List<Integer> merged = mergeClosePeakService.apply(raw);
+        List<Integer> raw = findRawPeak.apply(projection, offset);
+        List<Integer> merged = mergeClosePeak.apply(raw);
         double average = (double) projection.length / count;
-        List<EdgeSegmentData> pairs = pairEdgeService.apply(merged, (int) (average * minRatio), (int) (average * maxRatio));
+        List<EdgeSegmentData> pairs = pairEdge.apply(merged, (int) (average * minRatio), (int) (average * maxRatio));
         return new AxisPeaksData(raw, merged, pairs);
     }
 

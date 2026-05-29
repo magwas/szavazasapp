@@ -5,11 +5,11 @@ import boofcv.struct.image.Planar;
 import javax.inject.Inject;
 
 public class DrawLineService {
-    private final SetPixelService pixelSetService;
+    private final SetPixelService pixelSet;
 
     @Inject
-    public DrawLineService(SetPixelService pixelSetService) {
-        this.pixelSetService = pixelSetService;
+    public DrawLineService(SetPixelService pixelSet) {
+        this.pixelSet = pixelSet;
     }
 
     public void apply(Planar<GrayU8> image, int x0, int y0, int x1, int y1, int color) {
@@ -21,7 +21,7 @@ public class DrawLineService {
         int sy = y0 < y1 ? 1 : -1;
         int err = dx + dy;
         while (true) {
-            pixelSetService.apply(image, x, y, color);
+            pixelSet.apply(image, x, y, color);
             if (x == x1 && y == y1) {
                 break;
             }

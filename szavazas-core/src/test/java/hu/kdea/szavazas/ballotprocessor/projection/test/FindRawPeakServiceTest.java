@@ -5,7 +5,6 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.List;
 import hu.kdea.szavazas.ballotprocessor.projection.FindRawPeakService;
-import hu.kdea.szavazas.ballotprocessor.projection.MergeClosePeakService;
 import hu.kdea.szavazas.ballotprocessor.test.BallotProcessorStage1TestData;
 import io.github.magwas.konveyor.testing.TestBase;
 import org.junit.Test;
@@ -13,7 +12,7 @@ import org.junit.jupiter.api.DisplayName;
 
 public class FindRawPeakServiceTest extends TestBase implements BallotProcessorStage1TestData {
 
-    private final FindRawPeakService findRawPeakService = new FindRawPeakService(new MergeClosePeakService());
+    private final FindRawPeakService findRawPeakService = new FindRawPeakService();
 
     @Test
     @DisplayName("empty or non-positive projections return no peaks")
