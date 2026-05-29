@@ -16,7 +16,7 @@ public final class PairEdgeStub {
 
     public static PairEdgeService stubWithResult(List<EdgeSegmentData> result) {
         PairEdgeService mock = mock(PairEdgeService.class);
-        when(mock.apply(anyList(), anyInt(), anyInt())).thenReturn(result);
+        when(mock.apply(anyList(), anyInt(), anyInt(), anyInt())).thenReturn(result);
         return mock;
     }
 

@@ -4,7 +4,7 @@ import dagger.Binds;
 import dagger.Module;
 import dagger.Provides;
 import hu.kdea.szavazas.ballotprocessor.debug.DebugImageSaver;
-import hu.kdea.szavazas.ballotprocessor.debug.ImageSaver;
+import hu.kdea.szavazas.ballotprocessor.debug.ImageSaverWrapper;
 import hu.kdea.szavazas.review.BallotResultFileRepository;
 import hu.kdea.szavazas.review.InMemoryBallotResultFileRepository;
 import io.github.magwas.konveyor.annotations.Glue;
@@ -17,8 +17,8 @@ public interface JvmTestDebugModule {
     @Provides
     @Singleton
     @DebugImageSaver
-    static ImageSaver imageSaver(File outputDir) {
-        return new AwtImageSaverService(outputDir);
+    static ImageSaverWrapper imageSaver(File outputDir) {
+        return new AwtImageSaverWrapperService(outputDir);
     }
 
     @Binds

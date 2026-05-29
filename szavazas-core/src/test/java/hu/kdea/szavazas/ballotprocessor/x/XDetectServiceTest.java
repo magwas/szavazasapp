@@ -11,9 +11,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
-import hu.kdea.szavazas.ballotprocessor.common.LoggerWrapper;
 import hu.kdea.szavazas.ballotprocessor.common.PointData;
-import hu.kdea.szavazas.ballotprocessor.common.test.LoggerWrapperStub;
 import io.github.magwas.konveyor.testing.TestBase;
 import org.junit.Test;
 import org.junit.jupiter.api.DisplayName;
@@ -22,13 +20,11 @@ public class XDetectServiceTest extends TestBase implements XDetectConstants, XD
 
     private XDetectService xDetectService;
     private BinaryImageOpsWrapper binaryImageOpsWrapper;
-    private LoggerWrapper loggerWrapper;
 
     @Override
     public void setUp() {
         binaryImageOpsWrapper = BinaryImageOpsWrapperStub.stubWithThinIdentity();
-        loggerWrapper = LoggerWrapperStub.stub();
-        xDetectService = new XDetectService(binaryImageOpsWrapper, loggerWrapper);
+        xDetectService = new XDetectService(binaryImageOpsWrapper, new FindBranchPointsService());
     }
 
     @Test
@@ -62,7 +58,7 @@ public class XDetectServiceTest extends TestBase implements XDetectConstants, XD
     public void applyDetectsXWhenSkeletonHasEnoughBranches() {
         int expectedBranchPoints = XDetectTestUtil.countBranchPoints(DENSE_SKELETON);
         binaryImageOpsWrapper = BinaryImageOpsWrapperStub.stubWithThinResult(DENSE_SKELETON);
-        xDetectService = new XDetectService(binaryImageOpsWrapper, loggerWrapper);
+        xDetectService = new XDetectService(binaryImageOpsWrapper, new FindBranchPointsService());
         XDetectionResultData result = xDetectService.apply(FILLED_BINARY, LARGE_OUTER_RECT);
         assertNotNull(result);
         assertTrue(result.detected());

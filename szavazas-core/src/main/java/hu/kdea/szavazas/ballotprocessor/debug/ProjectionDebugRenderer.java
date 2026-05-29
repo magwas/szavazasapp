@@ -6,6 +6,7 @@ import hu.kdea.szavazas.ballotprocessor.common.EdgeSegmentData;
 import hu.kdea.szavazas.ballotprocessor.draw.DrawTextService;
 import hu.kdea.szavazas.ballotprocessor.draw.DrawLineService;
 import hu.kdea.szavazas.ballotprocessor.draw.FillOvalService;
+import hu.kdea.szavazas.ballotprocessor.draw.FillScanlineService;
 import hu.kdea.szavazas.ballotprocessor.draw.SetPixelService;
 import hu.kdea.szavazas.ballotprocessor.draw.RectFillService;
 import hu.kdea.szavazas.ballotprocessor.projection.AxisPeaksData;
@@ -23,14 +24,14 @@ public class ProjectionDebugRenderer {
     private static final int COLOR_RED = 0xFFFF0000;
     private static final int COLOR_BLUE = 0xFF0000FF;
 
-    private final ImageSaver saver;
+    private final ImageSaverWrapper saver;
     private final DrawTextService bitmapFont5x7Service;
     private final DrawLineService lineDrawService;
     private final RectFillService rectFillService;
     private final FillOvalService ovalFillService;
 
     @Inject
-    public ProjectionDebugRenderer(ImageSaver saver, DrawTextService bitmapFont5x7Service, DrawLineService lineDrawService, RectFillService rectFillService, FillOvalService ovalFillService) {
+    public ProjectionDebugRenderer(ImageSaverWrapper saver, DrawTextService bitmapFont5x7Service, DrawLineService lineDrawService, RectFillService rectFillService, FillOvalService ovalFillService) {
         this.saver = saver;
         this.bitmapFont5x7Service = bitmapFont5x7Service;
         this.lineDrawService = lineDrawService;
@@ -38,8 +39,8 @@ public class ProjectionDebugRenderer {
         this.ovalFillService = ovalFillService;
     }
 
-    public ProjectionDebugRenderer(ImageSaver saver) {
-        this(saver, new DrawTextService(new SetPixelService()), new DrawLineService(new SetPixelService()), new RectFillService(new SetPixelService()), new FillOvalService(new SetPixelService()));
+    public ProjectionDebugRenderer(ImageSaverWrapper saver) {
+        this(saver, new DrawTextService(new SetPixelService()), new DrawLineService(new SetPixelService()), new RectFillService(new SetPixelService()), new FillOvalService(new FillScanlineService(new SetPixelService())));
     }
 
     public void renderAll(ProjectionData data, AxisPeaksData colAxis, AxisPeaksData rowAxis) {

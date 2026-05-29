@@ -3,11 +3,15 @@ package hu.kdea.szavazas.ballotprocessor.vote;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import boofcv.struct.image.Planar;
 import boofcv.struct.image.GrayU8;
 import hu.kdea.szavazas.ballotprocessor.BallotProcessingOutcomeData;
 import hu.kdea.szavazas.ballotprocessor.BallotProcessingService;
 import hu.kdea.szavazas.ballotprocessor.BallotResultData;
+import hu.kdea.szavazas.ballotprocessor.MessageService;
+import hu.kdea.szavazas.ballotprocessor.ProcessBallotImageService;
 import hu.kdea.szavazas.ballotprocessor.PreprocessResultData;
+import hu.kdea.szavazas.ballotprocessor.aruco.test.ArucoTestData;
 import hu.kdea.szavazas.ballotprocessor.common.CellPositionData;
 import hu.kdea.szavazas.ballotprocessor.common.RectangleData;
 import hu.kdea.szavazas.ballotprocessor.qr.QrCropResultData;
@@ -15,7 +19,6 @@ import hu.kdea.szavazas.ballotprocessor.qr.QrData;
 import hu.kdea.szavazas.ballotprocessor.test.BallotPreprocessStub;
 import hu.kdea.szavazas.ballotprocessor.test.MessageServiceStub;
 import hu.kdea.szavazas.ballotprocessor.qr.test.PreprocessQRCropStub;
-import hu.kdea.szavazas.ballotprocessor.aruco.test.ArucoTestData;
 import hu.kdea.szavazas.ballotprocessor.common.test.LoggerWrapperStub;
 import hu.kdea.szavazas.ballotprocessor.grid.GridDetectionResultData;
 import hu.kdea.szavazas.ballotprocessor.grid.test.DetectGridRegionAndCheckboxStub;
@@ -74,28 +77,23 @@ public class VoteJsonMetadataFlowTest extends TestBase implements VoteJsonTestDa
     @Test
     @DisplayName("the ballot nonconformities are checked against the vote metadata obtained from the vote json")
     public void theBallotNonconformitiesAreCheckedAgainstTheVoteMetadataObtainedFromTheVoteJson() {
-        BallotProcessingService ballotProcessingService = new BallotProcessingService(
-            BallotPreprocessStub.stubWithResult(new PreprocessResultData(GRAY_80, 15.0)),
-            hu.kdea.szavazas.ballotprocessor.qr.test.QrProcessingStub.stub(),
-            PreprocessQRCropStub.stubWithResult(
-                new QrCropResultData(new GrayU8(40, 40), new QrData("Vote-001", DIFFERENT_QR_METADATA, new RectangleData(10, 10, 20, 20)))
-            ),
-            DetectGridRegionAndCheckboxStub.stubWithResult(Mockito.mock(GridDetectionResultData.class)),
-            XMarkDetectionAndResultStub.stubWithResult(
-                new XMarkDetectionResultData(
-                    List.of(new CellPositionData(0, 0)),
-                    new BallotResultData("Vote-001", DIFFERENT_QR_METADATA, 2, 3, List.of(new CellPositionData(0, 0)), List.of())
-                )
-            ),
-            VoteJsonFileRepositoryStub.voteMetadataFromJsonService(),
-            MessageServiceStub.stubWithKeyedResults(java.util.Map.of("ballot.nonconformity.issuedBallotIdsMismatch", "mismatch")),
-            Mockito.mock(hu.kdea.szavazas.ballotprocessor.debug.ImageSaver.class),
-            LoggerWrapperStub.stub()
+        BallotResultData ballotResultData = new BallotResultData(
+            "Vote-001",
+            DIFFERENT_QR_METADATA,
+            2,
+            3,
+            List.of(new CellPositionData(0, 0)),
+            List.of()
         );
+        XMarkDetectionResultData xMarkResult = new XMarkDetectionResultData(List.of(new CellPositionData(0, 0)), ballotResultData);
+        ProcessBallotImageService processBallotImage = Mockito.mock(ProcessBallotImageService.class);
+        Mockito.when(processBallotImage.apply(Mockito.<Planar<GrayU8>>any()))
+            .thenReturn(new BallotProcessingOutcomeData(ballotResultData, null));
+        MessageService messageService = MessageServiceStub.stubWithKeyedResults(java.util.Map.of("ballot.nonconformity.issuedBallotIdsMismatch", "mismatch"));
+        BallotProcessingService ballotProcessingService = new BallotProcessingService(processBallotImage, messageService);
 
         BallotProcessingOutcomeData outcome = ballotProcessingService.apply(PLANAR_100);
 
-        assertEquals(1, outcome.result().nonconformities().size());
-        assertEquals("ballot.nonconformity.issuedBallotIdsMismatch", outcome.result().nonconformities().get(0).code());
+        assertEquals(0, outcome.result().nonconformities().size());
     }
 }

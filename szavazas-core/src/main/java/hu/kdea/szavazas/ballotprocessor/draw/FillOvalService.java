@@ -5,11 +5,11 @@ import boofcv.struct.image.Planar;
 import javax.inject.Inject;
 
 public class FillOvalService {
-    private final SetPixelService pixelSet;
+    private final FillScanlineService fillScanline;
 
     @Inject
-    public FillOvalService(SetPixelService pixelSet) {
-        this.pixelSet = pixelSet;
+    public FillOvalService(FillScanlineService fillScanline) {
+        this.fillScanline = fillScanline;
     }
 
     public void apply(Planar<GrayU8> image, int x, int y, int w, int h, int color) {
@@ -26,13 +26,7 @@ public class FillOvalService {
                 continue;
             }
             double dx = a * Math.sqrt(1.0 - (dy * dy) / (b * b));
-            fillScanline(image, (int) (cx - dx), (int) (cx + dx), py, color);
-        }
-    }
-
-    private void fillScanline(Planar<GrayU8> image, int xStart, int xEnd, int y, int color) {
-        for (int px = xStart; px <= xEnd; px++) {
-            pixelSet.apply(image, px, y, color);
+            fillScanline.apply(image, (int) (cx - dx), (int) (cx + dx), py, color);
         }
     }
 }

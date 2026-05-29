@@ -17,7 +17,7 @@ public final class VoteJsonFileRepositoryStub implements VoteJsonTestData {
         return new hu.kdea.szavazas.ballotprocessor.VoteMetadataFromJsonService(
             stub(),
             new hu.kdea.szavazas.review.ExtractVoteNameService(),
-            hu.kdea.szavazas.ballotprocessor.common.test.LoggerWrapperStub.stub()
+            new hu.kdea.szavazas.ballotprocessor.ParseVoteMetadataJsonService()
         );
     }
 }

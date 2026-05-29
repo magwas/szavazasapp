@@ -15,11 +15,11 @@ public class GridOverlayDebugRenderer {
     private static final int COLOR_BLACK = 0xFF000000;
     private static final int COLOR_RED = 0xFFFF0000;
 
-    private final ImageSaver saver;
+    private final ImageSaverWrapper saver;
     private final SetPixelService pixelSetService;
     private final DrawLineService lineDrawService;
 
-    public GridOverlayDebugRenderer(ImageSaver saver, SetPixelService pixelSetService, DrawLineService lineDrawService) {
+    public GridOverlayDebugRenderer(ImageSaverWrapper saver, SetPixelService pixelSetService, DrawLineService lineDrawService) {
         this.saver = saver;
         this.pixelSetService = pixelSetService;
         this.lineDrawService = lineDrawService;

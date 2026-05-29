@@ -10,7 +10,9 @@ import hu.kdea.szavazas.ballotprocessor.qr.preprocess.PreprocessQRService;
 
 public final class PreprocessQRStub {
     public static PreprocessQRService stub() {
-        return mock(PreprocessQRService.class);
+        PreprocessQRService mock = mock(PreprocessQRService.class);
+        when(mock.apply(any(GrayU8.class), anyString())).thenAnswer(invocation -> invocation.getArgument(0));
+        return mock;
     }
 
     public static PreprocessQRService stubWithResult(GrayU8 result) {

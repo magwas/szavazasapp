@@ -3,15 +3,15 @@ package hu.kdea.szavazas;
 import boofcv.io.image.ConvertBufferedImage;
 import boofcv.struct.image.GrayU8;
 import boofcv.struct.image.Planar;
-import hu.kdea.szavazas.ballotprocessor.debug.ImageSaver;
+import hu.kdea.szavazas.ballotprocessor.debug.ImageSaverWrapper;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import javax.imageio.ImageIO;
 
-public class AwtImageSaverService implements ImageSaver {
+public class AwtImageSaverWrapperService implements ImageSaverWrapper {
     private final File outputDir;
 
-    public AwtImageSaverService(File outputDir) {
+    public AwtImageSaverWrapperService(File outputDir) {
         this.outputDir = outputDir;
         outputDir.mkdirs();
     }

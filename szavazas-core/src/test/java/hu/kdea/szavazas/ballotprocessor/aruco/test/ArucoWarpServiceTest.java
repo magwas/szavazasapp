@@ -19,7 +19,10 @@ public class ArucoWarpServiceTest extends TestBase implements ArucoTestData {
 
     @Override
     public void setUp() {
-        arucoWarpService = new ArucoWarpService();
+        arucoWarpService = new ArucoWarpService(
+            new hu.kdea.szavazas.ballotprocessor.aruco.ConvertPlanarU8ToF32Service(),
+            new hu.kdea.szavazas.ballotprocessor.aruco.ComputeHomographyService()
+        );
     }
 
     @Test

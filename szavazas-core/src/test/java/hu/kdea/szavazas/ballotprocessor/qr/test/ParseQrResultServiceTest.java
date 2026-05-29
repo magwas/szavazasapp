@@ -15,7 +15,12 @@ public class ParseQrResultServiceTest extends TestBase implements QrDecoderTestD
 
     @Override
     public void setUp() {
-        parseQrResultService = new ParseQrResultService();
+        parseQrResultService = new ParseQrResultService(
+            new hu.kdea.szavazas.ballotprocessor.qr.ValidateQrResultService(),
+            new hu.kdea.szavazas.ballotprocessor.qr.ParseQrFieldService(),
+            new hu.kdea.szavazas.ballotprocessor.qr.ComputeQrBoundingBoxService(),
+            new hu.kdea.szavazas.ballotprocessor.qr.ExtractQrVoteIdService()
+        );
     }
 
     @Test

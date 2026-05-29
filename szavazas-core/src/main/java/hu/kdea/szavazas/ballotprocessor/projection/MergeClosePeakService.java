@@ -11,10 +11,6 @@ public class MergeClosePeakService implements ProjectionConstants {
     public MergeClosePeakService() {
     }
 
-    public List<Integer> apply(List<Integer> peaks) {
-        return apply(peaks, MERGE_CLOSE_PEAKS_DIST);
-    }
-
     public List<Integer> apply(List<Integer> peaks, int minDist) {
         if (peaks.size() < 2) {
             return peaks;

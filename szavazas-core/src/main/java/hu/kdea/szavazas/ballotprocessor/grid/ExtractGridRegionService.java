@@ -3,6 +3,7 @@ package hu.kdea.szavazas.ballotprocessor.grid;
 import boofcv.struct.image.GrayU8;
 import hu.kdea.szavazas.ballotprocessor.common.ImageNormalizerService;
 import hu.kdea.szavazas.ballotprocessor.common.InverterService;
+import hu.kdea.szavazas.ballotprocessor.common.RectangleData;
 import hu.kdea.szavazas.ballotprocessor.common.RowBoundaryData;
 import hu.kdea.szavazas.ballotprocessor.projection.ComputeRowProjectionService;
 import javax.inject.Inject;
@@ -26,7 +27,7 @@ public class ExtractGridRegionService {
 
     public GridRegionData apply(GrayU8 scaledGray, int qrCentreX, int qrBottomY, Double markerTopY) {
         GrayU8 inverted = inverter.apply(scaledGray);
-        RowBoundaryData boundary = findGridBoundary.apply(computeRowProjection.apply(inverted), qrBottomY, markerTopY);
+        RowBoundaryData boundary = findGridBoundary.apply(computeRowProjection.apply(inverted, new RectangleData(0, 0, inverted.width, inverted.height), 0, inverted.height), qrBottomY, markerTopY);
         if (boundary == null) {
             return null;
         }

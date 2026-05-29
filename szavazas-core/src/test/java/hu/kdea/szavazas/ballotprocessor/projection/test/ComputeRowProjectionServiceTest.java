@@ -19,7 +19,7 @@ public class ComputeRowProjectionServiceTest extends TestBase implements BallotP
     @Test
     @DisplayName("full-image projection sums each row correctly")
     public void applyFullImageSumsEachRow() {
-        float[] result = computeRowProjectionService.apply(IMAGE_3X3);
+        float[] result = computeRowProjectionService.apply(IMAGE_3X3, new RectangleData(0, 0, 3, 3), 0, 3);
         assertArrayEquals(new float[]{6f, 15f, 24f}, result, 0.001f);
     }
 

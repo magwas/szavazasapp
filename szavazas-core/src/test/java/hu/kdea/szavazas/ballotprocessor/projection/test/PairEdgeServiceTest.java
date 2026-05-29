@@ -20,7 +20,7 @@ public class PairEdgeServiceTest extends TestBase {
     @DisplayName("peaks are paired when the gap is inside min and max bounds")
     public void applyPairsWhenGapInBounds() {
         List<Integer> peaks = Arrays.asList(10, 25, 40, 55);
-        List<EdgeSegmentData> result = pairEdgeService.apply(peaks, 10, 20);
+        List<EdgeSegmentData> result = pairEdgeService.apply(peaks, 10, 20, 10);
         assertEquals(2, result.size());
         assertEquals(new EdgeSegmentData(10, 25), result.get(0));
         assertEquals(new EdgeSegmentData(40, 55), result.get(1));
@@ -30,7 +30,7 @@ public class PairEdgeServiceTest extends TestBase {
     @DisplayName("already used peaks are not reused")
     public void applyUsedPeaksNotReused() {
         List<Integer> peaks = Arrays.asList(10, 25, 30);
-        List<EdgeSegmentData> result = pairEdgeService.apply(peaks, 10, 20);
+        List<EdgeSegmentData> result = pairEdgeService.apply(peaks, 10, 20, 10);
         assertEquals(1, result.size());
         assertEquals(new EdgeSegmentData(10, 25), result.get(0));
     }
@@ -39,7 +39,7 @@ public class PairEdgeServiceTest extends TestBase {
     @DisplayName("unmatched peaks are ignored")
     public void applyUnmatchedPeaksIgnored() {
         List<Integer> peaks = Arrays.asList(10, 50, 100);
-        List<EdgeSegmentData> result = pairEdgeService.apply(peaks, 10, 20);
+        List<EdgeSegmentData> result = pairEdgeService.apply(peaks, 10, 20, 10);
         assertEquals(0, result.size());
     }
 
@@ -54,6 +54,6 @@ public class PairEdgeServiceTest extends TestBase {
     @Test
     @DisplayName("empty peaks list returns empty")
     public void applyEmptyPeaksReturnsEmpty() {
-        assertTrue(pairEdgeService.apply(Collections.emptyList(), 10, 20).isEmpty());
+        assertTrue(pairEdgeService.apply(Collections.emptyList(), 10, 20, 10).isEmpty());
     }
 }

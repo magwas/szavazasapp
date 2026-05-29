@@ -3,17 +3,17 @@ package hu.kdea.szavazas.ballotprocessor.grid;
 import boofcv.struct.image.GrayU8;
 import hu.kdea.szavazas.ballotprocessor.common.RectangleData;
 import hu.kdea.szavazas.ballotprocessor.debug.DebugImageSaver;
-import hu.kdea.szavazas.ballotprocessor.debug.ImageSaver;
+import hu.kdea.szavazas.ballotprocessor.debug.ImageSaverWrapper;
 import hu.kdea.szavazas.ballotprocessor.qr.QrData;
 import javax.inject.Inject;
 
 public class DetectGridRegionAndCheckboxService {
     private final ExtractGridRegionService extractGridRegion;
     private final DetectGridService detectGrid;
-    private final ImageSaver imageSaver;
+    private final ImageSaverWrapper imageSaver;
 
     @Inject
-    public DetectGridRegionAndCheckboxService(ExtractGridRegionService extractGridRegion, DetectGridService detectGrid, @DebugImageSaver ImageSaver imageSaver) {
+    public DetectGridRegionAndCheckboxService(ExtractGridRegionService extractGridRegion, DetectGridService detectGrid, @DebugImageSaver ImageSaverWrapper imageSaver) {
         this.extractGridRegion = extractGridRegion;
         this.detectGrid = detectGrid;
         this.imageSaver = imageSaver;

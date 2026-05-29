@@ -1,26 +1,37 @@
 package hu.kdea.szavazas.ballotprocessor.qr.preprocess;
 
 import boofcv.struct.image.GrayU8;
-import hu.kdea.szavazas.ballotprocessor.debug.ImageSaver;
-import java.util.List;
+import hu.kdea.szavazas.ballotprocessor.debug.DebugImageSaver;
+import hu.kdea.szavazas.ballotprocessor.debug.ImageSaverWrapper;
+import javax.inject.Inject;
 
 public class PreprocessQRService {
-    private final ImageSaver debugSaver;
-    private final List<PreprocessingStep> steps;
+    private final ImageSaverWrapper debugSaver;
+    private final AdaptiveBinarizeService adaptiveBinarize;
+    private final EnhanceContrastService enhanceContrast;
+    private final SharpenService sharpen;
 
-    public PreprocessQRService(ImageSaver debugSaver, List<PreprocessingStep> steps) {
+    @Inject
+    public PreprocessQRService(@DebugImageSaver ImageSaverWrapper debugSaver, AdaptiveBinarizeService adaptiveBinarize, EnhanceContrastService enhanceContrast, SharpenService sharpen) {
         this.debugSaver = debugSaver;
-        this.steps = steps;
+        this.adaptiveBinarize = adaptiveBinarize;
+        this.enhanceContrast = enhanceContrast;
+        this.sharpen = sharpen;
     }
 
     public GrayU8 apply(GrayU8 input, String baseName) {
         GrayU8 current = input;
-        for (int i = 0; i < steps.size(); i++) {
-            PreprocessingStep step = steps.get(i);
-            current = step.apply(current);
-            if (debugSaver != null) {
-                debugSaver.apply(current, baseName + "_" + i + "_" + step.getClass().getSimpleName() + ".jpg");
-            }
+        current = enhanceContrast.apply(current);
+        if (debugSaver != null) {
+            debugSaver.apply(current, baseName + "_0_EnhanceContrastService.jpg");
+        }
+        current = sharpen.apply(current);
+        if (debugSaver != null) {
+            debugSaver.apply(current, baseName + "_1_SharpenService.jpg");
+        }
+        current = adaptiveBinarize.apply(current);
+        if (debugSaver != null) {
+            debugSaver.apply(current, baseName + "_2_AdaptiveBinarizeService.jpg");
         }
         return current;
     }

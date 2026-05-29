@@ -3,7 +3,7 @@ package hu.kdea.szavazas.ballotprocessor.glue;
 import dagger.Module;
 import dagger.Provides;
 import hu.kdea.szavazas.ballotprocessor.debug.DebugImageSaver;
-import hu.kdea.szavazas.ballotprocessor.debug.ImageSaver;
+import hu.kdea.szavazas.ballotprocessor.debug.ImageSaverWrapper;
 import io.github.magwas.konveyor.annotations.Glue;
 
 @Glue
@@ -11,7 +11,7 @@ import io.github.magwas.konveyor.annotations.Glue;
 public interface NoOpDebugImageSaverModule {
     @Provides
     @DebugImageSaver
-    static ImageSaver imageSaver() {
+    static ImageSaverWrapper imageSaver() {
         return (image, fileName) -> {
         };
     }

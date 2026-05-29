@@ -14,7 +14,7 @@ import hu.kdea.szavazas.ballotprocessor.aruco.ArucoDetectionResultData;
 import hu.kdea.szavazas.ballotprocessor.aruco.ArucoDetectionService;
 import hu.kdea.szavazas.ballotprocessor.aruco.test.ArucoDetectionStub;
 import hu.kdea.szavazas.ballotprocessor.aruco.test.ArucoTestData;
-import hu.kdea.szavazas.ballotprocessor.debug.ImageSaver;
+import hu.kdea.szavazas.ballotprocessor.debug.ImageSaverWrapper;
 import io.github.magwas.konveyor.testing.TestBase;
 import org.junit.Test;
 import org.junit.jupiter.api.DisplayName;
@@ -24,13 +24,13 @@ public class BallotPreprocessServiceTest extends TestBase implements ArucoTestDa
     private BallotPreprocessService ballotPreprocessService;
     private ArucoDetectionService arucoDetectionService;
     private GrayPlanarToGrayService grayPlanarToGrayService;
-    private ImageSaver imageSaver;
+    private ImageSaverWrapper imageSaver;
 
     @Override
     public void setUp() {
         arucoDetectionService = ArucoDetectionStub.stub();
         grayPlanarToGrayService = GrayPlanarToGrayStub.stub();
-        imageSaver = Mockito.mock(ImageSaver.class);
+        imageSaver = Mockito.mock(ImageSaverWrapper.class);
         ballotPreprocessService = new BallotPreprocessService(arucoDetectionService, grayPlanarToGrayService, imageSaver);
     }
 

@@ -12,7 +12,9 @@ import org.junit.jupiter.api.DisplayName;
 
 public class FillOvalServiceTest extends TestBase implements DrawTestData {
 
-    private final FillOvalService fillOvalService = new FillOvalService(new SetPixelService());
+    private final FillOvalService fillOvalService = new FillOvalService(
+            new hu.kdea.szavazas.ballotprocessor.draw.FillScanlineService(new SetPixelService())
+        );
 
     @Test
     @DisplayName("non-positive width or height performs no drawing")

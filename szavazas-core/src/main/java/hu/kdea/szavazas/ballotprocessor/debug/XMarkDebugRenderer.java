@@ -20,14 +20,14 @@ public class XMarkDebugRenderer {
     private static final int COLOR_GREEN = 0xFF00AA00;
     private static final int COLOR_RED = 0xFFCC0000;
 
-    private final ImageSaver saver;
+    private final ImageSaverWrapper saver;
     private final DrawTextService bitmapFont5x7Service;
     private final SetPixelService pixelSetService;
     private final DrawRectangleService rectDrawService;
     private final RectFillService rectFillService;
 
     @Inject
-    public XMarkDebugRenderer(ImageSaver saver, DrawTextService bitmapFont5x7Service, SetPixelService pixelSetService, DrawRectangleService rectDrawService, RectFillService rectFillService) {
+    public XMarkDebugRenderer(ImageSaverWrapper saver, DrawTextService bitmapFont5x7Service, SetPixelService pixelSetService, DrawRectangleService rectDrawService, RectFillService rectFillService) {
         this.saver = saver;
         this.bitmapFont5x7Service = bitmapFont5x7Service;
         this.pixelSetService = pixelSetService;
@@ -35,7 +35,7 @@ public class XMarkDebugRenderer {
         this.rectFillService = rectFillService;
     }
 
-    public XMarkDebugRenderer(ImageSaver saver) {
+    public XMarkDebugRenderer(ImageSaverWrapper saver) {
         this(saver, new DrawTextService(new SetPixelService()), new SetPixelService(), new DrawRectangleService(new DrawLineService(new SetPixelService())), new RectFillService(new SetPixelService()));
     }
 

@@ -2,9 +2,14 @@ package hu.kdea.szavazas.ballotprocessor.qr.preprocess;
 
 import boofcv.alg.filter.binary.ThresholdImageOps;
 import boofcv.struct.image.GrayU8;
+import javax.inject.Inject;
 
-public class AdaptiveBinarizeService implements PreprocessingStep {
-    @Override
+public class AdaptiveBinarizeService {
+
+    @Inject
+    public AdaptiveBinarizeService() {
+    }
+
     public GrayU8 apply(GrayU8 input) {
         int[] histogram = new int[256];
         for (int y = 0; y < input.height; y++) {

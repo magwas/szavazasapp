@@ -7,8 +7,10 @@ import static org.junit.Assert.assertNull;
 import boofcv.struct.image.GrayU8;
 import hu.kdea.szavazas.ballotprocessor.common.CropService;
 import hu.kdea.szavazas.ballotprocessor.common.RectangleData;
-import hu.kdea.szavazas.ballotprocessor.debug.ImageSaver;
+import hu.kdea.szavazas.ballotprocessor.debug.ImageSaverWrapper;
 import hu.kdea.szavazas.ballotprocessor.qr.PreprocessQRCropService;
+import hu.kdea.szavazas.ballotprocessor.qr.preprocess.PreprocessQRService;
+import hu.kdea.szavazas.ballotprocessor.qr.preprocess.test.PreprocessQRStub;
 import hu.kdea.szavazas.ballotprocessor.qr.QrCropResultData;
 import hu.kdea.szavazas.ballotprocessor.qr.QrData;
 import hu.kdea.szavazas.ballotprocessor.qr.QrProcessingOutcomeData;
@@ -21,14 +23,15 @@ import org.mockito.Mockito;
 public class PreprocessQRCropServiceTest extends TestBase implements QrDecoderTestData {
     private PreprocessQRCropService preprocessQRCropService;
     private CropService cropService;
-    private ImageSaver imageSaver;
+    private ImageSaverWrapper imageSaver;
     private QrProcessingService qrProcessingService;
 
     @Override
     public void setUp() {
         cropService = new CropService();
-        imageSaver = Mockito.mock(ImageSaver.class);
-        preprocessQRCropService = new PreprocessQRCropService(cropService, imageSaver);
+        imageSaver = Mockito.mock(ImageSaverWrapper.class);
+        PreprocessQRService preprocessQR = PreprocessQRStub.stub();
+        preprocessQRCropService = new PreprocessQRCropService(cropService, imageSaver, preprocessQR);
         qrProcessingService = QrProcessingStub.stub();
     }
 

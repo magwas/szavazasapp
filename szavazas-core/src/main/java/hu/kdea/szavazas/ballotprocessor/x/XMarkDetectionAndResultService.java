@@ -1,6 +1,5 @@
 package hu.kdea.szavazas.ballotprocessor.x;
 
-import hu.kdea.szavazas.ballotprocessor.BallotResultData;
 import hu.kdea.szavazas.ballotprocessor.common.CellPositionData;
 import hu.kdea.szavazas.ballotprocessor.grid.GridDetectionResultData;
 import hu.kdea.szavazas.ballotprocessor.qr.QrData;
@@ -9,10 +8,12 @@ import javax.inject.Inject;
 
 public class XMarkDetectionAndResultService {
     private final XMarkDetectService xMarkDetect;
+    private final BuildBallotResultService buildBallotResult;
 
     @Inject
-    public XMarkDetectionAndResultService(XMarkDetectService xMarkDetect) {
+    public XMarkDetectionAndResultService(XMarkDetectService xMarkDetect, BuildBallotResultService buildBallotResult) {
         this.xMarkDetect = xMarkDetect;
+        this.buildBallotResult = buildBallotResult;
     }
 
     public XMarkDetectionResultData apply(GridDetectionResultData gridDetectionResultData, QrData adjustedQr) {
@@ -24,14 +25,6 @@ public class XMarkDetectionAndResultService {
             adjustedQr.voteMetadata().candidateCount(),
             adjustedQr.voteMetadata().supportColumnCount() + 1
         );
-        BallotResultData ballotResultData = new BallotResultData(
-            adjustedQr.raw(),
-            adjustedQr.voteMetadata(),
-            adjustedQr.voteMetadata().supportColumnCount(),
-            gridDetectionResultData.checkboxes().size() / (adjustedQr.voteMetadata().supportColumnCount() + 1),
-            marks,
-            List.of()
-        );
-        return new XMarkDetectionResultData(marks, ballotResultData);
+        return new XMarkDetectionResultData(marks, buildBallotResult.apply(adjustedQr, marks, gridDetectionResultData.checkboxes()));
     }
 }

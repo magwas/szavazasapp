@@ -5,15 +5,15 @@ import android.graphics.Bitmap;
 import boofcv.android.ConvertBitmap;
 import boofcv.struct.image.GrayU8;
 import boofcv.struct.image.Planar;
-import hu.kdea.szavazas.ballotprocessor.debug.ImageSaver;
+import hu.kdea.szavazas.ballotprocessor.debug.ImageSaverWrapper;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
-public class AndroidImageSaverService implements ImageSaver {
+public class AndroidImageSaverWrapperService implements ImageSaverWrapper {
     private final Context context;
 
-    public AndroidImageSaverService(Context context) {
+    public AndroidImageSaverWrapperService(Context context) {
         this.context = context;
     }
 

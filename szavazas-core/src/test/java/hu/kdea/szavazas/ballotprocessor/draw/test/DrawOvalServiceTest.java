@@ -12,7 +12,10 @@ import org.junit.jupiter.api.DisplayName;
 
 public class DrawOvalServiceTest extends TestBase implements DrawTestData {
 
-    private final DrawOvalService drawOvalService = new DrawOvalService(new SetPixelService());
+    private final DrawOvalService drawOvalService = new DrawOvalService(
+            new hu.kdea.szavazas.ballotprocessor.draw.DrawOvalRegion1Service(new SetPixelService()),
+            new hu.kdea.szavazas.ballotprocessor.draw.DrawOvalRegion2Service(new SetPixelService())
+        );
 
     @Test
     @DisplayName("non-positive width or height performs no drawing")

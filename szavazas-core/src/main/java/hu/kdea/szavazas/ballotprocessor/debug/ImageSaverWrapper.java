@@ -1,5 +1,5 @@
 package hu.kdea.szavazas.ballotprocessor.debug;
 
-public interface ImageSaver {
+public interface ImageSaverWrapper {
     void apply(Object image, String fileName);
 }

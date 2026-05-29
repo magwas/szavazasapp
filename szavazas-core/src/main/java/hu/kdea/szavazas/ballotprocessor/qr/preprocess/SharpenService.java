@@ -2,9 +2,14 @@ package hu.kdea.szavazas.ballotprocessor.qr.preprocess;
 
 import boofcv.alg.filter.blur.BlurImageOps;
 import boofcv.struct.image.GrayU8;
+import javax.inject.Inject;
 
-public class SharpenService implements PreprocessingStep {
-    @Override
+public class SharpenService {
+
+    @Inject
+    public SharpenService() {
+    }
+
     public GrayU8 apply(GrayU8 input) {
         GrayU8 blur = new GrayU8(input.width, input.height);
         BlurImageOps.gaussian(input, blur, 1.0, -1, null);

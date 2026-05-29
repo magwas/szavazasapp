@@ -16,7 +16,6 @@ public final class ComputeRowProjectionStub {
 
     public static ComputeRowProjectionService stubWithResult(float[] result) {
         ComputeRowProjectionService mock = mock(ComputeRowProjectionService.class);
-        when(mock.apply(any(GrayU8.class))).thenReturn(result);
         when(mock.apply(any(GrayU8.class), any(RectangleData.class), anyInt(), anyInt())).thenReturn(result);
         return mock;
     }

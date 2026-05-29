@@ -22,7 +22,7 @@ public class XMarkDetectionAndResultServiceTest extends TestBase implements XDet
     @Override
     public void setUp() {
         xMarkDetectService = Mockito.mock(XMarkDetectService.class);
-        xMarkDetectionAndResultService = new XMarkDetectionAndResultService(xMarkDetectService);
+        xMarkDetectionAndResultService = new XMarkDetectionAndResultService(xMarkDetectService, new BuildBallotResultService());
     }
 
     @Test

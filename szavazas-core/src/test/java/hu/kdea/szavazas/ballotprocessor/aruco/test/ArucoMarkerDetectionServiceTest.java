@@ -18,7 +18,8 @@ public class ArucoMarkerDetectionServiceTest extends TestBase implements ArucoTe
     @Override
     public void setUp() {
         loggerWrapper = LoggerWrapperStub.stub();
-        arucoMarkerDetectionService = new ArucoMarkerDetectionService(loggerWrapper);
+        arucoMarkerDetectionService = new ArucoMarkerDetectionService(loggerWrapper,
+            new hu.kdea.szavazas.ballotprocessor.aruco.CollectArucoMarkersService());
     }
 
     @Test

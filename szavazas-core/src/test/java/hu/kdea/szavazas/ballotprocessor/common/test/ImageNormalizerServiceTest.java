@@ -11,7 +11,8 @@ import org.junit.jupiter.api.DisplayName;
 
 public class ImageNormalizerServiceTest extends TestBase implements CommonTestData {
 
-    private final ImageNormalizerService imageNormalizerService = new ImageNormalizerService();
+    private final ImageNormalizerService imageNormalizerService = new ImageNormalizerService(
+            new hu.kdea.szavazas.ballotprocessor.common.NormalizeBinaryService());
 
     @Test
     @DisplayName("the output image has the same size as input")

@@ -22,7 +22,8 @@ public class ReconstructEdgeServiceTest extends TestBase {
     private final MergeClosePeakService mergeClosePeakService = MergeClosePeakStub.stub();
     private final PairEdgeService pairEdgeService = PairEdgeStub.stub();
     private final ReconstructEdgeService reconstructEdgeService =
-            new ReconstructEdgeService(findRawPeakService, mergeClosePeakService, pairEdgeService);
+            new ReconstructEdgeService(findRawPeakService, mergeClosePeakService, pairEdgeService,
+                new hu.kdea.szavazas.ballotprocessor.projection.ValidateEmptySecondColumnService());
 
     @Test
     @DisplayName("raw peaks are merged, paired, and returned when pair count matches expectation")
@@ -34,7 +35,8 @@ public class ReconstructEdgeServiceTest extends TestBase {
         MergeClosePeakService stubMerge = MergeClosePeakStub.stubWithResult(Arrays.asList(10, 20, 30, 40));
         PairEdgeService stubPair = PairEdgeStub.stubWithResultForArgs(Arrays.asList(10, 20, 30, 40), 12, 37,
                 Arrays.asList(new EdgeSegmentData(10, 20), new EdgeSegmentData(30, 40)));
-        ReconstructEdgeService service = new ReconstructEdgeService(stubRaw, stubMerge, stubPair);
+        ReconstructEdgeService service = new ReconstructEdgeService(stubRaw, stubMerge, stubPair,
+                new hu.kdea.szavazas.ballotprocessor.projection.ValidateEmptySecondColumnService());
         List<EdgeSegmentData> result = service.apply(projection, 0, 2, false);
         assertNotNull(result);
         assertEquals(2, result.size());
@@ -50,7 +52,8 @@ public class ReconstructEdgeServiceTest extends TestBase {
         MergeClosePeakService stubMerge = MergeClosePeakStub.stubWithResult(Arrays.asList(10, 20));
         PairEdgeService stubPair = PairEdgeStub.stubWithResultForArgs(Arrays.asList(10, 20), 12, 37,
                 Collections.singletonList(new EdgeSegmentData(10, 20)));
-        ReconstructEdgeService service = new ReconstructEdgeService(stubRaw, stubMerge, stubPair);
+        ReconstructEdgeService service = new ReconstructEdgeService(stubRaw, stubMerge, stubPair,
+                new hu.kdea.szavazas.ballotprocessor.projection.ValidateEmptySecondColumnService());
         assertNull(service.apply(projection, 0, 2, false));
     }
 
@@ -64,7 +67,8 @@ public class ReconstructEdgeServiceTest extends TestBase {
         MergeClosePeakService stubMerge = MergeClosePeakStub.stubWithResult(Arrays.asList(10, 25, 20, 35));
         PairEdgeService stubPair = PairEdgeStub.stubWithResultForArgs(Arrays.asList(10, 25, 20, 35), 12, 37,
                 Arrays.asList(new EdgeSegmentData(10, 25), new EdgeSegmentData(20, 35)));
-        ReconstructEdgeService service = new ReconstructEdgeService(stubRaw, stubMerge, stubPair);
+        ReconstructEdgeService service = new ReconstructEdgeService(stubRaw, stubMerge, stubPair,
+                new hu.kdea.szavazas.ballotprocessor.projection.ValidateEmptySecondColumnService());
         // end of first (25) >= start of second (20) -> overlapping
         assertNull(service.apply(projection, 0, 2, false));
     }
@@ -79,7 +83,8 @@ public class ReconstructEdgeServiceTest extends TestBase {
         MergeClosePeakService stubMerge = MergeClosePeakStub.stubWithResult(Arrays.asList(10, 20, 30, 40));
         PairEdgeService stubPair = PairEdgeStub.stubWithResultForArgs(Arrays.asList(10, 20, 30, 40), 12, 37,
                 Arrays.asList(new EdgeSegmentData(10, 20), new EdgeSegmentData(30, 40)));
-        ReconstructEdgeService service = new ReconstructEdgeService(stubRaw, stubMerge, stubPair);
+        ReconstructEdgeService service = new ReconstructEdgeService(stubRaw, stubMerge, stubPair,
+                new hu.kdea.szavazas.ballotprocessor.projection.ValidateEmptySecondColumnService());
         // emptySecondColumn=true, expectedPairs=1, totalColumns=2
         // gaps: 30-10=20, avgOtherGap=0 (empty sublist) -> returns null
         assertNull(service.apply(projection, 0, 1, true));

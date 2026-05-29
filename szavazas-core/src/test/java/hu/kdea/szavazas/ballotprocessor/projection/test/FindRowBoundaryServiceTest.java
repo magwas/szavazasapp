@@ -17,7 +17,7 @@ public class FindRowBoundaryServiceTest extends TestBase implements ProjectionTe
     @DisplayName("vertical projection is split into top and bottom halves for peak search")
     public void applySplitsProjectionIntoTopAndBottomHalves() {
         FindMaxPeakService findMaxPeakService = FindMaxPeakStub.stubWithChainedResults(5, 15);
-        FindRowBoundaryService findRowBoundaryService = new FindRowBoundaryService(findMaxPeakService);
+        FindRowBoundaryService findRowBoundaryService = new FindRowBoundaryService(findMaxPeakService, new hu.kdea.szavazas.ballotprocessor.projection.ComputeRowProjectionService());
         RowBoundaryData result = findRowBoundaryService.apply(IMAGE_10X20, ROI_FULL_10X20);
         // cropTop = max(0, 5+10) = 15, cropBottom = min(19, 15-10) = 5
         // When cropTop > cropBottom, the result still reflects the margin-adjusted values
@@ -29,7 +29,7 @@ public class FindRowBoundaryServiceTest extends TestBase implements ProjectionTe
     @DisplayName("returned crop bounds include boundary margin adjustments")
     public void applyCropBoundsIncludeMarginAdjustments() {
         FindMaxPeakService findMaxPeakService = FindMaxPeakStub.stubWithChainedResults(5, 15);
-        FindRowBoundaryService findRowBoundaryService = new FindRowBoundaryService(findMaxPeakService);
+        FindRowBoundaryService findRowBoundaryService = new FindRowBoundaryService(findMaxPeakService, new hu.kdea.szavazas.ballotprocessor.projection.ComputeRowProjectionService());
         RowBoundaryData result = findRowBoundaryService.apply(IMAGE_10X20, ROI_FULL_10X20);
         // cropTop = max(0, 5+10) = 15, cropBottom = min(19, 15-10) = 5
         assertEquals(15, result.cropTop());

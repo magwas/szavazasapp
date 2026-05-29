@@ -11,10 +11,6 @@ public class PairEdgeService {
     public PairEdgeService() {
     }
 
-    public List<EdgeSegmentData> apply(List<Integer> peaks, int minGap, int maxGap) {
-        return apply(peaks, minGap, maxGap, 10);
-    }
-
     public List<EdgeSegmentData> apply(List<Integer> peaks, int minGap, int maxGap, int maxLookAhead) {
         List<EdgeSegmentData> pairs = new ArrayList<>();
         boolean[] used = new boolean[peaks.size()];

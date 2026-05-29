@@ -9,7 +9,7 @@ import static org.mockito.Mockito.verify;
 
 import boofcv.struct.image.GrayU8;
 import hu.kdea.szavazas.ballotprocessor.common.RectangleData;
-import hu.kdea.szavazas.ballotprocessor.debug.ImageSaver;
+import hu.kdea.szavazas.ballotprocessor.debug.ImageSaverWrapper;
 import hu.kdea.szavazas.ballotprocessor.grid.DetectGridRegionAndCheckboxService;
 import hu.kdea.szavazas.ballotprocessor.grid.DetectGridService;
 import hu.kdea.szavazas.ballotprocessor.grid.ExtractGridRegionService;
@@ -27,7 +27,7 @@ public class DetectGridRegionAndCheckboxServiceTest extends TestBase implements 
 
     private final ExtractGridRegionService gridRegionExtract = ExtractGridRegionStub.stub();
     private final DetectGridService gridDetectorStep = DetectGridStub.stub();
-    private final ImageSaver imageSaver = Mockito.mock(ImageSaver.class);
+    private final ImageSaverWrapper imageSaver = Mockito.mock(ImageSaverWrapper.class);
     private final DetectGridRegionAndCheckboxService service =
             new DetectGridRegionAndCheckboxService(gridRegionExtract, gridDetectorStep, imageSaver);
 

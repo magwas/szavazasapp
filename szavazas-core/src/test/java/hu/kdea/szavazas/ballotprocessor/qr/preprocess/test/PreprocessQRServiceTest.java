@@ -9,38 +9,27 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import boofcv.struct.image.GrayU8;
-import hu.kdea.szavazas.ballotprocessor.debug.ImageSaver;
-import hu.kdea.szavazas.ballotprocessor.qr.preprocess.PreprocessingStep;
+import hu.kdea.szavazas.ballotprocessor.debug.ImageSaverWrapper;
+import hu.kdea.szavazas.ballotprocessor.qr.preprocess.AdaptiveBinarizeService;
+import hu.kdea.szavazas.ballotprocessor.qr.preprocess.EnhanceContrastService;
 import hu.kdea.szavazas.ballotprocessor.qr.preprocess.PreprocessQRService;
+import hu.kdea.szavazas.ballotprocessor.qr.preprocess.SharpenService;
 import io.github.magwas.konveyor.testing.TestBase;
-import java.util.Arrays;
-import java.util.List;
 import org.junit.Test;
 import org.junit.jupiter.api.DisplayName;
 
 public class PreprocessQRServiceTest extends TestBase implements PreprocessTestData {
 
-    private static class NamedStep implements PreprocessingStep {
-        private final GrayU8 output;
-
-        NamedStep(GrayU8 output) {
-            this.output = output;
-        }
-
-        @Override
-        public GrayU8 apply(GrayU8 input) {
-            return output;
-        }
-    }
-
     @Test
     @DisplayName("preprocessing steps are executed in order and each step receives the previous output")
     public void applyStepsExecutedInOrder() {
-        PreprocessingStep step1 = mock(PreprocessingStep.class);
-        PreprocessingStep step2 = mock(PreprocessingStep.class);
-        when(step1.apply(PREPROCESS_INPUT_2X2)).thenReturn(PREPROCESS_OUTPUT_2X2);
-        when(step2.apply(PREPROCESS_OUTPUT_2X2)).thenReturn(PREPROCESS_OUTPUT_2X2);
-        PreprocessQRService service = new PreprocessQRService(null, Arrays.asList(step1, step2));
+        EnhanceContrastService enhanceContrast = mock(EnhanceContrastService.class);
+        SharpenService sharpen = mock(SharpenService.class);
+        AdaptiveBinarizeService adaptiveBinarize = mock(AdaptiveBinarizeService.class);
+        when(enhanceContrast.apply(PREPROCESS_INPUT_2X2)).thenReturn(PREPROCESS_OUTPUT_2X2);
+        when(sharpen.apply(PREPROCESS_OUTPUT_2X2)).thenReturn(PREPROCESS_OUTPUT_2X2);
+        when(adaptiveBinarize.apply(PREPROCESS_OUTPUT_2X2)).thenReturn(PREPROCESS_OUTPUT_2X2);
+        PreprocessQRService service = new PreprocessQRService(null, adaptiveBinarize, enhanceContrast, sharpen);
         GrayU8 result = service.apply(PREPROCESS_INPUT_2X2, "test");
         assertEquals(PREPROCESS_OUTPUT_2X2, result);
     }
@@ -48,9 +37,13 @@ public class PreprocessQRServiceTest extends TestBase implements PreprocessTestD
     @Test
     @DisplayName("the final returned image is the output of the last step")
     public void applyReturnsLastStepOutput() {
-        PreprocessingStep step = mock(PreprocessingStep.class);
-        when(step.apply(PREPROCESS_INPUT_2X2)).thenReturn(PREPROCESS_OUTPUT_2X2);
-        PreprocessQRService service = new PreprocessQRService(null, List.of(step));
+        EnhanceContrastService enhanceContrast = mock(EnhanceContrastService.class);
+        SharpenService sharpen = mock(SharpenService.class);
+        AdaptiveBinarizeService adaptiveBinarize = mock(AdaptiveBinarizeService.class);
+        when(enhanceContrast.apply(PREPROCESS_INPUT_2X2)).thenReturn(PREPROCESS_INPUT_2X2);
+        when(sharpen.apply(PREPROCESS_INPUT_2X2)).thenReturn(PREPROCESS_INPUT_2X2);
+        when(adaptiveBinarize.apply(PREPROCESS_INPUT_2X2)).thenReturn(PREPROCESS_OUTPUT_2X2);
+        PreprocessQRService service = new PreprocessQRService(null, adaptiveBinarize, enhanceContrast, sharpen);
         GrayU8 result = service.apply(PREPROCESS_INPUT_2X2, "test");
         assertEquals(PREPROCESS_OUTPUT_2X2, result);
     }
@@ -58,19 +51,30 @@ public class PreprocessQRServiceTest extends TestBase implements PreprocessTestD
     @Test
     @DisplayName("debug saver is called after each step with the expected staged filename")
     public void applyDebugSaverCalledAfterEachStep() {
-        ImageSaver debugSaver = mock(ImageSaver.class);
-        PreprocessingStep step = new NamedStep(PREPROCESS_OUTPUT_2X2);
-        PreprocessQRService service = new PreprocessQRService(debugSaver, List.of(step));
+        ImageSaverWrapper debugSaver = mock(ImageSaverWrapper.class);
+        EnhanceContrastService enhanceContrast = mock(EnhanceContrastService.class);
+        SharpenService sharpen = mock(SharpenService.class);
+        AdaptiveBinarizeService adaptiveBinarize = mock(AdaptiveBinarizeService.class);
+        when(enhanceContrast.apply(any(GrayU8.class))).thenReturn(PREPROCESS_OUTPUT_2X2);
+        when(sharpen.apply(any(GrayU8.class))).thenReturn(PREPROCESS_OUTPUT_2X2);
+        when(adaptiveBinarize.apply(any(GrayU8.class))).thenReturn(PREPROCESS_OUTPUT_2X2);
+        PreprocessQRService service = new PreprocessQRService(debugSaver, adaptiveBinarize, enhanceContrast, sharpen);
         service.apply(PREPROCESS_INPUT_2X2, "testBase");
-        verify(debugSaver).apply(eq(PREPROCESS_OUTPUT_2X2), eq("testBase_0_NamedStep.jpg"));
+        verify(debugSaver).apply(eq(PREPROCESS_OUTPUT_2X2), eq("testBase_0_EnhanceContrastService.jpg"));
+        verify(debugSaver).apply(eq(PREPROCESS_OUTPUT_2X2), eq("testBase_1_SharpenService.jpg"));
+        verify(debugSaver).apply(eq(PREPROCESS_OUTPUT_2X2), eq("testBase_2_AdaptiveBinarizeService.jpg"));
     }
 
     @Test
     @DisplayName("processing works when debug saver is null")
     public void applyWorksWithNullDebugSaver() {
-        PreprocessingStep step = mock(PreprocessingStep.class);
-        when(step.apply(PREPROCESS_INPUT_2X2)).thenReturn(PREPROCESS_OUTPUT_2X2);
-        PreprocessQRService service = new PreprocessQRService(null, List.of(step));
+        EnhanceContrastService enhanceContrast = mock(EnhanceContrastService.class);
+        SharpenService sharpen = mock(SharpenService.class);
+        AdaptiveBinarizeService adaptiveBinarize = mock(AdaptiveBinarizeService.class);
+        when(enhanceContrast.apply(any(GrayU8.class))).thenReturn(PREPROCESS_OUTPUT_2X2);
+        when(sharpen.apply(any(GrayU8.class))).thenReturn(PREPROCESS_OUTPUT_2X2);
+        when(adaptiveBinarize.apply(any(GrayU8.class))).thenReturn(PREPROCESS_OUTPUT_2X2);
+        PreprocessQRService service = new PreprocessQRService(null, adaptiveBinarize, enhanceContrast, sharpen);
         GrayU8 result = service.apply(PREPROCESS_INPUT_2X2, "test");
         assertNotNull(result);
     }

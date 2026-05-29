@@ -7,8 +7,11 @@ import hu.kdea.szavazas.ballotprocessor.GridConstants;
 import javax.inject.Inject;
 
 public class ImageNormalizerService implements GridConstants {
+    private final NormalizeBinaryService normalizeBinary;
+
     @Inject
-    public ImageNormalizerService() {
+    public ImageNormalizerService(NormalizeBinaryService normalizeBinary) {
+        this.normalizeBinary = normalizeBinary;
     }
 
     public GrayU8 apply(GrayU8 gray) {
@@ -25,11 +28,7 @@ public class ImageNormalizerService implements GridConstants {
                 null,
                 null
         );
-        for (int y = 0; y < binary.height; y++) {
-            for (int x = 0; x < binary.width; x++) {
-                binary.set(x, y, binary.get(x, y) != 0 ? 255 : 0);
-            }
-        }
+        normalizeBinary.apply(binary);
         return binary;
     }
 }
