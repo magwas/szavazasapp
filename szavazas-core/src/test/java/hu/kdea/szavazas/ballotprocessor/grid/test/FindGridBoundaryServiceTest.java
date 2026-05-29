@@ -21,7 +21,8 @@ public class FindGridBoundaryServiceTest extends TestBase implements BallotProce
     @DisplayName("null is returned when fewer than two peaks are found")
     public void applyReturnsNullWhenFewerThanTwoPeaks() {
         FindRawPeakService findRawPeakService = FindRawPeakStub.stubWithResult(Collections.singletonList(10));
-        RowBoundaryData result = FindGridBoundaryService.apply(new float[100], 0, null, findRawPeakService);
+        FindGridBoundaryService findGridBoundary = new FindGridBoundaryService(findRawPeakService);
+        RowBoundaryData result = findGridBoundary.apply(new float[100], 0, null);
         assertNull(result);
     }
 
@@ -30,11 +31,9 @@ public class FindGridBoundaryServiceTest extends TestBase implements BallotProce
     public void applyTwoStrongestPeaksChosen() {
         FindRawPeakService findRawPeakService = FindRawPeakStub.stubWithResult(Arrays.asList(25, 60, 80));
         float[] projection = GRID_BOUNDARY_PROJECTION;
-        RowBoundaryData result = FindGridBoundaryService.apply(projection, 0, null, findRawPeakService);
+        FindGridBoundaryService findGridBoundary = new FindGridBoundaryService(findRawPeakService);
+        RowBoundaryData result = findGridBoundary.apply(projection, 0, null);
         assertNotNull(result);
-        // projection[25]=100, projection[60]=140, projection[80]=120
-        // sorted by value descending: 60(140), 80(120), 25(100)
-        // topPeak = min(60,80) = 60, bottomPeak = max(60,80) = 80
         assertEquals(60 + 10, result.cropTop());
         assertEquals(80 - 10, result.cropBottom());
     }
@@ -46,9 +45,9 @@ public class FindGridBoundaryServiceTest extends TestBase implements BallotProce
         float[] projection = new float[100];
         projection[2] = 100f;
         projection[98] = 100f;
-        RowBoundaryData result = FindGridBoundaryService.apply(projection, 0, null, findRawPeakService);
+        FindGridBoundaryService findGridBoundary = new FindGridBoundaryService(findRawPeakService);
+        RowBoundaryData result = findGridBoundary.apply(projection, 0, null);
         assertNotNull(result);
-        // cropTop = max(0, 2+10) = 12, cropBottom = min(99, 98-10) = 88
         assertEquals(12, result.cropTop());
         assertEquals(88, result.cropBottom());
     }
@@ -57,7 +56,8 @@ public class FindGridBoundaryServiceTest extends TestBase implements BallotProce
     @DisplayName("markerTopY changes the lower search bound")
     public void applyMarkerTopYChangesSearchBound() {
         FindRawPeakService findRawPeakService = FindRawPeakStub.stubWithResult(Arrays.asList(25, 60));
-        RowBoundaryData result = FindGridBoundaryService.apply(GRID_BOUNDARY_PROJECTION, 0, 50.0, findRawPeakService);
+        FindGridBoundaryService findGridBoundary = new FindGridBoundaryService(findRawPeakService);
+        RowBoundaryData result = findGridBoundary.apply(GRID_BOUNDARY_PROJECTION, 0, 50.0);
         assertNotNull(result);
     }
 }

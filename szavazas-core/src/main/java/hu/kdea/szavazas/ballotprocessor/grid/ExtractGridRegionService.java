@@ -5,29 +5,28 @@ import hu.kdea.szavazas.ballotprocessor.common.ImageNormalizerService;
 import hu.kdea.szavazas.ballotprocessor.common.InverterService;
 import hu.kdea.szavazas.ballotprocessor.common.RowBoundaryData;
 import hu.kdea.szavazas.ballotprocessor.projection.ComputeRowProjectionService;
-import hu.kdea.szavazas.ballotprocessor.projection.FindRawPeakService;
 import javax.inject.Inject;
 
 public class ExtractGridRegionService {
     private final ImageNormalizerService imageNormalizer;
     private final ComputeRowProjectionService computeRowProjection;
-    private final FindRawPeakService findRawPeak;
+    private final FindGridBoundaryService findGridBoundary;
     private final InverterService inverter;
 
     @Inject
     public ExtractGridRegionService(ImageNormalizerService imageNormalizer,
                                     ComputeRowProjectionService computeRowProjection,
-                                    FindRawPeakService findRawPeak,
+                                    FindGridBoundaryService findGridBoundary,
                                     InverterService inverter) {
         this.imageNormalizer = imageNormalizer;
         this.computeRowProjection = computeRowProjection;
-        this.findRawPeak = findRawPeak;
+        this.findGridBoundary = findGridBoundary;
         this.inverter = inverter;
     }
 
     public GridRegionData apply(GrayU8 scaledGray, int qrCentreX, int qrBottomY, Double markerTopY) {
         GrayU8 inverted = inverter.apply(scaledGray);
-        RowBoundaryData boundary = FindGridBoundaryService.apply(computeRowProjection.apply(inverted), qrBottomY, markerTopY, findRawPeak);
+        RowBoundaryData boundary = findGridBoundary.apply(computeRowProjection.apply(inverted), qrBottomY, markerTopY);
         if (boundary == null) {
             return null;
         }

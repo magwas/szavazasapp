@@ -8,15 +8,21 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-public final class FindGridBoundaryService implements GridConstants {
-    private FindGridBoundaryService() {
+import javax.inject.Inject;
+
+public class FindGridBoundaryService implements GridConstants {
+    private final FindRawPeakService findRawPeak;
+
+    @Inject
+    public FindGridBoundaryService(FindRawPeakService findRawPeak) {
+        this.findRawPeak = findRawPeak;
     }
 
-    public static RowBoundaryData apply(float[] projection, int qrBottomY, Double markerTopY, FindRawPeakService findRawPeakService) {
+    public RowBoundaryData apply(float[] projection, int qrBottomY, Double markerTopY) {
         int searchBottomY = calcSearchBottomY(markerTopY, projection.length);
         float[] searchProjection = new float[searchBottomY - qrBottomY + 1];
         System.arraycopy(projection, qrBottomY, searchProjection, 0, searchProjection.length);
-        List<Integer> peaks = findRawPeakService.apply(searchProjection, qrBottomY);
+        List<Integer> peaks = findRawPeak.apply(searchProjection, qrBottomY);
         if (peaks.size() < 2) {
             return null;
         }
@@ -29,7 +35,7 @@ public final class FindGridBoundaryService implements GridConstants {
         return new RowBoundaryData(cropTop, cropBottom);
     }
 
-    private static int calcSearchBottomY(Double markerTopY, int height) {
+    private int calcSearchBottomY(Double markerTopY, int height) {
         int margin = 20;
         if (markerTopY != null) {
             return Math.min(height - 1, (int) (markerTopY - margin));
