@@ -1,6 +1,6 @@
 package hu.kdea.szavazas.ballotprocessor.debug;
 
-interface XMarkDebugRendererConstants {
+public interface XMarkDebugRendererConstants {
     int COLOR_BLUE = 0xFF0000FF;
     int COLOR_YELLOW = 0xFFFFFF00;
     int COLOR_MAGENTA = 0xFFFF00FF;

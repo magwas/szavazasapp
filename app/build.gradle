@@ -79,7 +79,7 @@ dependencies {
     testImplementation "org.boofcv:boofcv-core:1.2.0"   // essential for ConvertBufferedImage
     testImplementation "org.boofcv:boofcv-geo:1.2.0"
     testImplementation "org.boofcv:boofcv-io:1.2.0"
-    testImplementation testFixtures(project(":szavazas-core"))
+
     // Android instrumentation tests
     androidTestImplementation "androidx.test.ext:junit:1.1.5"
     androidTestImplementation "androidx.test.espresso:espresso-core:3.5.1"

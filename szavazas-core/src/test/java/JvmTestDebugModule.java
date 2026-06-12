@@ -3,6 +3,7 @@ package hu.kdea.szavazas;
 import dagger.Binds;
 import dagger.Module;
 import dagger.Provides;
+import hu.kdea.szavazas.ballotprocessor.common.LogConsumer;
 import hu.kdea.szavazas.ballotprocessor.debug.DebugImageSaver;
 import hu.kdea.szavazas.ballotprocessor.debug.ImageSaverWrapper;
 import hu.kdea.szavazas.review.BallotResultFileRepository;
@@ -14,6 +15,12 @@ import javax.inject.Singleton;
 @Glue
 @Module
 public interface JvmTestDebugModule {
+    @Provides
+    @Singleton
+    static LogConsumer provideLogConsumer() {
+        return new LogConsumer((tag, msg) -> System.out.println(tag + ": " + msg));
+    }
+
     @Provides
     @Singleton
     @DebugImageSaver

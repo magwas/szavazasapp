@@ -14,9 +14,6 @@ public class XMarkDebugRendererWrapper {
     }
 
     public void render(GrayU8 gridBinary, List<CellDebugData> cells) {
-        if (cells.isEmpty()) {
-            return;
-        }
         renderer.apply(gridBinary, cells);
     }
 }

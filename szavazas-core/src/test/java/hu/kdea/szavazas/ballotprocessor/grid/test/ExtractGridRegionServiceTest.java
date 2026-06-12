@@ -72,4 +72,59 @@ public class ExtractGridRegionServiceTest extends TestBase implements GridTestDa
         assertNotNull(result);
         assertEquals(20, result.projectionInput().width);
     }
+
+    @Test
+    @DisplayName("returns null when no valid grid boundary is detected")
+    public void returnsNullWhenNoValidGridBoundaryIsDetected() {
+        ComputeRowProjectionService stubProjection = ComputeRowProjectionStub.stubWithResult(new float[30]);
+        FindGridBoundaryService stubBoundary = FindGridBoundaryStub.stubWithResult(null);
+        ExtractGridRegionService service = new ExtractGridRegionService(imageNormalizer, stubProjection, stubBoundary, inverter);
+        assertNull(service.apply(PROJECTION_INPUT_20X30, 5, 0, null));
+    }
+
+    @Test
+    @DisplayName("returns null when the computed crop region has zero or negative width")
+    public void returnsNullWhenComputedCropRegionHasZeroOrNegativeWidth() {
+        ComputeRowProjectionService stubProjection = ComputeRowProjectionStub.stubWithResult(new float[30]);
+        FindGridBoundaryService stubBoundary = FindGridBoundaryStub.stubWithResult(new RowBoundaryData(10, 20));
+        ExtractGridRegionService service = new ExtractGridRegionService(imageNormalizer, stubProjection, stubBoundary, inverter);
+        assertNull(service.apply(PROJECTION_INPUT_20X30, 20, 0, null));
+    }
+
+    @Test
+    @DisplayName("returns null when the computed crop region has zero or negative height")
+    public void returnsNullWhenComputedCropRegionHasZeroOrNegativeHeight() {
+        ComputeRowProjectionService stubProjection = ComputeRowProjectionStub.stubWithResult(new float[30]);
+        FindGridBoundaryService stubBoundary = FindGridBoundaryStub.stubWithResult(new RowBoundaryData(20, 10));
+        ExtractGridRegionService service = new ExtractGridRegionService(imageNormalizer, stubProjection, stubBoundary, inverter);
+        assertNull(service.apply(PROJECTION_INPUT_20X30, 5, 0, null));
+    }
+
+    @Test
+    @DisplayName("extracts a sub-image from the right side of the warped ballot starting from the QR centre")
+    public void extractsSubImageFromRightSideOfWarpedBallotStartingFromQrCentre() {
+        ComputeRowProjectionService stubProjection = ComputeRowProjectionStub.stubWithResult(new float[40]);
+        FindGridBoundaryService stubBoundary = FindGridBoundaryStub.stubWithResult(new RowBoundaryData(25, 25));
+        ImageNormalizerService stubNormalizer = ImageNormalizerStub.stubWithIdentity();
+        ExtractGridRegionService service = new ExtractGridRegionService(stubNormalizer, stubProjection, stubBoundary, inverter);
+        GridRegionData result = service.apply(PROJECTION_INPUT_30X40, 10, 0, null);
+        assertNotNull(result);
+        assertEquals(20, result.projectionInput().width);
+        assertEquals(1, result.projectionInput().height);
+    }
+
+    @Test
+    @DisplayName("normalizes the cropped grid region and includes the crop offset and QR centre position in the result")
+    public void normalizesCroppedGridRegionAndIncludesCropOffsetAndQrCentrePositionInResult() {
+        ComputeRowProjectionService stubProjection = ComputeRowProjectionStub.stubWithResult(new float[40]);
+        FindGridBoundaryService stubBoundary = FindGridBoundaryStub.stubWithResult(new RowBoundaryData(5, 10));
+        GrayU8 normalised = new GrayU8(10, 10);
+        ImageNormalizerService stubNormalizer = ImageNormalizerStub.stubWithResult(normalised);
+        ExtractGridRegionService service = new ExtractGridRegionService(stubNormalizer, stubProjection, stubBoundary, inverter);
+        GridRegionData result = service.apply(PROJECTION_INPUT_30X40, 10, 0, null);
+        assertNotNull(result);
+        assertEquals(normalised, result.projectionInput());
+        assertEquals(5, result.cropTop());
+        assertEquals(10, result.qrCentreX());
+    }
 }

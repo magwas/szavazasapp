@@ -5,11 +5,10 @@ import java.util.Map;
 import javax.inject.Inject;
 
 public class InMemoryBallotResultFileRepository implements BallotResultFileRepository {
-    private final Map<String, String> files;
+    private final Map<String, String> files = new HashMap<>();
 
     @Inject
     public InMemoryBallotResultFileRepository() {
-        this.files = new HashMap<>();
     }
 
     @Override

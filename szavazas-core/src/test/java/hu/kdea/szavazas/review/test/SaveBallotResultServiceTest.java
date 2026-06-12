@@ -29,7 +29,7 @@ public class SaveBallotResultServiceTest extends TestBase implements ReviewTestD
             ballotResultFileRepository,
             ExtractVoteNameServiceStub.stub(),
             SerializeBallotResultServiceStub.stub(),
-            new hu.kdea.szavazas.ballotprocessor.MessageService(new hu.kdea.szavazas.ballotprocessor.LocaleState())
+            new hu.kdea.szavazas.ballotprocessor.MessageService(new hu.kdea.szavazas.ballotprocessor.LocaleState(java.util.Locale.ENGLISH))
         );
         defaultBallotProcessingApi = new BallotProcessingApi(
             null,

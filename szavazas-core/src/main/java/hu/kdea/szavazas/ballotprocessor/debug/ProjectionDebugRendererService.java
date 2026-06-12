@@ -3,71 +3,60 @@ package hu.kdea.szavazas.ballotprocessor.debug;
 import boofcv.struct.image.GrayU8;
 import boofcv.struct.image.Planar;
 import hu.kdea.szavazas.ballotprocessor.common.EdgeSegmentData;
-import hu.kdea.szavazas.ballotprocessor.draw.DrawLineService;
-import hu.kdea.szavazas.ballotprocessor.draw.DrawTextService;
-import hu.kdea.szavazas.ballotprocessor.draw.FillOvalService;
-import hu.kdea.szavazas.ballotprocessor.draw.RectFillService;
 import hu.kdea.szavazas.ballotprocessor.projection.AxisPeaksData;
 import hu.kdea.szavazas.ballotprocessor.projection.ProjectionData;
 import java.util.List;
 import javax.inject.Inject;
 
 public class ProjectionDebugRendererService implements ProjectionDebugRendererConstants {
-    private final ImageSaverWrapper saver;
-    private final DrawTextService bitmapFont5x7;
-    private final DrawLineService lineDraw;
-    private final RectFillService rectFill;
-    private final FillOvalService ovalFill;
+    private final ProjectionDebugRendererDependenciesData projectionDebugRendererDependenciesData;
 
     @Inject
-    public ProjectionDebugRendererService(@DebugImageSaver ImageSaverWrapper saver, DrawTextService bitmapFont5x7, DrawLineService lineDraw, RectFillService rectFill, FillOvalService ovalFill) {
-        this.saver = saver;
-        this.bitmapFont5x7 = bitmapFont5x7;
-        this.lineDraw = lineDraw;
-        this.rectFill = rectFill;
-        this.ovalFill = ovalFill;
+    public ProjectionDebugRendererService(ProjectionDebugRendererDependenciesData projectionDebugRendererDependenciesData) {
+        this.projectionDebugRendererDependenciesData = projectionDebugRendererDependenciesData;
     }
 
     public void apply(ProjectionData data, AxisPeaksData colAxis, AxisPeaksData rowAxis) {
-        drawProjection(data.colProj(), data.colOffset(), "Column Projection", "col_proj");
-        drawProjection(data.rowProj(), data.rowOffset(), "Row Projection", "row_proj");
-        drawWithPeaksAndPairs(data.colProj(), colAxis.merged(), colAxis.pairs(), data.colOffset(), "Column Peaks & Pairs", "col_peaks_pairs");
-        drawWithPeaksAndPairs(data.rowProj(), rowAxis.merged(), rowAxis.pairs(), data.rowOffset(), "Row Peaks & Pairs", "row_peaks_pairs");
+        drawProjection(data.colProj(), data.colOffset(), new ProjectionRenderSpecData("Column Projection", "col_proj"));
+        drawProjection(data.rowProj(), data.rowOffset(), new ProjectionRenderSpecData("Row Projection", "row_proj"));
+        drawWithPeaksAndPairs(data.colProj(), colAxis, data.colOffset(), new ProjectionRenderSpecData("Column Peaks & Pairs", "col_peaks_pairs"));
+        drawWithPeaksAndPairs(data.rowProj(), rowAxis, data.rowOffset(), new ProjectionRenderSpecData("Row Peaks & Pairs", "row_peaks_pairs"));
     }
 
-    private void drawProjection(float[] proj, int offset, String title, String fileName) {
+    private void drawProjection(float[] proj, int offset, ProjectionRenderSpecData spec) {
         Planar<GrayU8> canvas = blankCanvas();
         float maxVal = maxOrOne(proj);
         if (maxVal <= 0f) {
-            bitmapFont5x7.apply(canvas, "Empty projection (max=0)", 10, 20, COLOR_BLACK, 12f);
-            saver.apply(canvas, "debug_" + fileName + ".jpg");
+            projectionDebugRendererDependenciesData.drawText().apply(canvas, "Empty projection (max=0)", 10, 20, COLOR_BLACK, 12f);
+            projectionDebugRendererDependenciesData.imageSaverWrapper().apply(canvas, "debug_" + spec.fileName() + ".jpg");
             return;
         }
-        bitmapFont5x7.apply(canvas, title, 10, 15, COLOR_GREY, 12f);
-        bitmapFont5x7.apply(canvas, "offset=" + offset + "  max=" + maxVal, 10, 30, COLOR_GREY, 12f);
+        projectionDebugRendererDependenciesData.drawText().apply(canvas, spec.title(), 10, 15, COLOR_GREY, 12f);
+        projectionDebugRendererDependenciesData.drawText().apply(canvas, "offset=" + offset + "  max=" + maxVal, 10, 30, COLOR_GREY, 12f);
         drawProjectionLine(canvas, proj, maxVal, COLOR_BLACK);
-        saver.apply(canvas, "debug_" + fileName + ".jpg");
+        projectionDebugRendererDependenciesData.imageSaverWrapper().apply(canvas, "debug_" + spec.fileName() + ".jpg");
     }
 
-    private void drawWithPeaksAndPairs(float[] proj, List<Integer> peaks, List<EdgeSegmentData> pairs, int offset, String title, String fileName) {
+    private void drawWithPeaksAndPairs(float[] proj, AxisPeaksData axis, int offset, ProjectionRenderSpecData spec) {
         Planar<GrayU8> canvas = blankCanvas();
         float maxVal = maxOrOne(proj);
         if (maxVal <= 0f) {
-            bitmapFont5x7.apply(canvas, "Empty projection", 10, 20, COLOR_BLACK, 12f);
-            saver.apply(canvas, "debug_" + fileName + ".jpg");
+            projectionDebugRendererDependenciesData.drawText().apply(canvas, "Empty projection", 10, 20, COLOR_BLACK, 12f);
+            projectionDebugRendererDependenciesData.imageSaverWrapper().apply(canvas, "debug_" + spec.fileName() + ".jpg");
             return;
         }
-        bitmapFont5x7.apply(canvas, title, 10, 15, COLOR_GREY, 12f);
-        bitmapFont5x7.apply(canvas, "peaks=" + peaks + "  pairs=" + pairs, 10, 30, COLOR_GREY, 12f);
+        projectionDebugRendererDependenciesData.drawText().apply(canvas, spec.title(), 10, 15, COLOR_GREY, 12f);
+        projectionDebugRendererDependenciesData.drawText().apply(canvas, "peaks=" + axis.merged() + "  pairs=" + axis.pairs(), 10, 30, COLOR_GREY, 12f);
         drawProjectionLine(canvas, proj, maxVal, COLOR_LIGHT_GREY);
-        drawPeaks(canvas, proj, peaks, offset, maxVal);
-        drawPairs(canvas, proj, pairs, offset, maxVal);
-        saver.apply(canvas, "debug_" + fileName + ".jpg");
+        ProjectionPaintContextData ctx = new ProjectionPaintContextData(canvas, proj, offset, maxVal);
+        drawPeaks(ctx, axis.merged());
+        drawPairs(ctx, axis.pairs());
+        projectionDebugRendererDependenciesData.imageSaverWrapper().apply(canvas, "debug_" + spec.fileName() + ".jpg");
     }
 
     private Planar<GrayU8> blankCanvas() {
         Planar<GrayU8> canvas = new Planar<>(GrayU8.class, WIDTH, HEIGHT, 3);
-        rectFill.apply(canvas, 0, 0, WIDTH, HEIGHT, COLOR_WHITE);
+        projectionDebugRendererDependenciesData.rectFill().apply(canvas, 0, 0, WIDTH, HEIGHT, COLOR_WHITE);
         return canvas;
     }
 
@@ -79,35 +68,35 @@ public class ProjectionDebugRendererService implements ProjectionDebugRendererCo
             int y1 = HEIGHT - 10 - (int) (proj[i - 1] * scaleY);
             int x2 = (int) (i * scaleX);
             int y2 = HEIGHT - 10 - (int) (proj[i] * scaleY);
-            lineDraw.apply(canvas, x1, y1, x2, y2, color);
+            projectionDebugRendererDependenciesData.drawLine().apply(canvas, x1, y1, x2, y2, color);
         }
     }
 
-    private void drawPeaks(Planar<GrayU8> canvas, float[] proj, List<Integer> peaks, int offset, float maxVal) {
-        double scaleX = (double) WIDTH / (proj.length - 1);
-        double scaleY = (double) (HEIGHT - 20) / maxVal;
+    private void drawPeaks(ProjectionPaintContextData ctx, List<Integer> peaks) {
+        double scaleX = (double) WIDTH / (ctx.proj().length - 1);
+        double scaleY = (double) (HEIGHT - 20) / ctx.maxVal();
         for (int peak : peaks) {
-            int idx = peak - offset;
-            if (idx >= 0 && idx < proj.length) {
+            int idx = peak - ctx.offset();
+            if (idx >= 0 && idx < ctx.proj().length) {
                 int x = (int) (idx * scaleX);
-                int y = HEIGHT - 10 - (int) (proj[idx] * scaleY);
-                ovalFill.apply(canvas, x - 3, y - 3, 6, 6, COLOR_RED);
+                int y = HEIGHT - 10 - (int) (ctx.proj()[idx] * scaleY);
+                projectionDebugRendererDependenciesData.fillOval().apply(ctx.canvas(), x - 3, y - 3, 6, 6, COLOR_RED);
             }
         }
     }
 
-    private void drawPairs(Planar<GrayU8> canvas, float[] proj, List<EdgeSegmentData> pairs, int offset, float maxVal) {
-        double scaleX = (double) WIDTH / (proj.length - 1);
-        double scaleY = (double) (HEIGHT - 20) / maxVal;
+    private void drawPairs(ProjectionPaintContextData ctx, List<EdgeSegmentData> pairs) {
+        double scaleX = (double) WIDTH / (ctx.proj().length - 1);
+        double scaleY = (double) (HEIGHT - 20) / ctx.maxVal();
         for (EdgeSegmentData pair : pairs) {
-            int startIdx = pair.start() - offset;
-            int endIdx = pair.end() - offset;
-            if (startIdx >= 0 && endIdx < proj.length) {
+            int startIdx = pair.start() - ctx.offset();
+            int endIdx = pair.end() - ctx.offset();
+            if (startIdx >= 0 && endIdx < ctx.proj().length) {
                 int x1 = (int) (startIdx * scaleX);
-                int y1 = HEIGHT - 10 - (int) (proj[startIdx] * scaleY);
+                int y1 = HEIGHT - 10 - (int) (ctx.proj()[startIdx] * scaleY);
                 int x2 = (int) (endIdx * scaleX);
-                int y2 = HEIGHT - 10 - (int) (proj[endIdx] * scaleY);
-                lineDraw.apply(canvas, x1, y1, x2, y2, COLOR_BLUE);
+                int y2 = HEIGHT - 10 - (int) (ctx.proj()[endIdx] * scaleY);
+                projectionDebugRendererDependenciesData.drawLine().apply(ctx.canvas(), x1, y1, x2, y2, COLOR_BLUE);
             }
         }
     }

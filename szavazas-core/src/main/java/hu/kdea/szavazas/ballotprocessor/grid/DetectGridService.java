@@ -16,7 +16,7 @@ public class DetectGridService {
 
     public List<RectangleData> apply(GrayU8 projectionInput, int cropTop, int qrCentreX, int expectedCols, int expectedRows) {
         RectangleData rect = new RectangleData(0, 0, projectionInput.width, projectionInput.height);
-        List<RectangleData> boxes = orchestrateGridDetection.apply(projectionInput, rect, expectedCols, expectedRows, true, true);
+        List<RectangleData> boxes = orchestrateGridDetection.apply(new GridDetectionInputData(projectionInput, rect, expectedCols, expectedRows, true, true));
         if (boxes.isEmpty()) {
             return null;
         }

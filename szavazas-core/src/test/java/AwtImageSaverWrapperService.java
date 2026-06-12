@@ -8,7 +8,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import javax.imageio.ImageIO;
 
-public class AwtImageSaverWrapperService implements ImageSaverWrapper {
+public class AwtImageSaverWrapperService extends ImageSaverWrapper {
     private final File outputDir;
 
     public AwtImageSaverWrapperService(File outputDir) {

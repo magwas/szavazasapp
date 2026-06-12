@@ -12,4 +12,8 @@ public record BallotResultData(
     List<CellPositionData> xCells,
     List<BallotNonconformityData> nonconformities
 ) {
+    public BallotResultData {
+        xCells = List.copyOf(xCells);
+        nonconformities = List.copyOf(nonconformities);
+    }
 }

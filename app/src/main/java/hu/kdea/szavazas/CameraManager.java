@@ -18,19 +18,22 @@ import java.io.File;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Consumer;
+import javax.inject.Inject;
 
 public class CameraManager {
     private final Context context;
     private final LifecycleOwner lifecycleOwner;
     private final PreviewView previewView;
-    private final ExecutorService cameraExecutor = Executors.newSingleThreadExecutor();
+    private final ExecutorService cameraExecutor;
     private ImageCapture imageCapture;
     private Camera camera;
 
+    @Inject
     public CameraManager(Context context, LifecycleOwner lifecycleOwner, PreviewView previewView) {
         this.context = context;
         this.lifecycleOwner = lifecycleOwner;
         this.previewView = previewView;
+        this.cameraExecutor = Executors.newSingleThreadExecutor();
     }
 
     public void start() {

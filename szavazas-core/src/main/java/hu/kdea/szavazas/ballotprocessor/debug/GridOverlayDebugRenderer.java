@@ -3,6 +3,7 @@ package hu.kdea.szavazas.ballotprocessor.debug;
 import boofcv.struct.image.GrayU8;
 import boofcv.struct.image.Planar;
 import hu.kdea.szavazas.ballotprocessor.common.EdgeSegmentData;
+import javax.inject.Inject;
 import hu.kdea.szavazas.ballotprocessor.common.RectangleData;
 import hu.kdea.szavazas.ballotprocessor.draw.DrawLineService;
 import hu.kdea.szavazas.ballotprocessor.draw.SetPixelService;
@@ -19,6 +20,7 @@ public class GridOverlayDebugRenderer {
     private final SetPixelService pixelSetService;
     private final DrawLineService lineDrawService;
 
+    @Inject
     public GridOverlayDebugRenderer(ImageSaverWrapper saver, SetPixelService pixelSetService, DrawLineService lineDrawService) {
         this.saver = saver;
         this.pixelSetService = pixelSetService;

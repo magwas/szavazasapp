@@ -17,4 +17,10 @@ public final class ImageNormalizerStub {
         when(mock.apply(any(GrayU8.class))).thenReturn(result);
         return mock;
     }
+
+    public static ImageNormalizerService stubWithIdentity() {
+        ImageNormalizerService mock = mock(ImageNormalizerService.class);
+        when(mock.apply(any(GrayU8.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        return mock;
+    }
 }

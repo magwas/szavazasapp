@@ -168,6 +168,202 @@ public interface ReviewTestData {
           ]
         }
         """;
+    VoteMetadataData VOTE_METADATA_VOTEID_DIFFERS = new VoteMetadataData(
+        "vote-different",
+        VOTE_NAME,
+        CANDIDATE_COUNT,
+        CANDIDATES,
+        SUPPORT_COLUMN_COUNT,
+        ISSUED_BALLOT_IDS
+    );
+    VoteMetadataData VOTE_METADATA_VOTENAME_DIFFERS = new VoteMetadataData(
+        VOTE_ID,
+        "Different Vote",
+        CANDIDATE_COUNT,
+        CANDIDATES,
+        SUPPORT_COLUMN_COUNT,
+        ISSUED_BALLOT_IDS
+    );
+    VoteMetadataData VOTE_METADATA_CANDIDATECOUNT_DIFFERS = new VoteMetadataData(
+        VOTE_ID,
+        VOTE_NAME,
+        5,
+        List.of("Alice", "Bob", "Carol", "Dave", "Erin"),
+        SUPPORT_COLUMN_COUNT,
+        ISSUED_BALLOT_IDS
+    );
+    VoteMetadataData VOTE_METADATA_CANDIDATES_DIFFER = new VoteMetadataData(
+        VOTE_ID,
+        VOTE_NAME,
+        CANDIDATE_COUNT,
+        List.of("Alice", "Bob", "Dan"),
+        SUPPORT_COLUMN_COUNT,
+        ISSUED_BALLOT_IDS
+    );
+    VoteMetadataData VOTE_METADATA_SUPPORTCOLUMNCOUNT_DIFFERS = new VoteMetadataData(
+        VOTE_ID,
+        VOTE_NAME,
+        CANDIDATE_COUNT,
+        CANDIDATES,
+        5,
+        ISSUED_BALLOT_IDS
+    );
+    VoteMetadataData VOTE_METADATA_ISSUEDBALLOTIDS_DIFFER = new VoteMetadataData(
+        VOTE_ID,
+        VOTE_NAME,
+        CANDIDATE_COUNT,
+        CANDIDATES,
+        SUPPORT_COLUMN_COUNT,
+        List.of("Vote-003", "Vote-004")
+    );
+    BallotResultData BALLOT_RESULT_VOTEID_DIFFERS = new BallotResultData(
+        "Vote-001",
+        VOTE_METADATA_VOTEID_DIFFERS,
+        2,
+        3,
+        List.of(),
+        List.of()
+    );
+    BallotResultData BALLOT_RESULT_VOTENAME_DIFFERS = new BallotResultData(
+        "Vote-001",
+        VOTE_METADATA_VOTENAME_DIFFERS,
+        2,
+        3,
+        List.of(),
+        List.of()
+    );
+    BallotResultData BALLOT_RESULT_CANDIDATECOUNT_DIFFERS = new BallotResultData(
+        "Vote-001",
+        VOTE_METADATA_CANDIDATECOUNT_DIFFERS,
+        2,
+        3,
+        List.of(),
+        List.of()
+    );
+    BallotResultData BALLOT_RESULT_CANDIDATES_DIFFER = new BallotResultData(
+        "Vote-001",
+        VOTE_METADATA_CANDIDATES_DIFFER,
+        2,
+        3,
+        List.of(),
+        List.of()
+    );
+    BallotResultData BALLOT_RESULT_SUPPORTCOLUMNCOUNT_DIFFERS = new BallotResultData(
+        "Vote-001",
+        VOTE_METADATA_SUPPORTCOLUMNCOUNT_DIFFERS,
+        2,
+        3,
+        List.of(),
+        List.of()
+    );
+    BallotResultData BALLOT_RESULT_ISSUEDBALLOTIDS_DIFFER = new BallotResultData(
+        "Vote-001",
+        VOTE_METADATA_ISSUEDBALLOTIDS_DIFFER,
+        2,
+        3,
+        List.of(),
+        List.of()
+    );
+    String EXISTING_VOTE_JSON_EXTRA_KEY = """
+        {
+          \"vote\": {
+            \"voteId\": \"vote-1\",
+            \"voteName\": \"Vote\",
+            \"candidateCount\": 3,
+            \"candidates\": [\"Alice\", \"Bob\", \"Carol\"],
+            \"supportColumnCount\": 2,
+            \"issuedBallotIds\": [\"Vote-001\", \"Vote-002\"],
+            \"extraField\": \"ignored\"
+          },
+          \"ballots\": [
+            {
+              \"raw\": \"Vote-002\",
+              \"numSupport\": 1,
+              \"numRows\": 1,
+              \"xCells\": []
+            }
+          ]
+        }
+        """;
+    String EXISTING_VOTE_JSON_DIFFERENT_CANDIDATE_COUNT = """
+        {
+          \"vote\": {
+            \"voteId\": \"vote-1\",
+            \"voteName\": \"Vote\",
+            \"candidateCount\": 3,
+            \"candidates\": [\"Alice\", \"Bob\", \"Carol\", \"Dave\"],
+            \"supportColumnCount\": 2,
+            \"issuedBallotIds\": [\"Vote-001\", \"Vote-002\"]
+          },
+          \"ballots\": [
+            {
+              \"raw\": \"Vote-002\",
+              \"numSupport\": 1,
+              \"numRows\": 1,
+              \"xCells\": []
+            }
+          ]
+        }
+        """;
+    String EXISTING_VOTE_JSON_DIFFERENT_CANDIDATE_VALUES = """
+        {
+          \"vote\": {
+            \"voteId\": \"vote-1\",
+            \"voteName\": \"Vote\",
+            \"candidateCount\": 3,
+            \"candidates\": [\"Alice\", \"Bob\", \"Dan\"],
+            \"supportColumnCount\": 2,
+            \"issuedBallotIds\": [\"Vote-001\", \"Vote-002\"]
+          },
+          \"ballots\": [
+            {
+              \"raw\": \"Vote-002\",
+              \"numSupport\": 1,
+              \"numRows\": 1,
+              \"xCells\": []
+            }
+          ]
+        }
+        """;
+    String EXISTING_VOTE_JSON_NESTED_DIFFERS = """
+        {
+          \"vote\": {
+            \"voteId\": \"vote-1\",
+            \"voteName\": \"Vote\",
+            \"candidateCount\": 3,
+            \"candidates\": [{\"name\": \"Alice\"}, {\"name\": \"Bob\"}, {\"name\": \"Carol\"}],
+            \"supportColumnCount\": 2,
+            \"issuedBallotIds\": [\"Vote-001\", \"Vote-002\"]
+          },
+          \"ballots\": [
+            {
+              \"raw\": \"Vote-002\",
+              \"numSupport\": 1,
+              \"numRows\": 1,
+              \"xCells\": []
+            }
+          ]
+        }
+        """;
+    String EXISTING_VOTE_JSON_NULL_FIELD = """
+        {
+          \"vote\": {
+            \"voteId\": \"vote-1\",
+            \"voteName\": \"Vote\",
+            \"candidateCount\": 3,
+            \"supportColumnCount\": 2,
+            \"issuedBallotIds\": [\"Vote-001\", \"Vote-002\"]
+          },
+          \"ballots\": [
+            {
+              \"raw\": \"Vote-002\",
+              \"numSupport\": 1,
+              \"numRows\": 1,
+              \"xCells\": []
+            }
+          ]
+        }
+        """;
     String CONFLICTING_VOTE_WARNING = "Metadata conflict while preserving stored vote metadata";
     String CONFLICTING_VOTE_WARNING_DETAILS = "stored vote metadata differs from incoming ballot metadata";
 }

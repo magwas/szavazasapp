@@ -12,7 +12,6 @@ public interface NoOpDebugImageSaverModule {
     @Provides
     @DebugImageSaver
     static ImageSaverWrapper imageSaver() {
-        return (image, fileName) -> {
-        };
+        return new ImageSaverWrapper();
     }
 }

@@ -4,10 +4,10 @@ import java.util.Locale;
 import javax.inject.Inject;
 
 public class LocaleState {
-    public Locale locale;
+    public final Locale locale;
 
     @Inject
-    public LocaleState() {
-        locale = Locale.getDefault();
+    public LocaleState(Locale locale) {
+        this.locale = locale;
     }
 }

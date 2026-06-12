@@ -4,29 +4,16 @@ import boofcv.struct.image.GrayU8;
 import boofcv.struct.image.Planar;
 import hu.kdea.szavazas.ballotprocessor.common.PointData;
 import hu.kdea.szavazas.ballotprocessor.common.RectangleData;
-import hu.kdea.szavazas.ballotprocessor.draw.DrawLineService;
-import hu.kdea.szavazas.ballotprocessor.draw.DrawRectangleService;
-import hu.kdea.szavazas.ballotprocessor.draw.DrawTextService;
-import hu.kdea.szavazas.ballotprocessor.draw.RectFillService;
-import hu.kdea.szavazas.ballotprocessor.draw.SetPixelService;
 import hu.kdea.szavazas.ballotprocessor.x.CellDebugData;
 import java.util.List;
 import javax.inject.Inject;
 
 public class XMarkDebugRendererService implements XMarkDebugRendererConstants {
-    private final ImageSaverWrapper saver;
-    private final DrawTextService bitmapFont5x7;
-    private final SetPixelService pixelSet;
-    private final DrawRectangleService rectDraw;
-    private final RectFillService rectFill;
+    private final XMarkDebugRendererDependenciesData xMarkDebugRendererDependenciesData;
 
     @Inject
-    public XMarkDebugRendererService(@DebugImageSaver ImageSaverWrapper saver, DrawTextService bitmapFont5x7, SetPixelService pixelSet, DrawRectangleService rectDraw, RectFillService rectFill) {
-        this.saver = saver;
-        this.bitmapFont5x7 = bitmapFont5x7;
-        this.pixelSet = pixelSet;
-        this.rectDraw = rectDraw;
-        this.rectFill = rectFill;
+    public XMarkDebugRendererService(XMarkDebugRendererDependenciesData xMarkDebugRendererDependenciesData) {
+        this.xMarkDebugRendererDependenciesData = xMarkDebugRendererDependenciesData;
     }
 
     public void apply(GrayU8 gridBinary, List<CellDebugData> cells) {
@@ -55,15 +42,15 @@ public class XMarkDebugRendererService implements XMarkDebugRendererConstants {
         Planar<GrayU8> canvas = binaryGridToCanvas(grid);
         for (CellDebugData cd : cells) {
             RectangleData r = cd.outerRect();
-            rectDraw.apply(canvas, r.x(), r.y(), r.width(), r.height(), COLOR_BLUE);
+            xMarkDebugRendererDependenciesData.drawRectangle().apply(canvas, r.x(), r.y(), r.width(), r.height(), COLOR_BLUE);
         }
-        saver.apply(canvas, "debug_x_grid_outline.jpg");
+        xMarkDebugRendererDependenciesData.imageSaverWrapper().apply(canvas, "debug_x_grid_outline.jpg");
     }
 
     private void drawExtractedCells(GrayU8 grid, List<CellDebugData> cells) {
         Planar<GrayU8> canvas = binaryGridToCanvas(grid);
         paintCellsBackground(canvas, cells);
-        saver.apply(canvas, "debug_x_extracted_cells.jpg");
+        xMarkDebugRendererDependenciesData.imageSaverWrapper().apply(canvas, "debug_x_extracted_cells.jpg");
     }
 
     private void drawErosionOverlay(GrayU8 grid, List<CellDebugData> cells) {
@@ -75,7 +62,7 @@ public class XMarkDebugRendererService implements XMarkDebugRendererConstants {
                 paintErodedDifference(canvas, cd, eroded);
             }
         }
-        saver.apply(canvas, "debug_x_erosion.jpg");
+        xMarkDebugRendererDependenciesData.imageSaverWrapper().apply(canvas, "debug_x_erosion.jpg");
     }
 
     private void drawSkeletonOverlay(GrayU8 grid, List<CellDebugData> cells) {
@@ -84,7 +71,7 @@ public class XMarkDebugRendererService implements XMarkDebugRendererConstants {
         for (CellDebugData cd : cells) {
             paintSkeleton(canvas, cd);
         }
-        saver.apply(canvas, "debug_x_skeleton.jpg");
+        xMarkDebugRendererDependenciesData.imageSaverWrapper().apply(canvas, "debug_x_skeleton.jpg");
     }
 
     private void drawBranchPoints(GrayU8 grid, List<CellDebugData> cells) {
@@ -99,7 +86,7 @@ public class XMarkDebugRendererService implements XMarkDebugRendererConstants {
         for (CellDebugData cd : cells) {
             paintBranchCount(canvas, cd);
         }
-        saver.apply(canvas, "debug_x_branchpoints.jpg");
+        xMarkDebugRendererDependenciesData.imageSaverWrapper().apply(canvas, "debug_x_branchpoints.jpg");
     }
 
     private Planar<GrayU8> binaryGridToCanvas(GrayU8 binary) {
@@ -107,7 +94,7 @@ public class XMarkDebugRendererService implements XMarkDebugRendererConstants {
         for (int y = 0; y < binary.height; y++) {
             for (int x = 0; x < binary.width; x++) {
                 int v = binary.get(x, y) == 0 ? 0xFF : 0x00;
-                pixelSet.apply(canvas, x, y, grayColor(v));
+                xMarkDebugRendererDependenciesData.setPixel().apply(canvas, x, y, grayColor(v));
             }
         }
         return canvas;
@@ -124,7 +111,7 @@ public class XMarkDebugRendererService implements XMarkDebugRendererConstants {
         for (int y = 0; y < ir.height(); y++) {
             for (int x = 0; x < ir.width(); x++) {
                 int v = cd.originalCell().get(x, y) != 0 ? 0 : 255;
-                pixelSet.apply(canvas, ir.x() + x, ir.y() + y, grayColor(v));
+                xMarkDebugRendererDependenciesData.setPixel().apply(canvas, ir.x() + x, ir.y() + y, grayColor(v));
             }
         }
     }
@@ -134,7 +121,7 @@ public class XMarkDebugRendererService implements XMarkDebugRendererConstants {
         for (int y = 0; y < ir.height(); y++) {
             for (int x = 0; x < ir.width(); x++) {
                 if (cd.originalCell().get(x, y) != 0 && eroded.get(x, y) == 0) {
-                    pixelSet.apply(canvas, ir.x() + x, ir.y() + y, COLOR_YELLOW);
+                    xMarkDebugRendererDependenciesData.setPixel().apply(canvas, ir.x() + x, ir.y() + y, COLOR_YELLOW);
                 }
             }
         }
@@ -145,7 +132,7 @@ public class XMarkDebugRendererService implements XMarkDebugRendererConstants {
         for (int y = 0; y < ir.height(); y++) {
             for (int x = 0; x < ir.width(); x++) {
                 if (cd.skeleton().get(x, y) != 0) {
-                    pixelSet.apply(canvas, ir.x() + x, ir.y() + y, COLOR_MAGENTA);
+                    xMarkDebugRendererDependenciesData.setPixel().apply(canvas, ir.x() + x, ir.y() + y, COLOR_MAGENTA);
                 }
             }
         }
@@ -154,7 +141,7 @@ public class XMarkDebugRendererService implements XMarkDebugRendererConstants {
     private void paintBranchMarkers(Planar<GrayU8> canvas, CellDebugData cd) {
         RectangleData ir = cd.innerRect();
         for (PointData pt : cd.branchPoints()) {
-            rectFill.apply(canvas, ir.x() + pt.x() - 3, ir.y() + pt.y() - 3, 6, 6, COLOR_BLUE);
+            xMarkDebugRendererDependenciesData.rectFill().apply(canvas, ir.x() + pt.x() - 3, ir.y() + pt.y() - 3, 6, 6, COLOR_BLUE);
         }
     }
 
@@ -162,7 +149,7 @@ public class XMarkDebugRendererService implements XMarkDebugRendererConstants {
         RectangleData r = cd.outerRect();
         String label = cd.branchPoints().size() + "/" + (cd.xDetected() ? "X" : "-");
         int color = cd.xDetected() ? COLOR_GREEN : COLOR_RED;
-        bitmapFont5x7.apply(canvas, label, r.x() + r.width() + 8, r.y() + r.height() / 2, color, 12f);
+        xMarkDebugRendererDependenciesData.drawText().apply(canvas, label, r.x() + r.width() + 8, r.y() + r.height() / 2, color, 12f);
     }
 
     private int grayColor(int v) {

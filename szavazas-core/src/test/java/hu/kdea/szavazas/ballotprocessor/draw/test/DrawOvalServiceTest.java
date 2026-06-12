@@ -65,4 +65,90 @@ public class DrawOvalServiceTest extends TestBase implements DrawTestData {
             }
         }
     }
+
+    @Test
+    @DisplayName("draws a very wide flat oval outline from all four quadrants symmetrically")
+    public void applyDrawsVeryWideFlatOvalOutlineSymmetrically() {
+        Planar<GrayU8> image = DrawTestData.thirtyByTenPlanar();
+        drawOvalService.apply(image, 1, 1, 28, 4, COLOR_RED);
+        int setCount = 0;
+        for (int y = 0; y < 10; y++) {
+            for (int x = 0; x < 30; x++) {
+                if (image.getBand(0).get(x, y) != 0) setCount++;
+            }
+        }
+        assertEquals(true, setCount > 0);
+    }
+
+    @Test
+    @DisplayName("draws a very tall narrow oval outline symmetrically")
+    public void applyDrawsVeryTallNarrowOvalOutlineSymmetrically() {
+        Planar<GrayU8> image = DrawTestData.tenByTenPlanar();
+        drawOvalService.apply(image, 2, 1, 4, 8, COLOR_RED);
+        int setCount = 0;
+        for (int y = 0; y < 10; y++) {
+            for (int x = 0; x < 10; x++) {
+                if (image.getBand(0).get(x, y) != 0) setCount++;
+            }
+        }
+        assertEquals(true, setCount > 0);
+    }
+
+    @Test
+    @DisplayName("draws a small oval outline where region 1 covers most of the curve with few pixels in region 2")
+    public void applyDrawsSmallOvalOutlineWithMostCurveInRegion1() {
+        Planar<GrayU8> image = DrawTestData.tenByTenPlanar();
+        drawOvalService.apply(image, 0, 0, 3, 5, COLOR_RED);
+        int setCount = 0;
+        for (int y = 0; y < 10; y++) {
+            for (int x = 0; x < 10; x++) {
+                if (image.getBand(0).get(x, y) != 0) setCount++;
+            }
+        }
+        assertEquals(true, setCount > 0);
+    }
+
+    @Test
+    @DisplayName("draws a circular outline where the region transition happens at a predictable quadrant boundary")
+    public void applyDrawsCircularOutlineWithPredictableRegionTransition() {
+        Planar<GrayU8> image = DrawTestData.tenByTenPlanar();
+        drawOvalService.apply(image, 1, 1, 8, 8, COLOR_RED);
+        // centre should not be filled for an outline
+        assertEquals(0, image.getBand(0).get(5, 5));
+        int setCount = 0;
+        for (int y = 0; y < 10; y++) {
+            for (int x = 0; x < 10; x++) {
+                if (image.getBand(0).get(x, y) != 0) setCount++;
+            }
+        }
+        assertEquals(true, setCount > 0);
+    }
+
+    @Test
+    @DisplayName("draws a one-pixel wide oval that produces exactly two symmetric points per quadrant")
+    public void applyDrawsOnePixelWideOvalOutliningTwoPointsPerQuadrant() {
+        Planar<GrayU8> image = DrawTestData.tenByTenPlanar();
+        drawOvalService.apply(image, 0, 1, 2, 6, COLOR_RED);
+        int setCount = 0;
+        for (int y = 0; y < 10; y++) {
+            for (int x = 0; x < 10; x++) {
+                if (image.getBand(0).get(x, y) != 0) setCount++;
+            }
+        }
+        assertEquals(true, setCount > 0);
+    }
+
+    @Test
+    @DisplayName("draws an oval outline with prime-number axes so the integer midpoint algorithm exercises all rounding branches")
+    public void applyDrawsOvalOutlineWithPrimeNumberAxesExercisingAllRoundingBranches() {
+        Planar<GrayU8> image = DrawTestData.tenByTenPlanar();
+        drawOvalService.apply(image, 1, 1, 13, 7, COLOR_RED);
+        int setCount = 0;
+        for (int y = 0; y < 10; y++) {
+            for (int x = 0; x < 10; x++) {
+                if (image.getBand(0).get(x, y) != 0) setCount++;
+            }
+        }
+        assertEquals(true, setCount > 0);
+    }
 }

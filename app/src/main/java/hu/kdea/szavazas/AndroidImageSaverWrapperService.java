@@ -9,10 +9,12 @@ import hu.kdea.szavazas.ballotprocessor.debug.ImageSaverWrapper;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import javax.inject.Inject;
 
-public class AndroidImageSaverWrapperService implements ImageSaverWrapper {
+public class AndroidImageSaverWrapperService extends ImageSaverWrapper {
     private final Context context;
 
+    @Inject
     public AndroidImageSaverWrapperService(Context context) {
         this.context = context;
     }
